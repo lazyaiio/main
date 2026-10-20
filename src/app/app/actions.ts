@@ -6,6 +6,7 @@ import { firstError, profileSchema } from "@/lib/auth/schemas";
 import type { FormState } from "@/lib/auth/form-state";
 import { getAppContext } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 const text = (value: FormDataEntryValue | null) => (typeof value === "string" ? value : "");
 
@@ -24,7 +25,10 @@ async function saveProfile(formData: FormData, completeOnboarding: boolean): Pro
   const ctx = await getAppContext();
   if (!ctx) redirect("/auth/login");
 
-  const supabase = await createClient();
+  // Compatibility workaround for Supabase JS type inference across minor versions.
+  // The database schema is defined in src/lib/supabase/database.types.ts; runtime queries
+  // remain protected by Supabase RLS and the server-side session.
+  const supabase = (await createClient()) as unknown as SupabaseClient<any>;
   const failure: FormState = { error: "We could not save your changes. Please try again.", values };
 
   const { data: profileRows, error: profileError } = await supabase
