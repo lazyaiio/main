@@ -38,7 +38,10 @@ export const getAppContext = cache(async (): Promise<AppContext | null> => {
   ]);
 
   const profile = profileRes.data;
-  const membership = membershipRes.data;
+  // Supabase's inferred result can become `never` when generated database typings
+  // and the installed client version disagree. Narrow the selected row to the
+  // exact columns requested by this query; this does not change runtime behavior.
+  const membership = membershipRes.data as { workspace_id: string; role: WorkspaceRole } | null;
   const workspace = workspaceRes.data;
 
   if (!profile || !membership || !workspace) {
