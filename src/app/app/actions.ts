@@ -28,7 +28,7 @@ async function saveProfile(formData: FormData, completeOnboarding: boolean): Pro
   // Compatibility workaround for Supabase JS type inference across minor versions.
   // The database schema is defined in src/lib/supabase/database.types.ts; runtime queries
   // remain protected by Supabase RLS and the server-side session.
-  const supabase = (await createClient()) as unknown as SupabaseClient<any>;
+  const supabase = (await createClient()) as unknown as SupabaseClient;
   const failure: FormState = { error: "We could not save your changes. Please try again.", values };
 
   const { data: profileRows, error: profileError } = await supabase
