@@ -47,10 +47,6 @@ export const appSections = {
     title: "Activity",
     description: "A clear history of what was generated, scheduled, and published.",
   },
-  settings: {
-    title: "Settings",
-    description: "Profile, workspace, language, timezone, and notifications.",
-  },
 } as const;
 
 export type AppSectionKey = keyof typeof appSections;

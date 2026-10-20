@@ -1,0 +1,42 @@
+import { readdirSync, readFileSync, statSync } from "node:fs";
+import { join, relative } from "node:path";
+import { describe, expect, it } from "vitest";
+
+const SRC = join(process.cwd(), "src");
+
+function walk(dir: string): string[] {
+  return readdirSync(dir).flatMap((name) => {
+    const full = join(dir, name);
+    return statSync(full).isDirectory() ? walk(full) : [full];
+  });
+}
+
+const files = walk(SRC).filter((f) => /\.(ts|tsx)$/.test(f) && !f.endsWith(".test.ts"));
+const rel = (f: string) => relative(SRC, f).split("\\").join("/");
+
+describe("secret handling", () => {
+  it("references the Supabase service-role key only in the server-only admin client", () => {
+    const offenders = files.filter((f) => readFileSync(f, "utf8").includes("SUPABASE_SERVICE_ROLE_KEY"));
+    expect(offenders.map(rel)).toEqual(["lib/supabase/admin.ts"]);
+  });
+
+  it("marks the admin client and server client as server-only", () => {
+    for (const path of ["lib/supabase/admin.ts", "lib/supabase/server.ts", "lib/auth/session.ts"]) {
+      expect(readFileSync(join(SRC, path), "utf8")).toContain('import "server-only"');
+    }
+  });
+
+  it("never exposes a secret through a NEXT_PUBLIC_ variable", () => {
+    for (const f of files) {
+      expect(readFileSync(f, "utf8")).not.toMatch(/NEXT_PUBLIC_[A-Z_]*(SERVICE|SECRET|PRIVATE)/);
+    }
+  });
+
+  it("keeps client components away from server-only modules", () => {
+    for (const f of files) {
+      const text = readFileSync(f, "utf8");
+      if (!/^\s*["']use client["']/.test(text)) continue;
+      expect(text).not.toMatch(/lib\/supabase\/(admin|server)|lib\/auth\/session/);
+    }
+  });
+});

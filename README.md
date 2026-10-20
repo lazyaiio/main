@@ -21,7 +21,7 @@ GitHub's browser uploader accepts **at most 100 files per upload** (and 25 MB pe
 
 ## Deploying (free tiers while in development)
 1. Vercel → **Add New → Project** → import this GitHub repo (framework: Next.js is auto-detected).
-2. Add environment variables from `.env.example` as each batch needs them. Start with `NEXT_PUBLIC_APP_URL` (your Vercel URL).
+2. Add environment variables from `.env.example` as each batch needs them: `NEXT_PUBLIC_APP_URL`, and for sign-in `NEXT_PUBLIC_SUPABASE_URL` + `NEXT_PUBLIC_SUPABASE_ANON_KEY` (see `docs/SUPABASE_SETUP.md`).
 3. Every commit to `main` deploys to production; other branches get preview URLs.
 
 ## Local commands (optional — only if you run it on your own machine)
