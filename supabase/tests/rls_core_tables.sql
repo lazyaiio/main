@@ -32,6 +32,7 @@ declare
   ws_a uuid := current_setting('test.ws_a')::uuid;
   ws_b uuid := current_setting('test.ws_b')::uuid;
   proj_a uuid;
+  camp_a uuid;
 begin
   -- A can create and read own project
   insert into public.content_projects (workspace_id, name, input_type, input_value)
@@ -80,10 +81,18 @@ begin
   end;
 
   -- A valid campaign and content item work
-  insert into public.campaigns (id, workspace_id, project_id, name, duration_days, requested_item_count)
-  values ('00000000-0000-0000-0000-00000000ca01', ws_a, proj_a, 'A campaign', 7, 7);
+  -- (browsers may not choose row ids: the id column is not insertable, the database generates it)
+  insert into public.campaigns (workspace_id, project_id, name, duration_days, requested_item_count)
+  values (ws_a, proj_a, 'A campaign', 7, 7) returning id into camp_a;
   insert into public.content_items (workspace_id, campaign_id, project_id, language, body)
-  values (ws_a, '00000000-0000-0000-0000-00000000ca01', proj_a, 'en', 'Hello');
+  values (ws_a, camp_a, proj_a, 'en', 'Hello');
+
+  begin
+    insert into public.campaigns (id, workspace_id, project_id, name, duration_days, requested_item_count)
+    values (gen_random_uuid(), ws_a, proj_a, 'chosen id', 7, 7);
+    raise exception 'FAIL A8b: A chose a campaign id from the browser role';
+  exception when insufficient_privilege then null;
+  end;
 
   -- Server-controlled tables are not writable from the browser role
   begin

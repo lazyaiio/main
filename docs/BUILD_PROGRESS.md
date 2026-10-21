@@ -26,7 +26,7 @@ Plan: [`LAZYAI_MASTER_PLAN.md`](./LAZYAI_MASTER_PLAN.md) (see section 23 for own
 
 ## Batch 3 — Data model and dashboard
 
-**Status:** IN PROGRESS (code written; migration 0002 not yet applied; lint / typecheck / vitest / build not run — no network in the sandbox).
+**Status:** IN PROGRESS. Owner verified: GitHub Actions green after upload, migration 0002 ran successfully in Supabase. The first run of `rls_core_tables.sql` stopped with `42501 permission denied for table campaigns` — a bug in the test script (it set the `id` column, which browser roles are deliberately not allowed to set), not in the migration. The test was corrected; waiting for the owner's re-run result.
 
 ### What was built
 - Migration `0002_core_data_model.sql`: `content_projects`, `campaigns`, `content_items`, `media_assets`, `content_item_media`, `social_accounts`, `social_pages`, `scheduled_posts`, `job_queue`, `usage_records`, `audit_events` with RLS. Children use composite `(workspace_id, id)` foreign keys so a row can never reference another workspace's parent. Browser roles can write only projects, campaigns, content and media (editors and above; project/campaign delete is admin-only); viewers are read-only. Publishing state, queue, usage, and audit rows are not writable from browsers; `job_queue` payload/locks/errors are hidden. Audit rows are written only through `log_audit_event()`, which verifies membership and sets the actor from the session.
@@ -49,7 +49,8 @@ Deleted/renamed: none.
 |---|---|
 | Pure-logic unit tests executed with a tiny stand-in runner (calendar, format, audit text, permissions, safe redirects, route guard, timezones: 21 tests) | PASS (this is not the real vitest) |
 | Remaining vitest tests (zod schemas, projects form, env, security scan) | Written, **NOT RUN** |
-| SQL RLS test for core tables | Written, **NOT RUN** (needs the Supabase project) |
+| SQL RLS test for core tables | First run: test-script bug (see status); corrected version **awaiting re-run** |
+| GitHub Actions (lint / typecheck / vitest / build) | PASS (owner-reported) |
 | lint / typecheck / build / `npm install` | **NOT RUN** (no network) |
 | Syntax of 101 TS/TSX files, import resolution, internal links, server-action export rule | PASS |
 | Partial typecheck | Remaining errors all come from missing installed packages (React/Next types) |
