@@ -8,9 +8,9 @@ Plan: [`LAZYAI_MASTER_PLAN.md`](./LAZYAI_MASTER_PLAN.md) (see section 23 for own
 | Batch | Title | Status |
 |---|---|---|
 | 0 | Repository inspection and plan | DONE |
-| 1 | App foundation | **IN PROGRESS** — code complete, waiting for CI/Vercel verification |
-| 2 | Supabase and authentication | **IN PROGRESS** — code written, not yet verified |
-| 3 | Data model and dashboard | NOT STARTED |
+| 1 | App foundation | DONE (owner deployed and verified) |
+| 2 | Supabase and authentication | DONE (owner-verified, see below) |
+| 3 | Data model and dashboard | **IN PROGRESS** — code written, not yet verified |
 | 4 | AI adapter and single-post generation | NOT STARTED |
 | 5 | URL extraction | NOT STARTED |
 | 6 | Campaign planner and bulk generation | NOT STARTED |
@@ -24,9 +24,63 @@ Plan: [`LAZYAI_MASTER_PLAN.md`](./LAZYAI_MASTER_PLAN.md) (see section 23 for own
 
 ---
 
+## Batch 3 — Data model and dashboard
+
+**Status:** IN PROGRESS (code written; migration 0002 not yet applied; lint / typecheck / vitest / build not run — no network in the sandbox).
+
+### What was built
+- Migration `0002_core_data_model.sql`: `content_projects`, `campaigns`, `content_items`, `media_assets`, `content_item_media`, `social_accounts`, `social_pages`, `scheduled_posts`, `job_queue`, `usage_records`, `audit_events` with RLS. Children use composite `(workspace_id, id)` foreign keys so a row can never reference another workspace's parent. Browser roles can write only projects, campaigns, content and media (editors and above; project/campaign delete is admin-only); viewers are read-only. Publishing state, queue, usage, and audit rows are not writable from browsers; `job_queue` payload/locks/errors are hidden. Audit rows are written only through `log_audit_event()`, which verifies membership and sets the actor from the session.
+- RLS test script `supabase/tests/rls_core_tables.sql` (cross-workspace read/write, viewer role, forged workspace_id, cross-workspace foreign key, server-only tables, anon).
+- Typed repository layer (`src/lib/data/*`, explicit row types, workspace always from the server session) and service layer with role checks and audit logging (`src/lib/services/*`).
+- Pages: real dashboard (live counts, failed-post alert, campaign progress, getting-started checklist driven by real data), Projects (list, create, detail/edit, archive/restore, delete with confirmation), Campaigns (read-only list with progress), Content (status filters, list), Calendar skeleton (month grid in the workspace timezone, previous/next/today, scheduled list), Activity (audit history), Settings (from Batch 2). Pages and Media remain "Coming soon".
+- Loading skeleton, empty states, error boundary, success/error notices (mapped from codes, not echoed from the URL).
+- Project form validation: topics 2–200 chars; links/websites must be full http(s) addresses. (SSRF-safe fetching is part of the URL-extraction batch.)
+
+### Files
+New: `supabase/migrations/0002_core_data_model.sql`, `supabase/tests/rls_core_tables.sql`, `src/lib/data/*`, `src/lib/services/*`, `src/lib/{projects,status,format,calendar,audit}.ts` (+tests), `src/lib/auth/permissions.ts` (+test), `src/components/{ui/page-header,ui/empty-state,ui/stat-card}.tsx`, `src/components/projects/*`, `src/app/app/{projects,campaigns,content,calendar,activity}/*`, `src/app/app/loading.tsx`.
+Changed: `src/app/app/page.tsx`, `src/lib/auth/session.ts` (adds `requireAppContext`, keeps owner's typing fix), `src/lib/site.ts`, `src/components/auth/fields.tsx` (adds textarea and checkbox fields), `docs/SUPABASE_SETUP.md`, `docs/BUILD_PROGRESS.md`.
+Deleted/renamed: none.
+
+### Database migrations
+`0002_core_data_model.sql` — **not yet applied**.
+
+### Tests / checks and results
+| Check | Result |
+|---|---|
+| Pure-logic unit tests executed with a tiny stand-in runner (calendar, format, audit text, permissions, safe redirects, route guard, timezones: 21 tests) | PASS (this is not the real vitest) |
+| Remaining vitest tests (zod schemas, projects form, env, security scan) | Written, **NOT RUN** |
+| SQL RLS test for core tables | Written, **NOT RUN** (needs the Supabase project) |
+| lint / typecheck / build / `npm install` | **NOT RUN** (no network) |
+| Syntax of 101 TS/TSX files, import resolution, internal links, server-action export rule | PASS |
+| Partial typecheck | Remaining errors all come from missing installed packages (React/Next types) |
+
+Acceptance status: "CRUD works with authorization", "cross-workspace data is inaccessible" and the loading/empty/error/success states are **unproven** until the owner runs the migration and the RLS test, passes CI, and tries the pages on the deployed site.
+
+### External setup required (owner)
+Run migration 0002 and `rls_core_tables.sql` per `docs/SUPABASE_SETUP.md`. No new environment variables.
+
+### Decisions
+- Database types for the new tables are explicit row types in `src/lib/data/types.ts`, and queries use an untyped client, because the owner had to work around generated-type inference in Batch 2. Same approach avoids repeating the problem.
+- Audit logging is best-effort: if it fails the user's action still succeeds.
+- Projects that already have campaigns or posts cannot be deleted (archive instead), to prevent accidental loss of generated content.
+- Provider tokens are not stored yet; they will go in a server-only table in the Meta batch.
+- `email_events` is deferred to the Resend batch.
+
+### Known issues / risks
+- First CI run may show lint/type problems that could not be caught offline; send the log.
+- The Pages and Media screens are placeholders until their batches.
+- Content is read-only in this batch; the editor and generation arrive in Batch 4.
+
+### Exact next action
+Owner: upload the Batch 3 zip, wait for CI, run both SQL files, then try: create a project → edit → archive → restore → delete, view Activity, change calendar month. Report results (or paste errors). Then Batch 4 (AI adapter and single-post generation) after approval — it will need an AI provider choice and key.
+
+---
+
 ## Batch 2 — Supabase and authentication
 
-**Status:** IN PROGRESS (code written; nothing executed against a real Supabase project, and lint / typecheck / tests / build not run — no network in the sandbox). Started at the owner's request before the Batch 1 CI result was reported, so Batch 2 also depends on Batch 1 being green.
+**Status:** DONE — verified by the owner: GitHub Actions green after the owner fixed two TypeScript typing errors (workarounds now merged into `src/app/app/actions.ts` and `src/lib/auth/session.ts`), migration 0001 and the RLS test ran successfully in Supabase (owner reported success; the exact result text was not quoted), Supabase↔Vercel integration supplied the environment variables, and sign-up → email → onboarding → dashboard works on the deployed site.
+
+_Original build note (kept for history): code was first written without network access, so nothing had been executed._
 
 ### What was built
 - Typed Supabase clients: browser, server (cookie-bound, RLS applies), middleware session refresh, and a server-only admin (service-role) client that nothing uses yet.

@@ -1,5 +1,6 @@
 import "server-only";
 import type { User } from "@supabase/supabase-js";
+import { redirect } from "next/navigation";
 import { cache } from "react";
 import { isSupabaseConfigured } from "@/lib/env";
 import { createClient } from "@/lib/supabase/server";
@@ -50,3 +51,10 @@ export const getAppContext = cache(async (): Promise<AppContext | null> => {
 
   return { user, profile, workspace, role: membership.role };
 });
+
+/** For pages: the signed-in context, or a redirect to the login page. */
+export async function requireAppContext(): Promise<AppContext> {
+  const ctx = await getAppContext();
+  if (!ctx) redirect("/auth/login");
+  return ctx;
+}

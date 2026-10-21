@@ -37,3 +37,11 @@ Also add `NEXT_PUBLIC_APP_URL` with your Vercel address.
 - Supabase's built-in auth email is for testing only and sends very few emails per hour. Batch 10 connects Resend so confirmation and reset emails are reliable.
 - Free projects can pause after a period of inactivity; unpause from the dashboard.
 - Without the two public variables the site still works, but sign-in pages show "not set up yet" and `/app` stays locked.
+
+---
+
+## Batch 3 additions: migration 0002 (run once, after 0001)
+
+1. SQL Editor → New query → paste all of `supabase/migrations/0002_core_data_model.sql` → **Run**. Run it **once**; a second run fails with "already exists", which is safe.
+2. New query → paste all of `supabase/tests/rls_core_tables.sql` → **Run**. Expected: `ALL CORE RLS TESTS PASSED`. If you see a message starting with `FAIL`, send it to me word for word.
+3. No new Vercel variables are needed for Batch 3.

@@ -1,4 +1,4 @@
-import type { InputHTMLAttributes, ReactNode } from "react";
+import type { InputHTMLAttributes, ReactNode, TextareaHTMLAttributes } from "react";
 import { Button } from "@/components/ui/button";
 import type { FormState } from "@/lib/auth/form-state";
 import { cn } from "@/lib/utils";
@@ -75,5 +75,67 @@ export function SubmitButton({ pending, children }: { pending: boolean; children
     <Button type="submit" size="lg" className="w-full" disabled={pending} aria-busy={pending}>
       {pending ? "Please wait…" : children}
     </Button>
+  );
+}
+
+export function TextAreaField({
+  label,
+  hint,
+  ...props
+}: TextareaHTMLAttributes<HTMLTextAreaElement> & { label: string; hint?: string; name: string }) {
+  const id = `field-${props.name}`;
+  return (
+    <div className="space-y-1.5">
+      <label htmlFor={id} className="block text-sm font-medium text-ink-700">
+        {label}
+      </label>
+      <textarea
+        id={id}
+        rows={3}
+        aria-describedby={hint ? `${id}-hint` : undefined}
+        className={cn(inputClass, "h-auto py-2.5")}
+        {...props}
+      />
+      {hint ? (
+        <p id={`${id}-hint`} className="text-xs text-ink-500">
+          {hint}
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
+export function CheckboxGroup({
+  legend,
+  name,
+  options,
+  selected,
+}: {
+  legend: string;
+  name: string;
+  options: { value: string; label: string }[];
+  selected: string[];
+}) {
+  return (
+    <fieldset className="space-y-2">
+      <legend className="text-sm font-medium text-ink-700">{legend}</legend>
+      <div className="flex flex-wrap gap-3">
+        {options.map((option) => (
+          <label
+            key={option.value}
+            className="flex cursor-pointer items-center gap-2 rounded-xl border border-ink-200 bg-white px-3.5 py-2.5 text-sm font-medium has-[:checked]:border-brand has-[:checked]:bg-brand-50"
+          >
+            <input
+              type="checkbox"
+              name={name}
+              value={option.value}
+              defaultChecked={selected.includes(option.value)}
+              className="h-4 w-4 accent-brand"
+            />
+            {option.label}
+          </label>
+        ))}
+      </div>
+    </fieldset>
   );
 }
