@@ -12,6 +12,7 @@ export type NewContentItem = {
   cta: string | null;
   hashtags: string[];
   imageBrief: string | null;
+  sourceUrl?: string | null;
   contentHash: string;
   aiProvider: string | null;
   aiModel: string | null;
@@ -37,6 +38,7 @@ export async function insertContentItem(db: Db, ws: string, item: NewContentItem
       cta: item.cta,
       hashtags: item.hashtags,
       image_brief: item.imageBrief,
+      source_url: item.sourceUrl ?? null,
       content_hash: item.contentHash,
       approval_status: "draft",
       ai_provider: item.aiProvider,

@@ -32,9 +32,9 @@ Give this file to Claude at the start of a new chat, together with `lazyai-full-
 | 1 | App foundation, landing page, shell, CI | Done (owner verified) |
 | 2 | Supabase auth, profiles, workspaces, RLS | Done (owner verified; owner fixed two typing errors, already merged) |
 | 3 | Core data model, projects, content list, calendar, activity, dashboard | CI green; migration 0002 applied; the **first** `rls_core_tables.sql` run failed because of a bug in the test script (it set `id` from the browser role); the **corrected** script was delivered and its re-run result is not yet known |
-| 4 | AI layer, admin section, single-post generation | **Code written, nothing verified.** Migration 0003 not applied. No real AI call made |
-| 5 | URL extraction | Not started |
-| 6 | Campaign planner and bulk generation | Not started |
+| 4 | AI layer, admin section, single-post generation | **Code written, owner verification pending.** CI failed once only because the old `bilingual.tsx` file had not been deleted (the copy-rules test caught Bengali text in it); the owner was told to delete it. Migration 0003 and its SQL test status unknown. No real AI call confirmed |
+| 5 | URL extraction (+ admin redesign) | **Code written, nothing verified.** Migration 0004 not applied; real HTTP transport untested |
+| 6 | Campaign planner and bulk generation | Not started (next) |
 | 7 | Media and images | Not started |
 | 8 | Meta OAuth and Facebook Pages | Not started |
 | 9 | Durable scheduler and publishing | Not started |
@@ -45,12 +45,9 @@ Give this file to Claude at the start of a new chat, together with `lazyai-full-
 
 `docs/BUILD_PROGRESS.md` is the detailed log for each batch (what was built, files, tests, risks, next action). Update it at the end of every batch.
 
-### What the owner still has to do for Batch 4 (check with them first)
-1. Upload the Batch 4 zip; **delete `src/components/marketing/bilingual.tsx`** on GitHub; confirm CI is green (send the log if red).
-2. Supabase SQL Editor: run `supabase/migrations/0003_admin_and_ai.sql` once, then `supabase/tests/rls_admin_ai.sql` (expect `ALL ADMIN/AI TESTS PASSED`), then re-run the corrected `supabase/tests/rls_core_tables.sql` (expect `ALL CORE RLS TESTS PASSED`).
-3. Make themselves a platform admin with the SQL in `docs/SUPABASE_SETUP.md`.
-4. Add at least one AI key as a Vercel environment variable (`ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `GEMINI_API_KEY`, or `OPENROUTER_API_KEY`), redeploy, then Admin -> AI providers: turn it on, fix the model name if needed, press Test.
-5. Create a post in English and in Bengali; judge the quality.
+### What the owner still has to do (ask for the results first)
+**Batch 4:** upload the Batch 4 zip and delete `src/components/marketing/bilingual.tsx` on GitHub; confirm CI is green; run `0003_admin_and_ai.sql` then `rls_admin_ai.sql` (expect `ALL ADMIN/AI TESTS PASSED`); re-run the corrected `rls_core_tables.sql` (expect `ALL CORE RLS TESTS PASSED`); make themselves a platform admin (SQL in `docs/SUPABASE_SETUP.md`); add an AI key in Vercel (`ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `GEMINI_API_KEY`, or `OPENROUTER_API_KEY`), redeploy, turn a provider on in Admin and press Test; write an English and a Bengali post and judge quality.
+**Batch 5:** upload the Batch 5 zip; confirm CI; run `0004_source_documents.sql` then `rls_sources.sql` (expect `ALL SOURCE TESTS PASSED`); try an English article link, a 404 link, a PDF link, a paywalled/login page, and `http://localhost` (must be refused); report results.
 
 ## 5. Architecture and conventions (follow these)
 
@@ -61,17 +58,17 @@ Give this file to Claude at the start of a new chat, together with `lazyai-full-
 - **AI layer** (`src/lib/ai/`): provider interface + 4 adapters + mock, router (priority, bounded retries, fallback, time budget), prompts (`PROMPT_VERSION`), schemas, one repair attempt. Keys are read only in `ai/keys.ts`. Provider and model settings live in the `ai_provider_settings` table; usage in `usage_records`.
 - **UI patterns:** `PageHeader`, `EmptyState`, `StatCard`, `Badge`, `Button/ButtonLink`, form fields in `components/auth/fields.tsx`, `useActionState` forms with `FormState`. Every page needs loading, empty, error, and success states.
 - **Tests:** vitest files next to the code (`*.test.ts`). Pure logic is tested without network or database. Run SQL tests by asking the owner.
-- **Known lessons:** (a) a test that inserts an `id` as the browser role fails by design; (b) `redirect()` must not be inside `try/catch`; (c) Next 15 `params` and `searchParams` are Promises; (d) `next/font/google` needs network at build (fine on Vercel); (e) server actions that call AI export `maxDuration = 60` from the hosting page.
+- **Known lessons:** (a) a test that inserts an `id` as the browser role fails by design; (b) `redirect()` must not be inside `try/catch`; (c) Next 15 `params` and `searchParams` are Promises; (d) `next/font/google` needs network at build (fine on Vercel); (e) server actions that call AI export `maxDuration = 60` from the hosting page; (f) SSRF rules are strict on purpose (no IP literals, only ports 80/443); (g) tests that repeat identical paragraphs get de-duplicated by the HTML extractor.
 
-## 6. Next batch: Batch 5 (URL extraction)
+## 6. Next batch: Batch 6 (campaign planner and bulk generation)
 
-Read the Batch 5 section of `LAZYAI_MASTER_PLAN.md`. Key points: safe server-side fetching (**SSRF protection**: block private/loopback/link-local addresses and unsafe redirects, size and time limits, content-type checks, robots/terms respect), readable-text extraction, duplicate detection, using extracted content as source material for single posts, and clear user-facing failure messages. Link and website projects currently require the topic to be typed by hand; this batch removes that. Follow the same working method: inspect the owner's uploaded changes first, build, run what can be run, update `docs/BUILD_PROGRESS.md`, deliver a changed-files zip, and stop for the owner's verification.
+Read the Batch 6 section of `LAZYAI_MASTER_PLAN.md` first. Only start it after the owner reports Batch 4 and 5 results (fix whatever failed first). Reuse what exists: `src/lib/ai` (router, prompts, validation, overlap guard), `services/generation.ts` (single-post generation, usage recording, per-user hourly limit), the `campaigns`, `content_items` and `job_queue` tables from migration 0002, the approval workflow in `lib/content.ts`, and `services/sources.ts` for article links. Campaign generation must run in small resumable batches (not one long request), record progress in `campaigns.generation_progress`, avoid duplicates (`content_hash`), and respect the per-user/hour limits. The queue writes need trusted server code (migration functions), since browsers cannot write `job_queue`. Same method as before: inspect uploaded changes first, build, run what can be run, update `docs/BUILD_PROGRESS.md`, deliver a changed-files zip (under 100 files, list deletions), and stop for the owner's verification.
 
 ## 7. File map
 
 - `docs/LAZYAI_MASTER_PLAN.md` the plan (section 23 holds the owner's constraints, language rule, AI provider decisions)
 - `docs/BUILD_PROGRESS.md` per-batch log; `docs/SUPABASE_SETUP.md` owner setup steps; `docs/decisions/` ADRs
-- `supabase/migrations/0001..0003_*.sql`, `supabase/tests/*.sql`
+- `supabase/migrations/0001..0004_*.sql`, `supabase/tests/*.sql`
 - `src/app/(marketing)` public site; `src/app/auth` sign-in flows; `src/app/onboarding`; `src/app/app` signed-in product; `src/app/admin` admin; `src/middleware.ts` route protection
-- `src/lib/{ai,auth,data,services,supabase}` as described above; `src/components/*`
+- `src/lib/{ai,auth,data,extract,services,supabase}` as described above (`extract/` = safe web page reading: URL/IP safety, pinned-address fetcher, robots.txt, HTML text extraction, copy-overlap check); `src/components/*`
 - `.github/workflows/ci.yml` (install, lint, typecheck, test, build), `.env.example` (all variable names, no values)

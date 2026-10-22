@@ -1,5 +1,6 @@
 import { AiError } from "./errors";
-import { PROMPT_VERSION, SYSTEM_PROMPT, buildPostPrompt, buildRepairPrompt } from "./prompts";
+import { sourceOverlap } from "@/lib/extract/overlap";
+import { PROMPT_VERSION, SYSTEM_PROMPT, buildPostPrompt, buildRepairPrompt, type PromptSource } from "./prompts";
 import { checkLanguage, extractJsonObject, postOutputSchema, type PostOutput, type PostRequest } from "./post-schema";
 import type { RouterRequest, RouterResult } from "./router";
 
@@ -16,7 +17,14 @@ export type GeneratedPost = {
 
 type Run = (request: RouterRequest) => Promise<RouterResult>;
 
-function validate(text: string, language: "en" | "bn"): { ok: true; output: PostOutput } | { ok: false; problems: string } {
+/** More than this share of the post copied word-for-word from the source is rejected. */
+export const MAX_SOURCE_OVERLAP = 0.2;
+
+function validate(
+  text: string,
+  language: "en" | "bn",
+  source?: PromptSource | null,
+): { ok: true; output: PostOutput } | { ok: false; problems: string } {
   let raw: unknown;
   try {
     raw = extractJsonObject(text);
@@ -30,6 +38,9 @@ function validate(text: string, language: "en" | "bn"): { ok: true; output: Post
   }
   const languageProblem = checkLanguage(parsed.data.body, language);
   if (languageProblem) return { ok: false, problems: languageProblem };
+  if (source && sourceOverlap(parsed.data.body, source.text) > MAX_SOURCE_OVERLAP) {
+    return { ok: false, problems: "the post copies too much wording from the source article; rewrite it completely in your own words" };
+  }
   return { ok: true, output: parsed.data };
 }
 
@@ -37,14 +48,18 @@ function validate(text: string, language: "en" | "bn"): { ok: true; output: Post
  * Builds the prompt, calls the AI, and validates the result. If the first answer is unusable it
  * makes exactly one repair attempt, then gives up with a clear error.
  */
-export async function generatePostContent(input: PostRequest, run: Run): Promise<GeneratedPost> {
+export async function generatePostContent(
+  input: PostRequest,
+  run: Run,
+  source?: PromptSource | null,
+): Promise<GeneratedPost> {
   const base = { system: SYSTEM_PROMPT, maxTokens: 1200, json: true } as const;
 
-  const first = await run({ ...base, user: buildPostPrompt(input) });
+  const first = await run({ ...base, user: buildPostPrompt(input, source) });
   let inputTokens = first.inputTokens ?? 0;
   let outputTokens = first.outputTokens ?? 0;
 
-  const firstCheck = validate(first.text, input.language);
+  const firstCheck = validate(first.text, input.language, source);
   if (firstCheck.ok) {
     return {
       output: firstCheck.output,
@@ -62,7 +77,7 @@ export async function generatePostContent(input: PostRequest, run: Run): Promise
   inputTokens += second.inputTokens ?? 0;
   outputTokens += second.outputTokens ?? 0;
 
-  const secondCheck = validate(second.text, input.language);
+  const secondCheck = validate(second.text, input.language, source);
   if (!secondCheck.ok) {
     throw new AiError("invalid_output", "The AI output was invalid after one repair attempt.");
   }

@@ -1215,3 +1215,11 @@ These were provided by the project owner after the original plan was written and
 - Supported providers: Anthropic, OpenAI, Google Gemini, and OpenRouter (an aggregator that offers some free models). Use free models when available, paid ones otherwise.
 - Platform admins (rows in `platform_admins`, added with SQL only) manage providers in **Admin -> AI providers**: turn any number of providers on or off, set the model, and set a priority. The router tries active providers from the lowest priority number up and falls back on failures.
 - API keys live only in hosting environment variables (`ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `GEMINI_API_KEY`, `OPENROUTER_API_KEY`). They are never stored in the database, shown in the UI, or sent to the browser. The admin page shows only "Key found" or "No key".
+
+## 23.6 Reading web pages (decisions made while building Batch 5)
+- Reading an article is a server-side action on behalf of one signed-in editor. Only public `http(s)` pages on standard ports are read; IP addresses, `localhost`, private/internal names, credentials in addresses, and non-web schemes are refused. DNS is resolved once, every answer must be a public address, and the connection is pinned to that validated address; every redirect is re-checked (no downgrade to http).
+- Limits: 1.5 MB after decompression, 10 seconds for the page plus 4 seconds for robots.txt, 4 redirects, HTML/XHTML only, no JavaScript is run, no cookies are sent. Per-user and per-website hourly limits apply (`URL_EXTRACTIONS_PER_HOUR`, `URL_EXTRACTIONS_PER_HOST_PER_HOUR`); every attempt, including failures, is recorded in `source_documents`.
+- `robots.txt` is honored. Missing or forbidden robots.txt (4xx) means no restrictions; if it cannot be checked (server error, timeout) the page is not read.
+- The crawler identifies itself as `LazyAIBot/1.0 (+app address)`.
+- Posts based on an article must be original: the AI is told to rewrite in its own words, and a post is rejected (one repair attempt) if more than 20% of its six-word sequences appear verbatim in the source. The article link is added at the end of the post.
+- Paywalled, login-only, JavaScript-only, and too-short pages fail with a clear message instead of producing a post.

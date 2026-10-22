@@ -4,7 +4,7 @@ import type { Language, ProjectInputType, ProjectSettings } from "@/lib/data/typ
 export const PROJECT_TYPES: { value: Exclude<ProjectInputType, "csv">; label: string; hint: string }[] = [
   { value: "topic", label: "Topic or keyword", hint: "For example: digital marketing for small shops" },
   { value: "url", label: "Article link", hint: "One article or page to turn into posts" },
-  { value: "website", label: "Website", hint: "Your homepage or site address" },
+  { value: "website", label: "Website", hint: "Your homepage or site address. Paste a specific article link when you write a post." },
 ];
 
 export const TONES = ["friendly", "professional", "playful", "authoritative", "inspirational"] as const;

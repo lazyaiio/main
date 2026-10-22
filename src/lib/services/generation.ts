@@ -3,6 +3,7 @@ import { AiError, describeAiError } from "@/lib/ai/errors";
 import { generatePostContent, type GeneratedPost } from "@/lib/ai/generate-post";
 import { createProviderInstance, getMaxGenerationsPerHour, hasApiKey, isMockEnabled } from "@/lib/ai/keys";
 import { createMockProvider } from "@/lib/ai/mock";
+import type { PromptSource } from "@/lib/ai/prompts";
 import { postRequestSchema, type PostRequest } from "@/lib/ai/post-schema";
 import { generateWithFallback, type EnabledProvider } from "@/lib/ai/router";
 import { canWrite } from "@/lib/auth/permissions";
@@ -14,6 +15,10 @@ import { getDb, type Db } from "@/lib/data/db";
 import { getProject } from "@/lib/data/projects";
 import { logAudit } from "./audit";
 import { ServiceError } from "./errors";
+import { loadSourceMaterial, readSource, type SourceMaterial } from "./sources";
+
+/** The longest a whole generation (reading a page plus writing) may take; hosting allows 60 seconds. */
+const TOTAL_BUDGET_MS = 55_000;
 
 const NOT_CONFIGURED = new ServiceError("not_configured", describeAiError("not_configured"));
 
@@ -44,16 +49,20 @@ async function enforceRateLimit(db: Db, ctx: AppContext) {
   }
 }
 
-async function generate(db: Db, request: PostRequest): Promise<GeneratedPost> {
+async function generate(db: Db, request: PostRequest, source: PromptSource | null, startedAt: number): Promise<GeneratedPost> {
   const providers = await usableProviders(db);
   if (providers.length === 0) throw NOT_CONFIGURED;
 
   try {
-    return await generatePostContent(request, (req) =>
-      generateWithFallback(req, {
-        providers,
-        getProvider: (id) => (id === "mock" ? createMockProvider() : createProviderInstance(id)),
-      }),
+    return await generatePostContent(
+      request,
+      (req) =>
+        generateWithFallback(req, {
+          providers,
+          getProvider: (id) => (id === "mock" ? createMockProvider() : createProviderInstance(id)),
+          deadlineMs: Math.max(0, startedAt + TOTAL_BUDGET_MS - Date.now()),
+        }),
+      source,
     );
   } catch (error) {
     if (error instanceof AiError) {
@@ -85,8 +94,10 @@ async function recordUsage(
   }
 }
 
-function requestSummary(request: PostRequest): Record<string, string> {
-  const summary: Record<string, string> = { topic: request.topic, length: request.length };
+function requestSummary(request: PostRequest, source: SourceMaterial | null): Record<string, string> {
+  const summary: Record<string, string> = { length: request.length };
+  if (request.topic) summary.topic = request.topic;
+  if (source) summary.source_document_id = source.documentId;
   if (request.tone) summary.tone = request.tone;
   if (request.audience) summary.audience = request.audience;
   if (request.notes) summary.notes = request.notes;
@@ -94,17 +105,24 @@ function requestSummary(request: PostRequest): Record<string, string> {
   return summary;
 }
 
-function metadataFor(generated: GeneratedPost, request: PostRequest) {
+function metadataFor(generated: GeneratedPost, request: PostRequest, source: SourceMaterial | null) {
   return {
     input_tokens: generated.inputTokens,
     output_tokens: generated.outputTokens,
     fact_check_flags: generated.output.fact_check_flags,
     repaired: generated.repaired,
-    request: requestSummary(request),
+    request: requestSummary(request, source),
+    ...(source ? { source: { document_id: source.documentId, url: source.url, title: source.title } } : {}),
   };
 }
 
+/** Posts based on an article end with a link back to it. */
+function withSourceLink(body: string, source: SourceMaterial | null): string {
+  return source ? `${body}\n\nSource: ${source.url}` : body;
+}
+
 export async function generatePost(ctx: AppContext, request: PostRequest): Promise<string> {
+  const startedAt = Date.now();
   requireWrite(ctx);
   const db = await getDb();
 
@@ -115,8 +133,10 @@ export async function generatePost(ctx: AppContext, request: PostRequest): Promi
   }
 
   await enforceRateLimit(db, ctx);
-  const generated = await generate(db, request);
+  const source = request.sourceUrl ? await readSource(ctx, project.id, request.sourceUrl) : null;
+  const generated = await generate(db, request, source, startedAt);
   const { output } = generated;
+  const body = withSourceLink(output.body, source);
 
   let id: string | null = null;
   try {
@@ -125,15 +145,16 @@ export async function generatePost(ctx: AppContext, request: PostRequest): Promi
       language: request.language,
       contentFormat: request.format,
       hook: output.hook || null,
-      body: output.body,
+      body,
       cta: output.cta || null,
       hashtags: output.hashtags,
       imageBrief: output.image_brief || null,
+      sourceUrl: source?.url ?? null,
       contentHash: hashContent(output.body),
       aiProvider: generated.provider,
       aiModel: generated.model,
       promptVersion: generated.promptVersion,
-      usageMetadata: metadataFor(generated, request),
+      usageMetadata: metadataFor(generated, request, source),
     });
   } finally {
     await recordUsage(db, ctx, "ai.generate_post", generated, id ?? undefined);
@@ -145,6 +166,7 @@ export async function generatePost(ctx: AppContext, request: PostRequest): Promi
 }
 
 export async function regeneratePost(ctx: AppContext, itemId: string): Promise<void> {
+  const startedAt = Date.now();
   requireWrite(ctx);
   const db = await getDb();
 
@@ -155,11 +177,17 @@ export async function regeneratePost(ctx: AppContext, itemId: string): Promise<v
   if (!item.project_id || !stored) {
     throw new ServiceError("invalid", "This post was not generated by AI, so there is nothing to regenerate.");
   }
+  let source: SourceMaterial | null = null;
+  if (stored.source_document_id) {
+    source = await loadSourceMaterial(ctx, stored.source_document_id);
+    if (!source) throw new ServiceError("invalid", "The article this post was based on is no longer available.");
+  }
+
   const parsed = postRequestSchema.safeParse({
     projectId: item.project_id,
     language: item.language,
     format: item.content_format,
-    topic: stored.topic,
+    topic: stored.topic ?? source?.title ?? (source ? "the source article" : undefined),
     length: stored.length,
     tone: stored.tone,
     audience: stored.audience,
@@ -169,14 +197,15 @@ export async function regeneratePost(ctx: AppContext, itemId: string): Promise<v
   if (!parsed.success) throw new ServiceError("invalid", "The original settings for this post can no longer be used.");
 
   await enforceRateLimit(db, ctx);
-  const generated = await generate(db, parsed.data);
+  const generated = await generate(db, parsed.data, source, startedAt);
   const { output } = generated;
+  const body = withSourceLink(output.body, source);
 
   let ok = false;
   try {
     ok = await updateContentItem(db, ctx.workspace.id, itemId, {
       hook: output.hook || null,
-      body: output.body,
+      body,
       cta: output.cta || null,
       hashtags: output.hashtags,
       image_brief: output.image_brief || null,
@@ -185,7 +214,7 @@ export async function regeneratePost(ctx: AppContext, itemId: string): Promise<v
       ai_provider: generated.provider,
       ai_model: generated.model,
       prompt_version: generated.promptVersion,
-      usage_metadata: metadataFor(generated, parsed.data),
+      usage_metadata: metadataFor(generated, parsed.data, source),
     });
   } finally {
     await recordUsage(db, ctx, "ai.regenerate_post", generated, itemId);

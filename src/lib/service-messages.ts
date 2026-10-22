@@ -9,6 +9,7 @@ export const SERVICE_ERROR_MESSAGES: Record<ServiceErrorKind, string> = {
   not_configured: "AI generation is not set up yet. An admin needs to add an API key and turn on a provider.",
   rate_limited: "You have reached the hourly generation limit. Please try again later.",
   ai_failed: "The AI could not complete that request. Please try again in a moment.",
+  source_failed: "We could not read that web page. Check the link and try again.",
   invalid: "That change is not allowed right now.",
 };
 

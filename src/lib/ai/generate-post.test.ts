@@ -33,7 +33,7 @@ describe("generatePostContent", () => {
     expect(result.output.fact_check_flags).toEqual(["Within a day"]);
     expect(result.repaired).toBe(false);
     expect(result.inputTokens).toBe(100);
-    expect(result.promptVersion).toBe("post-v1");
+    expect(result.promptVersion).toBe("post-v2");
   });
 
   it("makes exactly one repair attempt and adds up token usage", async () => {
@@ -56,6 +56,25 @@ describe("generatePostContent", () => {
     }
     expect(kind).toBe("invalid_output");
     expect(calls).toHaveLength(2);
+  });
+
+  it("rejects a post that copies the source, then accepts a rewrite", async () => {
+    const sourceText =
+      "Small businesses that reply to customer comments within a day build trust faster and see more repeat visits, according to the owner of a local bakery who tracked her results for a year.";
+    const copied = JSON.stringify({ body: sourceText });
+    const rewritten = JSON.stringify({ body: "Answering your customers quickly shows you care, and one bakery owner saw people return more often after she started." });
+    const { run, calls } = runner([copied, rewritten]);
+    const result = await generatePostContent(input, run, { title: "T", url: "https://example.com/a", siteName: null, text: sourceText });
+    expect(calls).toHaveLength(2);
+    expect(calls[1]?.user).toContain("copies too much wording");
+    expect(result.repaired).toBe(true);
+  });
+
+  it("includes the source in the first prompt", async () => {
+    const { run, calls } = runner([good]);
+    await generatePostContent(input, run, { title: "My article", url: "https://example.com/a", siteName: null, text: "Some article text here." });
+    expect(calls[0]?.user).toContain("<source_material>");
+    expect(calls[0]?.user).toContain("My article");
   });
 
   it("treats wrong-language output as invalid", async () => {

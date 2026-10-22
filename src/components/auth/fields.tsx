@@ -73,14 +73,23 @@ export function FormMessage({ state }: { state: FormState }) {
 export function SubmitButton({
   pending,
   pendingLabel = "Please wait…",
+  compact = false,
   children,
 }: {
   pending: boolean;
   pendingLabel?: string;
+  /** Smaller, content-width button (used in admin cards). */
+  compact?: boolean;
   children: ReactNode;
 }) {
   return (
-    <Button type="submit" size="lg" className="w-full" disabled={pending} aria-busy={pending}>
+    <Button
+      type="submit"
+      size={compact ? "md" : "lg"}
+      className={compact ? undefined : "w-full"}
+      disabled={pending}
+      aria-busy={pending}
+    >
       {pending ? pendingLabel : children}
     </Button>
   );

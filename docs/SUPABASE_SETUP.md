@@ -83,3 +83,13 @@ Admin -> AI providers. Each card shows "Key found" once the variable is detected
 ### 5. Optional variables
 - `AI_MAX_GENERATIONS_PER_HOUR` (default 30 per user) limits runaway cost.
 - `AI_MOCK=1` makes the app use built-in sample text when no real provider is active, so you can try the flow for free. It is ignored on the production environment.
+
+
+---
+
+## Batch 5 additions: migration 0004 (reading articles from links)
+
+1. SQL Editor -> new query -> paste all of `supabase/migrations/0004_source_documents.sql` -> **Run** (once).
+2. New query -> paste all of `supabase/tests/rls_sources.sql` -> **Run**. Expected: `ALL SOURCE TESTS PASSED`. If you see `FAIL`, send the exact message.
+3. No new environment variables are required. Optional: `URL_EXTRACTIONS_PER_HOUR` (default 20 per user) and `URL_EXTRACTIONS_PER_HOST_PER_HOUR` (default 5 per website).
+4. Try it: New post -> paste an article link (for example a public blog post) -> Generate. The post ends with `Source: <link>` and the editor shows "Based on ...". Pages that need a login, sit behind a paywall, or ask not to be read by robots.txt show a clear message.

@@ -34,6 +34,7 @@ export async function generatePostAction(_prev: FormState, formData: FormData): 
     language: str(formData, "language"),
     format: str(formData, "format"),
     topic: str(formData, "topic"),
+    sourceUrl: str(formData, "sourceUrl"),
     length: str(formData, "length"),
     tone: str(formData, "tone"),
     audience: str(formData, "audience"),
@@ -42,6 +43,8 @@ export async function generatePostAction(_prev: FormState, formData: FormData): 
   };
   const parsed = postRequestSchema.safeParse({
     ...values,
+    topic: optional(formData, "topic"),
+    sourceUrl: optional(formData, "sourceUrl"),
     tone: optional(formData, "tone"),
     audience: optional(formData, "audience"),
     cta: optional(formData, "cta"),

@@ -30,6 +30,8 @@ export function GenerateForm({
   const v = state.values;
   const languageOptions = project?.languages ?? ["en"];
   const topicDefault = project?.inputType === "topic" ? project.inputValue.slice(0, 300) : "";
+  // A project that starts from one article link already knows its source.
+  const sourceDefault = project?.inputType === "url" ? project.inputValue : "";
 
   return (
     <form action={formAction} className="space-y-5">
@@ -70,17 +72,21 @@ export function GenerateForm({
       </div>
 
       <Field
+        key={`source-${projectId}`}
+        label="Article link (optional)"
+        name="sourceUrl"
+        type="url"
+        maxLength={2000}
+        defaultValue={v?.sourceUrl ?? sourceDefault}
+        hint="We read the page and write an original post about it, with a link back. Pages that need a login or are behind a paywall cannot be read."
+      />
+      <Field
         key={`topic-${projectId}`}
         label="What should this post be about?"
         name="topic"
-        required
         maxLength={300}
         defaultValue={v?.topic ?? topicDefault}
-        hint={
-          project && project.inputType !== "topic"
-            ? "Describe the topic in a few words. Automatic reading of links and websites is coming next."
-            : "A topic, an idea, or an angle."
-        }
+        hint="A topic, an idea, or an angle. You can leave this empty when you paste an article link."
       />
 
       <div className="grid gap-5 sm:grid-cols-2">
@@ -106,7 +112,7 @@ export function GenerateForm({
       <TextAreaField label="Notes for the writer (optional)" name="notes" maxLength={500} defaultValue={v?.notes ?? ""} />
 
       <FormMessage state={state} />
-      <SubmitButton pending={pending || !available} pendingLabel={pending ? "Generating… this can take up to a minute" : "AI is not set up yet"}>
+      <SubmitButton pending={pending || !available} pendingLabel={pending ? "Reading and writing… this can take up to a minute" : "AI is not set up yet"}>
         Generate post
       </SubmitButton>
     </form>

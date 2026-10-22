@@ -16,6 +16,13 @@ describe("postRequestSchema", () => {
     expect(postRequestSchema.safeParse(base).success).toBe(true);
   });
 
+  it("accepts an article link with no topic, but needs one or the other", () => {
+    const withoutTopic = { projectId: base.projectId, language: base.language, format: base.format, length: base.length };
+    expect(postRequestSchema.safeParse({ ...withoutTopic, sourceUrl: "https://example.com/a" }).success).toBe(true);
+    expect(postRequestSchema.safeParse(withoutTopic).success).toBe(false);
+    expect(postRequestSchema.safeParse({ ...withoutTopic, topic: " " }).success).toBe(false);
+  });
+
   it("rejects unknown formats, languages, and short topics", () => {
     expect(postRequestSchema.safeParse({ ...base, format: "meme" }).success).toBe(false);
     expect(postRequestSchema.safeParse({ ...base, language: "fr" }).success).toBe(false);

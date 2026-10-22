@@ -6,6 +6,7 @@ const verbs: Record<string, string> = {
   "project.archived": "Archived project",
   "project.restored": "Restored project",
   "project.deleted": "Deleted project",
+  "source.read": "Read an article",
   "content.created": "Created a post",
   "content.generated": "Generated a post",
   "content.regenerated": "Regenerated a post",

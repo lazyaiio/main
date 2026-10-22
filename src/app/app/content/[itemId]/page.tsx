@@ -104,6 +104,21 @@ export default async function ContentItemPage({ params, searchParams }: Props) {
         </div>
       ) : null}
 
+      {item.usage_metadata?.source ? (
+        <p className="text-sm text-ink-600">
+          Based on{" "}
+          <a
+            href={item.usage_metadata.source.url}
+            target="_blank"
+            rel="noopener noreferrer nofollow"
+            className="font-medium text-brand hover:underline"
+          >
+            {item.usage_metadata.source.title || item.usage_metadata.source.url}
+          </a>
+          . The post is written in our own words, and the link is included at the end.
+        </p>
+      ) : null}
+
       {similar > 0 ? (
         <p role="note" className="rounded-xl border border-ink-200 bg-white px-4 py-3 text-sm text-ink-700">
           This wording is very similar to {similar === 1 ? "another post" : `${similar} other posts`} in your workspace.

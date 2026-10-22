@@ -3,17 +3,29 @@ import { POST_FORMAT_VALUES, POST_LENGTH_VALUES } from "@/lib/post-formats";
 import { TONES } from "@/lib/projects";
 
 /** What the user asks for (validated before any prompt is built). */
-export const postRequestSchema = z.object({
-  projectId: z.string().uuid("Choose a project."),
-  language: z.enum(["en", "bn"], { message: "Choose a language." }),
-  format: z.enum(POST_FORMAT_VALUES, { message: "Choose a format." }),
-  topic: z.string().trim().min(2, "Enter a topic (at least 2 characters).").max(300, "Keep the topic under 300 characters."),
-  length: z.enum(POST_LENGTH_VALUES, { message: "Choose a length." }),
-  tone: z.enum(TONES).optional(),
-  audience: z.string().trim().max(200, "Audience: 200 characters or fewer.").optional(),
-  notes: z.string().trim().max(500, "Notes: 500 characters or fewer.").optional(),
-  cta: z.string().trim().max(200, "Call to action: 200 characters or fewer.").optional(),
-});
+export const postRequestSchema = z
+  .object({
+    projectId: z.string().uuid("Choose a project."),
+    language: z.enum(["en", "bn"], { message: "Choose a language." }),
+    format: z.enum(POST_FORMAT_VALUES, { message: "Choose a format." }),
+    topic: z.string().trim().max(300, "Keep the topic under 300 characters.").optional(),
+    /** An article to base the post on. The page is read on the server and rewritten, never copied. */
+    sourceUrl: z.string().trim().max(2000, "That link is too long.").optional(),
+    length: z.enum(POST_LENGTH_VALUES, { message: "Choose a length." }),
+    tone: z.enum(TONES).optional(),
+    audience: z.string().trim().max(200, "Audience: 200 characters or fewer.").optional(),
+    notes: z.string().trim().max(500, "Notes: 500 characters or fewer.").optional(),
+    cta: z.string().trim().max(200, "Call to action: 200 characters or fewer.").optional(),
+  })
+  .superRefine((value, ctx) => {
+    if (!value.sourceUrl && (!value.topic || value.topic.length < 2)) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["topic"],
+        message: "Enter a topic (at least 2 characters) or paste an article link.",
+      });
+    }
+  });
 
 export type PostRequest = z.infer<typeof postRequestSchema>;
 

@@ -99,5 +99,6 @@ export type ContentItemFull = ContentItemRow & {
     fact_check_flags?: string[];
     repaired?: boolean;
     request?: Record<string, string>;
+    source?: { document_id: string; url: string; title: string | null };
   };
 };

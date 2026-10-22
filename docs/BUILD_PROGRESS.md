@@ -12,7 +12,7 @@ Plan: [`LAZYAI_MASTER_PLAN.md`](./LAZYAI_MASTER_PLAN.md) (see section 23 for own
 | 2 | Supabase and authentication | DONE (owner-verified, see below) |
 | 3 | Data model and dashboard | DONE except the corrected RLS test re-run (see below) |
 | 4 | AI adapter and single-post generation | **IN PROGRESS** — code written, not yet verified |
-| 5 | URL extraction | NOT STARTED |
+| 5 | URL extraction | **IN PROGRESS** — code written, not yet verified |
 | 6 | Campaign planner and bulk generation | NOT STARTED |
 | 7 | Media and images | NOT STARTED |
 | 8 | Meta OAuth and Facebook Pages | NOT STARTED |
@@ -21,6 +21,48 @@ Plan: [`LAZYAI_MASTER_PLAN.md`](./LAZYAI_MASTER_PLAN.md) (see section 23 for own
 | 11 | Usage limits and hardening | NOT STARTED |
 | 12 | Deployment and DNS runbook | NOT STARTED |
 | 13 | Release readiness | NOT STARTED |
+
+---
+
+## Batch 5 — URL extraction (articles to posts) + admin redesign
+
+**Status:** IN PROGRESS (code written; migration 0004 not applied; lint / typecheck / vitest / build not run; no real web page and no real AI provider has been contacted). Batch 4 itself is still waiting for the owner's verification (its CI run failed once because `bilingual.tsx` was not yet deleted, which the owner was asked to do).
+
+### Admin redesign (owner request)
+Admin now has a sidebar shell (top tabs on phones) with Overview and AI providers. Overview shows a three-step setup checklist and provider status. The providers page has a summary strip (providers on, keys found, test mode), an "Order of use" line, and one card per provider with an on/off switch, model, priority, key status, and a Test connection panel. All text is American English.
+
+### What was built (Batch 5)
+- **Safe page reading** (`src/lib/extract/*`): URL validation (public http/https only, standard ports, no IP addresses, no localhost/internal names, no credentials), IPv4/IPv6 private-range detection including mapped, NAT64, 6to4, and Teredo forms, DNS answers all checked and the connection pinned to the validated address, redirects re-validated (no https-to-http), size/time/redirect limits, decompression limits, content-type checks, charset handling, robots.txt support (RFC-style rules, longest match, wildcards).
+- **Readable text extraction** without dependencies: one linear pass (hostile input tested), removes scripts, styles, navigation, headers, footers, forms; decodes entities; finds title, description, site name, canonical link, language; detects paywalled and too-short or JavaScript-only pages.
+- **Original-content guard**: prompt `post-v2` (source is untrusted data, rewrite in own words), and a six-word-sequence overlap check that rejects copied text (one repair attempt); the article link is appended to the post.
+- **Source records** (`0004_source_documents.sql`): `source_documents` table, written only through `record_source_document()` (membership checked), read/delete by workspace members, cached for one hour per address, every attempt recorded; per-user and per-website hourly limits.
+- **UI**: "Article link (optional)" on New post (prefilled for link projects), topic optional when a link is given, "Based on ..." in the editor, regeneration reuses the stored article, clear error messages for every failure kind.
+- SQL test `supabase/tests/rls_sources.sql`.
+
+### Files
+New: `supabase/migrations/0004_source_documents.sql`, `supabase/tests/rls_sources.sql`, `src/lib/extract/*` (+ tests), `src/lib/data/sources.ts`, `src/lib/services/sources.ts`, `src/components/admin/{admin-nav,provider-card}.tsx`, `src/components/ui/switch.tsx`.
+Changed: admin layout/pages/forms, `src/components/auth/fields.tsx`, `src/lib/ai/{post-schema,prompts,generate-post}.ts` (+ tests), `src/lib/services/{generation,errors}.ts`, `src/lib/data/{content,types}.ts`, `src/lib/{audit,service-messages,projects}.ts`, content form/actions/editor page, `.env.example`, docs.
+Deleted/renamed: none.
+
+### Tests / checks and results
+| Check | Result |
+|---|---|
+| Executed with the stand-in runner: URL safety (11), safe fetcher with fake network (17), robots (9), overlap (5), HTML extractor (12), prompts (6), router (8), providers (8), copy rules (2), security scan (5), calendar, format, audit, permissions, redirects, route guard, timezones | 112 tests PASS |
+| Written but NOT RUN (need installed zod/vitest): post schema, generate-post flow, content helpers, env, schemas, projects | NOT RUN |
+| SQL tests (`rls_core_tables.sql` corrected, `rls_admin_ai.sql`, `rls_sources.sql`) | NOT RUN |
+| Real network fetch of a web page | **Not done** (the real HTTP transport is untested here) |
+| lint / typecheck / build / `npm install` | NOT RUN (no network) |
+| Syntax of 163 TS/TSX files, imports, unused imports, partial typecheck | PASS (remaining type errors come only from missing installed packages) |
+
+### Known issues / risks
+- The real HTTP transport (`node-transport.ts`) and DNS resolver are the only extraction parts not exercised by tests; they need a real-world trial (try a public blog post, a 404, a PDF link, a paywalled page).
+- Extraction is heuristic: some sites (heavy JavaScript, unusual markup) will fail with "not enough readable text". A site-specific or library-based extractor can be added later.
+- Generation now includes a page fetch inside the same request; the combined limit is about 55 seconds. Slow sites plus a slow AI provider can time out (the user sees a retry message).
+- Website-level crawling (reading several pages of a site) is not built; a "website" project uses one article link at a time.
+- Reading pages on behalf of users carries legal and terms-of-service considerations; the product honors robots.txt, rewrites instead of copying, and links back to the source. A policy page should be written before launch.
+
+### Exact next action
+Owner: finish Batch 4 verification first (upload, delete `bilingual.tsx`, run `0003` + tests, add admin and a key). Then upload the Batch 5 zip, confirm CI, run `0004` and `rls_sources.sql`, and try: an English article link, a link that returns 404, a PDF link, a login/paywalled page, and a link to a private address (for example `http://localhost`) which must be refused. Report the results. Then Batch 6 (campaign planner and bulk generation).
 
 ---
 

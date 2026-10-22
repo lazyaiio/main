@@ -6,6 +6,7 @@ export type ServiceErrorKind =
   | "not_configured"
   | "rate_limited"
   | "ai_failed"
+  | "source_failed"
   | "invalid";
 
 /** An expected failure with a message that is safe to show to the user. */
