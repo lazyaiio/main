@@ -1,10 +1,10 @@
 /** Date/time display in a given IANA timezone (the workspace timezone). */
 export function formatDateTime(iso: string, timeZone: string): string {
-  return new Intl.DateTimeFormat("en-GB", { dateStyle: "medium", timeStyle: "short", timeZone }).format(new Date(iso));
+  return new Intl.DateTimeFormat("en-US", { dateStyle: "medium", timeStyle: "short", timeZone }).format(new Date(iso));
 }
 
 export function formatDate(iso: string, timeZone: string): string {
-  return new Intl.DateTimeFormat("en-GB", { dateStyle: "medium", timeZone }).format(new Date(iso));
+  return new Intl.DateTimeFormat("en-US", { dateStyle: "medium", timeZone }).format(new Date(iso));
 }
 
 export function excerpt(text: string, max = 120): string {

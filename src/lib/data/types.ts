@@ -85,3 +85,19 @@ export type AuditEventRow = {
   metadata: Record<string, unknown>;
   created_at: string;
 };
+
+export type ContentItemFull = ContentItemRow & {
+  source_url: string | null;
+  image_brief: string | null;
+  content_hash: string | null;
+  ai_provider: string | null;
+  ai_model: string | null;
+  prompt_version: string | null;
+  usage_metadata: {
+    input_tokens?: number;
+    output_tokens?: number;
+    fact_check_flags?: string[];
+    repaired?: boolean;
+    request?: Record<string, string>;
+  };
+};

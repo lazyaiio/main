@@ -24,6 +24,7 @@ export const metadata: Metadata = {
     description: siteConfig.description,
     siteName: siteConfig.name,
     type: "website",
+    locale: "en_US",
   },
 };
 
@@ -35,7 +36,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${sans.variable} ${display.variable} ${bengali.variable}`}>
+    <html lang="en-US" className={`${sans.variable} ${display.variable} ${bengali.variable}`}>
       <body className="font-sans">{children}</body>
     </html>
   );

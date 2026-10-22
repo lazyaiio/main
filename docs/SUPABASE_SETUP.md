@@ -45,3 +45,41 @@ Also add `NEXT_PUBLIC_APP_URL` with your Vercel address.
 1. SQL Editor → New query → paste all of `supabase/migrations/0002_core_data_model.sql` → **Run**. Run it **once**; a second run fails with "already exists", which is safe.
 2. New query → paste all of `supabase/tests/rls_core_tables.sql` → **Run**. Expected: `ALL CORE RLS TESTS PASSED`. If you see a message starting with `FAIL`, send it to me word for word.
 3. No new Vercel variables are needed for Batch 3.
+
+
+---
+
+## Batch 4 additions: migration 0003, admin access, AI keys
+
+### 1. Run the migration and its test
+1. SQL Editor -> new query -> paste all of `supabase/migrations/0003_admin_and_ai.sql` -> **Run** (once).
+2. New query -> paste all of `supabase/tests/rls_admin_ai.sql` -> **Run**. Expected: `ALL ADMIN/AI TESTS PASSED`. If you see `FAIL`, send the exact message.
+
+### 2. Make yourself a platform admin
+Admins are added with SQL only (the website cannot do it, on purpose). Sign up on the site first, then run this once, replacing the email with the one you signed up with:
+
+```sql
+insert into public.platform_admins (user_id)
+select id from auth.users where email = 'YOUR_EMAIL_HERE';
+```
+
+Then reload the site: an **Admin** link appears in the sidebar, and `/admin/ai-providers` opens. Anyone who is not an admin sees a normal "not found" page there.
+
+### 3. Add AI keys (Vercel environment variables)
+Vercel -> your project -> **Settings -> Environment Variables**. Add only the providers you want:
+
+| Variable | Provider |
+|---|---|
+| `ANTHROPIC_API_KEY` | Anthropic (Claude) |
+| `OPENAI_API_KEY` | OpenAI |
+| `GEMINI_API_KEY` | Google Gemini |
+| `OPENROUTER_API_KEY` | OpenRouter (has some free models; names end in `:free`) |
+
+Then **Deployments -> Redeploy**. Never paste a key into chat or GitHub.
+
+### 4. Turn providers on
+Admin -> AI providers. Each card shows "Key found" once the variable is detected. Tick **Active**, check the model name, set a priority (lowest number is tried first), **Save**, then **Test connection** (sends about 20 tokens). Model names change often; if the test says the model name may be wrong, look up the provider's current model list and update the field.
+
+### 5. Optional variables
+- `AI_MAX_GENERATIONS_PER_HOUR` (default 30 per user) limits runaway cost.
+- `AI_MOCK=1` makes the app use built-in sample text when no real provider is active, so you can try the flow for free. It is ignored on the production environment.

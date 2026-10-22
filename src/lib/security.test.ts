@@ -21,9 +21,15 @@ describe("secret handling", () => {
   });
 
   it("marks the admin client and server client as server-only", () => {
-    for (const path of ["lib/supabase/admin.ts", "lib/supabase/server.ts", "lib/auth/session.ts"]) {
+    for (const path of ["lib/supabase/admin.ts", "lib/supabase/server.ts", "lib/auth/session.ts", "lib/auth/admin.ts", "lib/ai/keys.ts"]) {
       expect(readFileSync(join(SRC, path), "utf8")).toContain('import "server-only"');
     }
+  });
+
+  it("reads AI provider keys only in the server-only keys module", () => {
+    const offenders = files.filter((f) => /process\.env\[/.test(readFileSync(f, "utf8")));
+    expect(offenders.map(rel)).toEqual(["lib/ai/keys.ts"]);
+    expect(readFileSync(join(SRC, "lib/ai/keys.ts"), "utf8")).toContain('import "server-only"');
   });
 
   it("never exposes a secret through a NEXT_PUBLIC_ variable", () => {
@@ -36,7 +42,7 @@ describe("secret handling", () => {
     for (const f of files) {
       const text = readFileSync(f, "utf8");
       if (!/^\s*["']use client["']/.test(text)) continue;
-      expect(text).not.toMatch(/lib\/supabase\/(admin|server)|lib\/auth\/session/);
+      expect(text).not.toMatch(/lib\/supabase\/(admin|server)|lib\/auth\/(session|admin)|lib\/ai\/keys|lib\/services\/|lib\/data\/db/);
     }
   });
 });

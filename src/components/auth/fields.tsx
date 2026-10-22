@@ -70,10 +70,18 @@ export function FormMessage({ state }: { state: FormState }) {
   return null;
 }
 
-export function SubmitButton({ pending, children }: { pending: boolean; children: ReactNode }) {
+export function SubmitButton({
+  pending,
+  pendingLabel = "Please wait…",
+  children,
+}: {
+  pending: boolean;
+  pendingLabel?: string;
+  children: ReactNode;
+}) {
   return (
     <Button type="submit" size="lg" className="w-full" disabled={pending} aria-busy={pending}>
-      {pending ? "Please wait…" : children}
+      {pending ? pendingLabel : children}
     </Button>
   );
 }

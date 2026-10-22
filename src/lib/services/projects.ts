@@ -4,17 +4,10 @@ import type { AppContext } from "@/lib/auth/session";
 import { DataError, getDb } from "@/lib/data/db";
 import * as repo from "@/lib/data/projects";
 import type { ProjectInput } from "@/lib/data/projects";
+import { ServiceError } from "./errors";
 import { logAudit } from "./audit";
 
-export class ServiceError extends Error {
-  constructor(
-    public readonly kind: "forbidden" | "not_found" | "in_use" | "failed",
-    message: string,
-  ) {
-    super(message);
-    this.name = "ServiceError";
-  }
-}
+export { ServiceError } from "./errors";
 
 const FORBIDDEN = new ServiceError("forbidden", "You do not have permission to do that.");
 

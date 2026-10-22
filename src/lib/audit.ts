@@ -6,6 +6,12 @@ const verbs: Record<string, string> = {
   "project.archived": "Archived project",
   "project.restored": "Restored project",
   "project.deleted": "Deleted project",
+  "content.created": "Created a post",
+  "content.generated": "Generated a post",
+  "content.regenerated": "Regenerated a post",
+  "content.updated": "Edited a post",
+  "content.deleted": "Deleted a post",
+  "content.status_changed": "Changed a post status",
 };
 
 /** Human-readable one-liner for an audit event. Unknown actions fall back to the raw action name. */

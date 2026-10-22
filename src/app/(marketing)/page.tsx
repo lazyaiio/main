@@ -1,9 +1,9 @@
-import { Bilingual } from "@/components/marketing/bilingual";
 import { FinalCta } from "@/components/marketing/cta";
 import { Faq } from "@/components/marketing/faq";
 import { Features } from "@/components/marketing/features";
 import { Hero } from "@/components/marketing/hero";
 import { HowItWorks } from "@/components/marketing/how-it-works";
+import { PostFormats } from "@/components/marketing/post-formats";
 
 export default function HomePage() {
   return (
@@ -11,7 +11,7 @@ export default function HomePage() {
       <Hero />
       <HowItWorks />
       <Features />
-      <Bilingual />
+      <PostFormats />
       <Faq />
       <FinalCta />
     </>

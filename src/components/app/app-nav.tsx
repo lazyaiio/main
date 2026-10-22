@@ -12,6 +12,7 @@ import {
   Megaphone,
   Plug,
   Settings,
+  Shield,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -28,7 +29,7 @@ const items: { href: string; label: string; icon: LucideIcon; exact?: boolean }[
   { href: "/app/settings", label: "Settings", icon: Settings },
 ];
 
-export function AppNav({ orientation }: { orientation: "vertical" | "horizontal" }) {
+export function AppNav({ orientation, isAdmin = false }: { orientation: "vertical" | "horizontal"; isAdmin?: boolean }) {
   const pathname = usePathname();
 
   return (
@@ -40,7 +41,7 @@ export function AppNav({ orientation }: { orientation: "vertical" | "horizontal"
           : "flex gap-1 overflow-x-auto px-3 pb-2 [scrollbar-width:none]",
       )}
     >
-      {items.map(({ href, label, icon: Icon, exact }) => {
+      {(isAdmin ? [...items, { href: "/admin/ai-providers", label: "Admin", icon: Shield, exact: false }] : items).map(({ href, label, icon: Icon, exact }) => {
         const active = exact ? pathname === href : pathname.startsWith(href);
         return (
           <Link

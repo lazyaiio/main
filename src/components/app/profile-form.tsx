@@ -26,7 +26,7 @@ export function ProfileForm({ action, submitLabel, timezones, defaults }: Props)
       <Field label="Workspace name" name="workspaceName" required defaultValue={v?.workspaceName ?? defaults.workspaceName} />
       <SelectField label="Content language" name="preferredLanguage" defaultValue={v?.preferredLanguage ?? defaults.preferredLanguage}>
         <option value="en">English</option>
-        <option value="bn">বাংলা (Bengali)</option>
+        <option value="bn">Bengali</option>
       </SelectField>
       <SelectField label="Timezone" name="timezone" defaultValue={v?.timezone ?? defaults.timezone}>
         {timezones.map((tz) => (

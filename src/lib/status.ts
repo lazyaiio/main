@@ -8,7 +8,7 @@ export const approvalStatus: Record<ApprovalStatus, Meta> = {
   awaiting_approval: { label: "Needs review", tone: "amber" },
   approved: { label: "Approved", tone: "brand" },
   rejected: { label: "Rejected", tone: "neutral" },
-  cancelled: { label: "Cancelled", tone: "neutral" },
+  cancelled: { label: "Canceled", tone: "neutral" },
 };
 
 export const campaignStatus: Record<CampaignStatus, Meta> = {
@@ -19,7 +19,7 @@ export const campaignStatus: Record<CampaignStatus, Meta> = {
   paused: { label: "Paused", tone: "neutral" },
   completed: { label: "Completed", tone: "green" },
   failed: { label: "Failed", tone: "amber" },
-  cancelled: { label: "Cancelled", tone: "neutral" },
+  cancelled: { label: "Canceled", tone: "neutral" },
 };
 
 export const postStatus: Record<PostStatus, Meta> = {
@@ -28,5 +28,5 @@ export const postStatus: Record<PostStatus, Meta> = {
   retrying: { label: "Retrying", tone: "amber" },
   published: { label: "Published", tone: "green" },
   failed: { label: "Failed", tone: "amber" },
-  cancelled: { label: "Cancelled", tone: "neutral" },
+  cancelled: { label: "Canceled", tone: "neutral" },
 };

@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { FileText } from "lucide-react";
+import { FileText, Plus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { ButtonLink } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/ui/page-header";
+import { canWrite } from "@/lib/auth/permissions";
 import { requireAppContext } from "@/lib/auth/session";
 import { getDb } from "@/lib/data/db";
 import { CONTENT_FILTERS, listContent } from "@/lib/data/overview";
@@ -38,7 +39,23 @@ export default async function ContentPage({ searchParams }: Props) {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Content" description="Every post, with its review status." />
+      <PageHeader
+        title="Content"
+        description="Every post, with its review status."
+        action={
+          canWrite(ctx.role) ? (
+            <ButtonLink href="/app/content/new">
+              <Plus className="h-4 w-4" aria-hidden="true" /> New post
+            </ButtonLink>
+          ) : null
+        }
+      />
+
+      {params.notice === "deleted" ? (
+        <p role="status" className="rounded-xl bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+          Post deleted.
+        </p>
+      ) : null}
 
       <nav aria-label="Filter by status" className="flex flex-wrap gap-2">
         {CONTENT_FILTERS.map((key) => (
@@ -69,8 +86,8 @@ export default async function ContentPage({ searchParams }: Props) {
           }
           action={
             filter === "all" ? (
-              <ButtonLink href="/app/projects" variant="secondary">
-                Go to projects
+              <ButtonLink href={canWrite(ctx.role) ? "/app/content/new" : "/app/projects"} variant="secondary">
+                {canWrite(ctx.role) ? "Create a post" : "Go to projects"}
               </ButtonLink>
             ) : (
               <ButtonLink href="/app/content" variant="secondary">
@@ -84,7 +101,11 @@ export default async function ContentPage({ searchParams }: Props) {
           {items.map((item) => {
             const meta = approvalStatus[item.approval_status];
             return (
-              <li key={item.id} className="rounded-2xl border border-ink-100 bg-white p-5 shadow-card">
+              <li key={item.id}>
+                <Link
+                  href={`/app/content/${item.id}`}
+                  className="block rounded-2xl border border-ink-100 bg-white p-5 shadow-card transition-colors hover:border-brand-200"
+                >
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <p className="text-xs font-medium text-ink-400">
                     {languageLabel(item.language)} · {formatDate(item.created_at, ctx.workspace.timezone)}
@@ -93,6 +114,7 @@ export default async function ContentPage({ searchParams }: Props) {
                 </div>
                 {item.hook ? <h2 className="mt-2 font-display text-base font-bold">{item.hook}</h2> : null}
                 <p className="mt-1.5 text-sm leading-relaxed text-ink-700">{excerpt(item.body, 220)}</p>
+                </Link>
               </li>
             );
           })}

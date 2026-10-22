@@ -2,7 +2,7 @@ export type RouteDecision =
   | { type: "next" }
   | { type: "redirect"; pathname: string; search?: string };
 
-const PROTECTED = ["/app", "/onboarding"];
+const PROTECTED = ["/app", "/onboarding", "/admin"];
 const GUEST_ONLY = ["/auth/login", "/auth/signup", "/auth/forgot-password"];
 
 const matches = (pathname: string, base: string) =>

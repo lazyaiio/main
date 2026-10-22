@@ -9,6 +9,7 @@ describe("decideRoute", () => {
       search: `?next=${encodeURIComponent("/app/content?a=1")}`,
     });
     expect(decideRoute({ pathname: "/onboarding", isAuthed: false }).type).toBe("redirect");
+    expect(decideRoute({ pathname: "/admin/ai-providers", isAuthed: false }).type).toBe("redirect");
   });
 
   it("lets signed-in users through protected pages", () => {

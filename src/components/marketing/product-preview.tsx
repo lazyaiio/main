@@ -45,11 +45,11 @@ export function ProductPreview() {
                 </span>
                 <div>
                   <p className="text-xs font-semibold">Your Page</p>
-                  <p className="text-[11px] text-ink-400">Bengali · Tip</p>
+                  <p className="text-[11px] text-ink-400">Tip</p>
                 </div>
               </div>
               <p className="mt-3 text-sm leading-relaxed">
-                ছোট ব্যবসার টিপ: প্রতিটি কমেন্টের উত্তর ২৪ ঘণ্টার মধ্যে দিন।
+                Small business tip: reply to every comment within 24 hours.
               </p>
               <div className="mt-3 flex h-20 items-center justify-center rounded-lg bg-gradient-to-br from-brand-100 to-brand-50 text-brand-500">
                 <ImageIcon className="h-6 w-6" aria-hidden="true" />

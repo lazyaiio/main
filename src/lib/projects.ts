@@ -77,5 +77,5 @@ export function readProjectForm(formData: FormData) {
 }
 
 export function languageLabel(language: Language): string {
-  return language === "bn" ? "বাংলা" : "English";
+  return language === "bn" ? "Bengali" : "English";
 }

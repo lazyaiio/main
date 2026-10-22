@@ -8,7 +8,7 @@ import {
 } from "./schemas";
 
 describe("signUpSchema", () => {
-  it("normalises email and trims the name", () => {
+  it("normalizes email and trims the name", () => {
     const out = signUpSchema.parse({
       displayName: "  Rahim ",
       email: "  Rahim@Example.COM ",

@@ -65,7 +65,7 @@ export function ProjectForm({
         selected={languages}
         options={[
           { value: "en", label: "English" },
-          { value: "bn", label: "বাংলা (Bengali)" },
+          { value: "bn", label: "Bengali" },
         ]}
       />
       <Field

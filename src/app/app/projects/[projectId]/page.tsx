@@ -5,7 +5,7 @@ import { z } from "zod";
 import { ProjectDangerZone } from "@/components/projects/project-danger-zone";
 import { ProjectForm } from "@/components/projects/project-form";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { ButtonLink } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/page-header";
 import { canAdmin, canWrite } from "@/lib/auth/permissions";
 import { requireAppContext } from "@/lib/auth/session";
@@ -61,9 +61,9 @@ export default async function ProjectPage({ params, searchParams }: Props) {
         action={
           <div className="flex items-center gap-2">
             {project.status === "archived" ? <Badge>Archived</Badge> : null}
-            <Button disabled title="Post generation is coming soon">
-              Generate posts · soon
-            </Button>
+            {writable && project.status === "active" ? (
+              <ButtonLink href={`/app/content/new?project=${project.id}`}>New post</ButtonLink>
+            ) : null}
           </div>
         }
       />

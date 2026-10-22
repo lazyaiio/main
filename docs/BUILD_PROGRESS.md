@@ -10,8 +10,8 @@ Plan: [`LAZYAI_MASTER_PLAN.md`](./LAZYAI_MASTER_PLAN.md) (see section 23 for own
 | 0 | Repository inspection and plan | DONE |
 | 1 | App foundation | DONE (owner deployed and verified) |
 | 2 | Supabase and authentication | DONE (owner-verified, see below) |
-| 3 | Data model and dashboard | **IN PROGRESS** — code written, not yet verified |
-| 4 | AI adapter and single-post generation | NOT STARTED |
+| 3 | Data model and dashboard | DONE except the corrected RLS test re-run (see below) |
+| 4 | AI adapter and single-post generation | **IN PROGRESS** — code written, not yet verified |
 | 5 | URL extraction | NOT STARTED |
 | 6 | Campaign planner and bulk generation | NOT STARTED |
 | 7 | Media and images | NOT STARTED |
@@ -21,6 +21,54 @@ Plan: [`LAZYAI_MASTER_PLAN.md`](./LAZYAI_MASTER_PLAN.md) (see section 23 for own
 | 11 | Usage limits and hardening | NOT STARTED |
 | 12 | Deployment and DNS runbook | NOT STARTED |
 | 13 | Release readiness | NOT STARTED |
+
+---
+
+## Batch 4 — AI adapter, admin section, single-post generation
+
+**Status:** IN PROGRESS (code written; migration 0003 not applied; lint / typecheck / vitest / build not run — no network in the sandbox; no real AI provider has been called).
+
+### Owner decisions applied
+- Providers: Anthropic, OpenAI, Google Gemini, OpenRouter; any number can be switched on or off by an admin; free models when available, paid otherwise; keys supplied as Vercel environment variables.
+- **Site language rule:** American native English everywhere; no Bengali text anywhere on the site. All Bengali UI text found in earlier batches was removed (language labels, the product preview, and the whole bilingual home-page section, which was replaced by a post-formats section). Date formats and labels switched to American. Recorded in plan section 23.4 and enforced by `src/lib/copy-rules.test.ts`.
+
+### What was built
+- **Provider-neutral AI layer** (`src/lib/ai/*`): one interface, adapters for the four providers (plain `fetch`, no new dependencies, keys sent in headers only), a deterministic mock provider (development/preview only, never production), and a router with priority order, bounded retries with backoff, fallback to the next provider, a total time budget, and safe error kinds (no keys or raw provider responses in errors).
+- **Generation**: versioned English prompt (`post-v1`) that treats user text as data (injection-resistant), American English rules for English output and natural-Bengali rules for Bengali output, a strict JSON output schema (Zod), tolerant JSON extraction, a language check (Bengali script for `bn`, no Bengali for `en`), exactly one repair attempt, token usage totals, and fact-check flags for claims the author should verify.
+- **Admin section** (`/admin`, platform admins only; everyone else sees 404): AI providers page with Active toggle, model, priority, "Key found / No key" status, and a Test connection button (about 20 tokens). Enabling a provider without a key is refused.
+- **Posts**: New post page (AI generation with project, language, format, topic, length, tone, audience, CTA, notes; or write by hand), post editor with character count, hashtags, image idea, similar-wording warning, fact-check callout, approval workflow (draft -> needs review -> approved / rejected, back to draft, cancel), regenerate, and delete (drafts, rejected and canceled only). Editing an approved post moves it back to Draft.
+- **Safety and cost controls**: per-user hourly generation limit (`AI_MAX_GENERATIONS_PER_HOUR`, default 30), usage recorded server-side through a membership-checked database function, audit events for post actions.
+- **Database** (`0003_admin_and_ai.sql`): `platform_admins` (no browser access), `ai_provider_settings` (admin-only read/update), `get_enabled_ai_providers()`, `record_ai_usage()`, `is_platform_admin()`, plus update permission on the AI bookkeeping columns of `content_items`.
+- SQL test `supabase/tests/rls_admin_ai.sql`.
+
+### Files
+New: `supabase/migrations/0003_admin_and_ai.sql`, `supabase/tests/rls_admin_ai.sql`, `src/lib/ai/*` (+tests), `src/lib/{post-formats,content,service-messages,copy-rules.test}.ts`, `src/lib/data/{ai-settings,content}.ts`, `src/lib/services/{generation,content,errors}.ts`, `src/lib/auth/admin.ts`, `src/app/admin/*`, `src/app/app/content/{actions.ts,new,[itemId]}`, `src/components/{admin,content}/*`, `src/components/ui/pending-button.tsx`, `src/components/marketing/post-formats.tsx`, `docs/NEW_SESSION_START.md`.
+Changed: `.env.example`, `package.json` unchanged, `src/middleware.ts`, `src/lib/auth/route-guard.ts`(+test), `src/lib/{format,status,projects,audit,security.test}.ts`, `src/lib/services/projects.ts`, `src/lib/data/types.ts`, `src/components/{app/app-nav,app/profile-form,auth/fields,projects/project-form,marketing/product-preview}.tsx`, `src/app/layout.tsx`, `src/app/(marketing)/{page,pricing/page}.tsx`, `src/app/app/{layout,content/page,projects/[projectId]/page}.tsx`, docs.
+**Deleted: `src/components/marketing/bilingual.tsx`** — drag-and-drop upload cannot delete files, so the owner must delete this one file on GitHub (it is no longer imported; leaving it is harmless but untidy).
+
+### Database migrations
+`0003_admin_and_ai.sql` — **not yet applied**. After applying: add yourself to `platform_admins` (SQL in `docs/SUPABASE_SETUP.md`).
+
+### Tests / checks and results
+| Check | Result |
+|---|---|
+| Executed with a tiny stand-in runner: router (8), providers with fake HTTP (8), prompts (4), copy rules (2), security scan (5), calendar, format, audit text, permissions, redirects, route guard, timezones | PASS (stand-in runner, not real vitest) |
+| Written but NOT RUN (need installed zod/vitest): post schema, generate-post flow, content helpers | NOT RUN |
+| SQL tests: `rls_core_tables.sql` (corrected) and `rls_admin_ai.sql` | NOT RUN |
+| Real AI provider calls | **None made** |
+| lint / typecheck / build / `npm install` | NOT RUN (no network) |
+| Syntax of 144 TS/TSX files, import resolution | PASS |
+| Partial typecheck | Remaining errors come only from missing installed packages |
+
+### Known issues / risks
+- Default model names are suggestions and may be out of date; fix them in Admin -> AI providers (the Test button shows "model name may be wrong").
+- Generation runs inside a server action. The pages request a 60-second maximum run time; verify the Hobby plan allows it. If a provider is slow the request can time out; the user sees a retry message.
+- Usage recording and the hourly limit rely on a database function callable by workspace editors; a malicious editor could only inflate their own usage. Hard quotas and plan limits arrive in the limits batch.
+- Link and website projects need the topic typed by hand until URL extraction is built.
+- Free OpenRouter models differ in quality, rate limits, and Bengali ability; test before relying on them.
+
+### Exact next action
+Owner: upload the Batch 4 zip and delete `bilingual.tsx`; confirm CI is green; run `0003` and `rls_admin_ai.sql`; re-run the corrected `rls_core_tables.sql`; add yourself as admin; add at least one AI key in Vercel and redeploy; turn a provider on and press Test; create a post in English and in Bengali and report the quality. Then Batch 5 (URL extraction) after approval.
 
 ---
 
@@ -89,7 +137,7 @@ _Original build note (kept for history): code was first written without network 
 - RLS isolation test script `supabase/tests/rls_tenant_isolation.sql` (run in the Supabase SQL Editor; rolls back).
 - Auth: sign-up, log-in, log-out, forgot/reset password, email-link callback with PKCE code exchange and a graceful failure path. Generic error messages (no account enumeration), Zod validation, open-redirect protection on `next`.
 - Route protection in middleware for `/app/*` and `/onboarding`; signed-in users are sent away from login/sign-up. If Supabase env vars are missing, the site still runs, sign-in pages say "not set up yet", and `/app` stays locked.
-- Onboarding (`/onboarding`): name, workspace name, content language (English/বাংলা), timezone (default Asia/Dhaka). Settings page (`/app/settings`) edits the same fields. Workspace is always taken from the server session, never from form input; updates verify that a row was actually changed.
+- Onboarding (`/onboarding`): name, workspace name, content language (English or Bengali), timezone (default Asia/Dhaka). Settings page (`/app/settings`) edits the same fields. Workspace is always taken from the server session, never from form input; updates verify that a row was actually changed.
 - Dashboard now shows the real user and workspace. Fake "preview mode" zeros removed.
 
 ### Files
@@ -140,7 +188,7 @@ Owner: (1) confirm Batch 1 CI is green, (2) upload the Batch 2 zip, (3) complete
 ### What was built
 - Next.js 15 (App Router), React 19, TypeScript strict (+ `noUncheckedIndexedAccess`), Tailwind CSS 3, Zod, lucide icons.
 - Brand: logo background cleaned (transparent PNGs for light and dark backgrounds), app icon, Apple icon, social share image. Colours ink `#0E1722` / blue `#006FFE`. Fonts: Inter, Plus Jakarta Sans, Noto Sans Bengali.
-- Public site (`/`): header, hero with sample product preview, how-it-works, features, bilingual EN/বাংলা section, FAQ, final CTA, footer. Placeholder pages: `/pricing`, `/contact`, `/privacy`, `/terms`, `/auth/login`, `/auth/signup`, custom 404.
+- Public site (`/`): header, hero with sample product preview, how-it-works, features, post-formats section, FAQ, final CTA, footer. Placeholder pages: `/pricing`, `/contact`, `/privacy`, `/terms`, `/auth/login`, `/auth/signup`, custom 404.
 - App shell (`/app`): sidebar (desktop) / scrolling top nav (mobile), dashboard in clearly-labelled **preview mode** (zeros, no fake data), "Coming soon" pages for Projects, Campaigns, Content, Calendar, Pages, Media, Activity, Settings.
 - `/api/health` (no secrets), `robots.txt`, `sitemap.xml`, basic security headers, `.env.example` with placeholders only.
 - Copy rules followed: no invented prices, stats, or testimonials; sample content is labelled as a sample; "Published" is only described as confirmed-by-Facebook.

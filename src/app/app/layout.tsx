@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { signOutAction } from "@/app/auth/actions";
 import { AppNav } from "@/components/app/app-nav";
 import { Logo } from "@/components/brand/logo";
+import { isCurrentUserPlatformAdmin } from "@/lib/auth/admin";
 import { getAppContext } from "@/lib/auth/session";
 
 export const metadata: Metadata = {
@@ -15,6 +16,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const ctx = await getAppContext();
   if (!ctx) redirect("/auth/login");
   if (!ctx.profile.onboarded_at) redirect("/onboarding");
+  const isAdmin = await isCurrentUserPlatformAdmin();
 
   return (
     <div className="min-h-screen bg-ink-50 md:grid md:grid-cols-[248px_1fr]">
@@ -22,7 +24,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         <Link href="/app" aria-label="LazyAI dashboard" className="mb-6 px-2">
           <Logo className="h-7" />
         </Link>
-        <AppNav orientation="vertical" />
+        <AppNav orientation="vertical" isAdmin={isAdmin} />
         <div className="mt-auto space-y-3 rounded-xl bg-ink-50 p-3">
           <div className="min-w-0">
             <p className="truncate text-sm font-semibold">{ctx.workspace.name}</p>
@@ -45,7 +47,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           <Link href="/app" aria-label="LazyAI dashboard" className="mb-3 block px-4">
             <Logo className="h-6" />
           </Link>
-          <AppNav orientation="horizontal" />
+          <AppNav orientation="horizontal" isAdmin={isAdmin} />
         </div>
         <main className="mx-auto max-w-5xl p-4 sm:p-6 md:p-10">{children}</main>
       </div>

@@ -1204,3 +1204,14 @@ These were provided by the project owner after the original plan was written and
 - Use the supplied LazyAI logo everywhere for now. Source: `docs/brand/LogoLogo.source.png` (has a baked-in fake checkerboard background). Cleaned transparent versions live in `public/brand/` (`logo.png` for light backgrounds, `logo-light.png` for dark backgrounds); the app icon and social card are generated from it.
 - Brand colours: ink `#0E1722`, blue `#006FFE`.
 - **Frontend and backend/dashboard design must be simple and lucrative** (clean, uncluttered, conversion-focused): one clear primary action per screen, generous whitespace, honest copy, fast, mobile-friendly, accessible. Pay special attention to design in every batch that touches UI.
+
+## 23.4 Site language rule (owner decision, 2026-10-21)
+- **All site text must be American native English, everywhere:** the public website, the user dashboard, the admin section, emails the product sends, error messages, labels, placeholders, alt text, and metadata. Use American spelling (for example "canceled" in labels, "organize", "color"), American date and time formats (for example "Oct 21, 2026, 1:30 AM"), and natural American phrasing.
+- **No Bengali text anywhere in the site's source or interface.** The language selector says "Bengali", never the Bengali word. Sample or demo content on the site is English.
+- **What stays:** writing posts in Bengali remains a product feature. AI-written Bengali posts are user content that is stored and displayed as data; the Noto Sans Bengali font stays loaded so that content renders correctly. Prompts that instruct the AI are written in English. Developer-only sample data (such as the mock AI provider) uses escape sequences so the source has no Bengali characters.
+- **Enforced by tests:** `src/lib/copy-rules.test.ts` fails the build if any source file contains Bengali characters or British spellings/date locales. Replies in chat to the owner may be in Bengali; the product never is.
+
+## 23.5 AI providers (owner decision, 2026-10-21)
+- Supported providers: Anthropic, OpenAI, Google Gemini, and OpenRouter (an aggregator that offers some free models). Use free models when available, paid ones otherwise.
+- Platform admins (rows in `platform_admins`, added with SQL only) manage providers in **Admin -> AI providers**: turn any number of providers on or off, set the model, and set a priority. The router tries active providers from the lowest priority number up and falls back on failures.
+- API keys live only in hosting environment variables (`ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `GEMINI_API_KEY`, `OPENROUTER_API_KEY`). They are never stored in the database, shown in the UI, or sent to the browser. The admin page shows only "Key found" or "No key".

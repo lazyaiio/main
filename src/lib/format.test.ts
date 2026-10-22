@@ -3,8 +3,8 @@ import { excerpt, formatDateTime } from "./format";
 
 describe("formatDateTime", () => {
   it("renders in the requested timezone", () => {
-    expect(formatDateTime("2026-10-20T19:30:00Z", "Asia/Dhaka")).toContain("21 Oct 2026");
-    expect(formatDateTime("2026-10-20T19:30:00Z", "UTC")).toContain("20 Oct 2026");
+    expect(formatDateTime("2026-10-20T19:30:00Z", "Asia/Dhaka")).toContain("Oct 21, 2026");
+    expect(formatDateTime("2026-10-20T19:30:00Z", "UTC")).toContain("Oct 20, 2026");
   });
 });
 
