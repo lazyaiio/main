@@ -54,6 +54,9 @@ Deleted/renamed: none.
 | lint / typecheck / build / `npm install` | NOT RUN (no network) |
 | Syntax of 163 TS/TSX files, imports, unused imports, partial typecheck | PASS (remaining type errors come only from missing installed packages) |
 
+### Fix after the first CI run (owner reported)
+`npm run build` in GitHub Actions failed on `/admin` with `SupabaseNotConfiguredError`: CI has no Supabase keys, and the new admin overview created a database client without first reading cookies, so Next.js tried to prerender it. Fixed in two ways: `createClient()` now reads cookies before checking configuration (any page that uses the database is automatically dynamic), and the admin layout is `force-dynamic`. Vercel was unaffected because its environment has the keys. Lesson: CI builds without Supabase variables, so every page that needs a user must be dynamic.
+
 ### Known issues / risks
 - The real HTTP transport (`node-transport.ts`) and DNS resolver are the only extraction parts not exercised by tests; they need a real-world trial (try a public blog post, a 404, a PDF link, a paywalled page).
 - Extraction is heuristic: some sites (heavy JavaScript, unusual markup) will fail with "not enough readable text". A site-specific or library-based extractor can be added later.

@@ -6,6 +6,9 @@ import { Logo } from "@/components/brand/logo";
 import { Badge } from "@/components/ui/badge";
 import { requirePlatformAdmin } from "@/lib/auth/admin";
 
+// Admin pages depend on who is signed in, so they must never be built ahead of time.
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: { default: "Admin", template: "%s · Admin · LazyAI" },
   robots: { index: false, follow: false },
