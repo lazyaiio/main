@@ -43,7 +43,20 @@ function sanitizeBlock(value: string): string {
   return value.replace(/[<>]/g, " ").replace(/[ \t]+/g, " ").replace(/\n{3,}/g, "\n\n").trim();
 }
 
-export function buildPostPrompt(input: PostRequest, source?: PromptSource | null): string {
+/** Extra context when a post is one of many in a campaign. */
+export type CampaignPromptContext = {
+  /** 1-based position of this post in the campaign. */
+  position: number;
+  total: number;
+  /** Optional angle chosen by the author for this post. */
+  theme: string | null;
+  /** Openings of earlier posts in the same campaign, to avoid repeating them. */
+  avoidHooks: string[];
+  /** 1 on the first try; higher when an earlier try was too similar to another post. */
+  attempt: number;
+};
+
+export function buildPostPrompt(input: PostRequest, source?: PromptSource | null, campaign?: CampaignPromptContext | null): string {
   const format = POST_FORMATS.find((f) => f.value === input.format);
   const length = POST_LENGTHS.find((l) => l.value === input.length);
   const language = input.language === "bn" ? "Bengali (bn)" : "English (en)";
@@ -60,6 +73,16 @@ export function buildPostPrompt(input: PostRequest, source?: PromptSource | null
   if (input.audience) lines.push(`Audience: ${sanitize(input.audience)}`);
   if (input.notes) lines.push(`Notes: ${sanitize(input.notes)}`);
   if (input.cta) lines.push(`Preferred call to action: ${sanitize(input.cta)}`);
+  if (campaign) {
+    lines.push(`Campaign: post ${campaign.position} of ${campaign.total}. It must be clearly different from the other posts in the campaign.`);
+    if (campaign.theme) lines.push(`Angle for this post: ${sanitize(campaign.theme)}`);
+    if (campaign.attempt > 1) lines.push(`This is attempt ${campaign.attempt}. Choose a noticeably different angle, opening, and wording than before.`);
+    const avoid = campaign.avoidHooks.map((h) => sanitize(h).slice(0, 100)).filter(Boolean).slice(0, 12);
+    if (avoid.length > 0) {
+      lines.push("Earlier posts in this campaign (do not repeat their angle or opening):");
+      for (const item of avoid) lines.push(`- ${item}`);
+    }
+  }
   lines.push("</user_input>");
 
   if (source) {

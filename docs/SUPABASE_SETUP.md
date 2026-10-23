@@ -93,3 +93,13 @@ Admin -> AI providers. Each card shows "Key found" once the variable is detected
 2. New query -> paste all of `supabase/tests/rls_sources.sql` -> **Run**. Expected: `ALL SOURCE TESTS PASSED`. If you see `FAIL`, send the exact message.
 3. No new environment variables are required. Optional: `URL_EXTRACTIONS_PER_HOUR` (default 20 per user) and `URL_EXTRACTIONS_PER_HOST_PER_HOUR` (default 5 per website).
 4. Try it: New post -> paste an article link (for example a public blog post) -> Generate. The post ends with `Source: <link>` and the editor shows "Based on ...". Pages that need a login, sit behind a paywall, or ask not to be read by robots.txt show a clear message.
+
+
+---
+
+## Batch 6 additions: migration 0005 (campaign planner)
+
+1. SQL Editor -> new query -> paste all of `supabase/migrations/0005_campaign_planner.sql` -> **Run** (once). It adds the `campaign_slots` table, a `brief` column on `campaigns`, and the functions that start, pause, cancel, and resume campaigns. It also stops browsers from changing a campaign's `status` directly.
+2. New query -> paste all of `supabase/tests/rls_campaign_planner.sql` -> **Run**. Expected: `ALL CAMPAIGN PLANNER TESTS PASSED`. If you see `FAIL`, send the exact message (it names the failing check, for example `FAIL A7`).
+3. No new environment variables are required. Reminder: `AI_MAX_GENERATIONS_PER_HOUR` (default 30 per user) also limits campaigns. A 90-post campaign therefore pauses once the hourly limit is reached; press **Resume writing** later. Raise the limit only if you accept the AI cost.
+4. Try it: Campaigns -> New campaign -> fill the form -> **Preview calendar** -> **Create campaign** -> **Start writing**. Keep the page open while posts are written. Test mode (`AI_MOCK=1`) works for a free dry run.

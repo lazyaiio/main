@@ -3,7 +3,7 @@ import { AiError, describeAiError } from "@/lib/ai/errors";
 import { generatePostContent, type GeneratedPost } from "@/lib/ai/generate-post";
 import { createProviderInstance, getMaxGenerationsPerHour, hasApiKey, isMockEnabled } from "@/lib/ai/keys";
 import { createMockProvider } from "@/lib/ai/mock";
-import type { PromptSource } from "@/lib/ai/prompts";
+import type { CampaignPromptContext, PromptSource } from "@/lib/ai/prompts";
 import { postRequestSchema, type PostRequest } from "@/lib/ai/post-schema";
 import { generateWithFallback, type EnabledProvider } from "@/lib/ai/router";
 import { canWrite } from "@/lib/auth/permissions";
@@ -27,7 +27,7 @@ function requireWrite(ctx: AppContext) {
 }
 
 /** Providers an admin turned on AND that have a key. Falls back to the mock outside production. */
-async function usableProviders(db: Db): Promise<EnabledProvider[]> {
+export async function usableProviders(db: Db): Promise<EnabledProvider[]> {
   const enabled = await listEnabledProviders(db);
   const usable = enabled.filter((p) => p.provider !== "mock" && hasApiKey(p.provider));
   if (usable.length > 0) return usable;
@@ -41,6 +41,13 @@ export async function getAiAvailability(): Promise<{ available: boolean; usingMo
   return { available: providers.length > 0, usingMock: providers.some((p) => p.provider === "mock") };
 }
 
+/** How many AI generations this user may still run in the current hour. */
+export async function remainingHourlyAllowance(db: Db, ctx: AppContext): Promise<number> {
+  const since = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+  const used = await countRecentAiUsage(db, ctx.workspace.id, ctx.user.id, since);
+  return Math.max(0, getMaxGenerationsPerHour() - used);
+}
+
 async function enforceRateLimit(db: Db, ctx: AppContext) {
   const since = new Date(Date.now() - 60 * 60 * 1000).toISOString();
   const used = await countRecentAiUsage(db, ctx.workspace.id, ctx.user.id, since);
@@ -49,7 +56,13 @@ async function enforceRateLimit(db: Db, ctx: AppContext) {
   }
 }
 
-async function generate(db: Db, request: PostRequest, source: PromptSource | null, startedAt: number): Promise<GeneratedPost> {
+export async function generate(
+  db: Db,
+  request: PostRequest,
+  source: PromptSource | null,
+  startedAt: number,
+  campaign: CampaignPromptContext | null = null,
+): Promise<GeneratedPost> {
   const providers = await usableProviders(db);
   if (providers.length === 0) throw NOT_CONFIGURED;
 
@@ -63,6 +76,7 @@ async function generate(db: Db, request: PostRequest, source: PromptSource | nul
           deadlineMs: Math.max(0, startedAt + TOTAL_BUDGET_MS - Date.now()),
         }),
       source,
+      campaign,
     );
   } catch (error) {
     if (error instanceof AiError) {
@@ -72,12 +86,13 @@ async function generate(db: Db, request: PostRequest, source: PromptSource | nul
   }
 }
 
-async function recordUsage(
+export async function recordUsage(
   db: Db,
   ctx: AppContext,
-  actionType: "ai.generate_post" | "ai.regenerate_post",
+  actionType: "ai.generate_post" | "ai.regenerate_post" | "ai.campaign_post",
   generated: GeneratedPost,
   entityId?: string,
+  entityType = "content_item",
 ) {
   try {
     await recordAiUsage(db, {
@@ -86,7 +101,7 @@ async function recordUsage(
       provider: generated.provider,
       model: generated.model,
       units: generated.inputTokens + generated.outputTokens,
-      entityType: "content_item",
+      entityType,
       entityId,
     });
   } catch {
@@ -105,7 +120,7 @@ function requestSummary(request: PostRequest, source: SourceMaterial | null): Re
   return summary;
 }
 
-function metadataFor(generated: GeneratedPost, request: PostRequest, source: SourceMaterial | null) {
+export function metadataFor(generated: GeneratedPost, request: PostRequest, source: SourceMaterial | null) {
   return {
     input_tokens: generated.inputTokens,
     output_tokens: generated.outputTokens,
@@ -117,7 +132,7 @@ function metadataFor(generated: GeneratedPost, request: PostRequest, source: Sou
 }
 
 /** Posts based on an article end with a link back to it. */
-function withSourceLink(body: string, source: SourceMaterial | null): string {
+export function withSourceLink(body: string, source: SourceMaterial | null): string {
   return source ? `${body}\n\nSource: ${source.url}` : body;
 }
 

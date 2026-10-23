@@ -1,6 +1,6 @@
 import { AiError } from "./errors";
 import { sourceOverlap } from "@/lib/extract/overlap";
-import { PROMPT_VERSION, SYSTEM_PROMPT, buildPostPrompt, buildRepairPrompt, type PromptSource } from "./prompts";
+import { PROMPT_VERSION, SYSTEM_PROMPT, buildPostPrompt, buildRepairPrompt, type CampaignPromptContext, type PromptSource } from "./prompts";
 import { checkLanguage, extractJsonObject, postOutputSchema, type PostOutput, type PostRequest } from "./post-schema";
 import type { RouterRequest, RouterResult } from "./router";
 
@@ -52,10 +52,11 @@ export async function generatePostContent(
   input: PostRequest,
   run: Run,
   source?: PromptSource | null,
+  campaign?: CampaignPromptContext | null,
 ): Promise<GeneratedPost> {
   const base = { system: SYSTEM_PROMPT, maxTokens: 1200, json: true } as const;
 
-  const first = await run({ ...base, user: buildPostPrompt(input, source) });
+  const first = await run({ ...base, user: buildPostPrompt(input, source, campaign) });
   let inputTokens = first.inputTokens ?? 0;
   let outputTokens = first.outputTokens ?? 0;
 

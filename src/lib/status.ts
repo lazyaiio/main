@@ -1,5 +1,5 @@
 import type { BadgeTone } from "@/components/ui/badge";
-import type { ApprovalStatus, CampaignStatus, PostStatus } from "@/lib/data/types";
+import type { ApprovalStatus, CampaignStatus, PostStatus, SlotStatus } from "@/lib/data/types";
 
 type Meta = { label: string; tone: BadgeTone };
 
@@ -29,4 +29,12 @@ export const postStatus: Record<PostStatus, Meta> = {
   published: { label: "Published", tone: "green" },
   failed: { label: "Failed", tone: "amber" },
   cancelled: { label: "Canceled", tone: "neutral" },
+};
+
+export const slotStatus: Record<SlotStatus, Meta> = {
+  planned: { label: "Planned", tone: "neutral" },
+  generating: { label: "Writing", tone: "brand" },
+  done: { label: "Written", tone: "green" },
+  failed: { label: "Failed", tone: "amber" },
+  skipped: { label: "Skipped", tone: "neutral" },
 };

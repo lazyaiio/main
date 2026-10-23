@@ -34,8 +34,8 @@ Give this file to Claude at the start of a new chat, together with `lazyai-full-
 | 3 | Core data model, projects, content list, calendar, activity, dashboard | CI green; migration 0002 applied; the **first** `rls_core_tables.sql` run failed because of a bug in the test script (it set `id` from the browser role); the **corrected** script was delivered and its re-run result is not yet known |
 | 4 | AI layer, admin section, single-post generation | **Code written, owner verification pending.** CI failed once only because the old `bilingual.tsx` file had not been deleted (the copy-rules test caught Bengali text in it); the owner was told to delete it. Migration 0003 and its SQL test status unknown. No real AI call confirmed |
 | 5 | URL extraction (+ admin redesign) | **Code written, nothing verified.** Migration 0004 not applied; real HTTP transport untested |
-| 6 | Campaign planner and bulk generation | Not started (next) |
-| 7 | Media and images | Not started |
+| 6 | Campaign planner and bulk generation | **Code written, owner verification pending.** Migration 0005 and `rls_campaign_planner.sql` not yet run; progress panel untested in a browser |
+| 7 | Media and images | Not started (next, after Batch 6 is verified) |
 | 8 | Meta OAuth and Facebook Pages | Not started |
 | 9 | Durable scheduler and publishing | Not started |
 | 10 | Resend and email | Not started |
@@ -60,7 +60,9 @@ Give this file to Claude at the start of a new chat, together with `lazyai-full-
 - **Tests:** vitest files next to the code (`*.test.ts`). Pure logic is tested without network or database. Run SQL tests by asking the owner.
 - **Known lessons:** (a) a test that inserts an `id` as the browser role fails by design; (b) `redirect()` must not be inside `try/catch`; (c) Next 15 `params` and `searchParams` are Promises; (d) `next/font/google` needs network at build (fine on Vercel); (e) server actions that call AI export `maxDuration = 60` from the hosting page; (f) SSRF rules are strict on purpose (no IP literals, only ports 80/443); (g) tests that repeat identical paragraphs get de-duplicated by the HTML extractor.
 
-## 6. Next batch: Batch 6 (campaign planner and bulk generation)
+## 6. Batch 6 (campaign planner and bulk generation): code written; Batch 7 is next after the owner verifies it
+
+(Batch 6 notes below are kept for reference. Verification still needed: upload zip, CI green, run `0005_campaign_planner.sql` + `rls_campaign_planner.sql`, try a small campaign. See `docs/BUILD_PROGRESS.md` and `docs/decisions/0002-campaign-generation.md`.)
 
 Read the Batch 6 section of `LAZYAI_MASTER_PLAN.md` first. Only start it after the owner reports Batch 4 and 5 results (fix whatever failed first). Reuse what exists: `src/lib/ai` (router, prompts, validation, overlap guard), `services/generation.ts` (single-post generation, usage recording, per-user hourly limit), the `campaigns`, `content_items` and `job_queue` tables from migration 0002, the approval workflow in `lib/content.ts`, and `services/sources.ts` for article links. Campaign generation must run in small resumable batches (not one long request), record progress in `campaigns.generation_progress`, avoid duplicates (`content_hash`), and respect the per-user/hour limits. The queue writes need trusted server code (migration functions), since browsers cannot write `job_queue`. Same method as before: inspect uploaded changes first, build, run what can be run, update `docs/BUILD_PROGRESS.md`, deliver a changed-files zip (under 100 files, list deletions), and stop for the owner's verification.
 

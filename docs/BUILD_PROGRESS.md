@@ -10,10 +10,10 @@ Plan: [`LAZYAI_MASTER_PLAN.md`](./LAZYAI_MASTER_PLAN.md) (see section 23 for own
 | 0 | Repository inspection and plan | DONE |
 | 1 | App foundation | DONE (owner deployed and verified) |
 | 2 | Supabase and authentication | DONE (owner-verified, see below) |
-| 3 | Data model and dashboard | DONE except the corrected RLS test re-run (see below) |
-| 4 | AI adapter and single-post generation | **IN PROGRESS** — code written, not yet verified |
-| 5 | URL extraction | **IN PROGRESS** — code written, not yet verified |
-| 6 | Campaign planner and bulk generation | NOT STARTED |
+| 3 | Data model and dashboard | DONE (owner reports deployed and SQL run successfully) |
+| 4 | AI adapter and single-post generation | DONE per owner report (deployed, SQL run successfully); real AI quality not yet reported |
+| 5 | URL extraction | DONE per owner report (deployed, SQL run successfully); real-page results not yet reported |
+| 6 | Campaign planner and bulk generation | **IN PROGRESS** — code written, not yet verified |
 | 7 | Media and images | NOT STARTED |
 | 8 | Meta OAuth and Facebook Pages | NOT STARTED |
 | 9 | Durable scheduler and publishing | NOT STARTED |
@@ -21,6 +21,46 @@ Plan: [`LAZYAI_MASTER_PLAN.md`](./LAZYAI_MASTER_PLAN.md) (see section 23 for own
 | 11 | Usage limits and hardening | NOT STARTED |
 | 12 | Deployment and DNS runbook | NOT STARTED |
 | 13 | Release readiness | NOT STARTED |
+
+---
+
+## Batch 6 — Campaign planner and bulk generation
+
+**Status:** IN PROGRESS (code written; migration 0005 not applied; lint / typecheck / vitest / build not run in the sandbox; no real AI call and no database run).
+
+### What was built
+- **Plan a campaign** (`/app/campaigns/new`): project, topic or article link, optional angles (one per line, up to 20), start date, duration (7/14/30/60/90 days), number of posts (1 to 90), posting days, posting times (up to 4 per day), languages, formats, length, tone, audience, call to action, notes. **Preview calendar** shows the proposed dates before anything is saved; **Create campaign** saves it (no AI is used yet).
+- **Deterministic calendar** (`src/lib/campaign-plan.ts`): spreads posts evenly over eligible days and times in the workspace timezone (daylight saving handled), skips times that already passed, rejects impossible plans with a clear message. Two languages alternate; each pair shares a format and an angle.
+- **Campaign page** (`/app/campaigns/[id]`): progress bar, status, planned-posts table (date, language, format, status, link to the draft), buttons Start/Resume, Pause, Retry failed posts, Send drafts for review, Cancel.
+- **Bulk generation in small rounds**: at most 3 posts per request (about 45 seconds), repeated by the open page; progress is stored in the database (`campaign_slots`, `campaigns.generation_progress`), so closing the page only pauses. Leases recover abandoned work; 3 attempts per post; the hourly per-user AI limit pauses the campaign instead of failing it.
+- **Duplicate protection**: recent openings go into the prompt, three-word-run similarity check (retry with a different angle), and the existing content-hash unique index.
+- **Safety**: slots and status changes are written only by `SECURITY DEFINER` functions (membership-checked, campaign row locked); browsers can no longer update `campaigns.status`. See `docs/decisions/0002-campaign-generation.md`.
+- Test mode (`AI_MOCK=1`) now gives different sample text per campaign position, so the whole flow can be tried for free.
+
+### Files
+New: `supabase/migrations/0005_campaign_planner.sql`, `supabase/tests/rls_campaign_planner.sql`, `docs/decisions/0002-campaign-generation.md`, `src/lib/{campaign-plan,campaign-options,campaign-batch,campaign-failure,campaign-format,similarity}.ts` (+ tests), `src/lib/ai/mock.test.ts`, `src/lib/data/campaigns.ts`, `src/lib/services/campaigns.ts`, `src/app/app/campaigns/{actions.ts,new/page.tsx,[campaignId]/page.tsx}`, `src/components/campaigns/{campaign-form,campaign-runner,plan-table}.tsx`.
+Changed: `src/app/app/campaigns/page.tsx`, `src/lib/ai/{mock,prompts,generate-post}.ts`, `src/lib/services/generation.ts` (exports and campaign context), `src/lib/data/{content,types}.ts`, `src/lib/status.ts`, `docs/{BUILD_PROGRESS,SUPABASE_SETUP,NEW_SESSION_START}.md`.
+Deleted: none.
+
+### Tests / checks and results
+| Check | Result |
+|---|---|
+| Pure-logic tests (plan, similarity, batch rules, failure rules, formatting, mock, prompts) plus all existing pure tests, run with a small stand-in runner under `tsx` | 193 passed, 0 failed |
+| Real `vitest`, `lint`, full `typecheck`, `next build` | **NOT RUN** (no network). GitHub Actions is the real check |
+| Partial typecheck | Only errors caused by missing packages remained (React/Next types); real strictness errors (`noUncheckedIndexedAccess`) were found and fixed |
+| No Bengali text in source | PASS (scanned) |
+| SQL migration 0005 and `rls_campaign_planner.sql` | **NOT RUN** (no database in the sandbox). The test must be run by the owner |
+| Real AI calls, real browser use of the progress panel | **NOT RUN** |
+
+### Risks / things to watch
+- The SQL functions and test were written without a database; a syntax or logic slip is possible. Send the exact message if the test prints `FAIL`.
+- Tests used zod 3.23.8 here; the project asks for `^3.24`. CI uses the real one.
+- Generation only advances while the campaign page is open (see ADR 0002).
+- Default hourly limit (30 per user) means a 90-post campaign needs several resumes.
+- `on delete set null (content_item_id)` needs PostgreSQL 15 or newer (current Supabase projects have it).
+
+### Exact next action
+Owner uploads the Batch 6 zip, confirms CI, runs `0005_campaign_planner.sql` then `rls_campaign_planner.sql` (expect `ALL CAMPAIGN PLANNER TESTS PASSED`), then tries a small campaign (for example 5 posts; test mode is fine), including Pause, Resume, Cancel, and closing the page mid-way. Then start Batch 7 (media and images).
 
 ---
 

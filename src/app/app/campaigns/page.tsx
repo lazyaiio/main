@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Megaphone } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { ButtonLink } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/ui/page-header";
+import { canWrite } from "@/lib/auth/permissions";
 import { requireAppContext } from "@/lib/auth/session";
 import { getDb } from "@/lib/data/db";
 import { listCampaigns } from "@/lib/data/overview";
@@ -19,17 +21,25 @@ export default async function CampaignsPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Campaigns" description="A campaign is a planned set of posts for 7 to 30 days." />
+      <PageHeader
+        title="Campaigns"
+        description="A campaign is a planned set of posts over up to 90 days. You preview the calendar, then the AI writes the drafts in small batches."
+        action={canWrite(ctx.role) ? <ButtonLink href="/app/campaigns/new">New campaign</ButtonLink> : undefined}
+      />
 
       {campaigns.length === 0 ? (
         <EmptyState
           icon={Megaphone}
           title="No campaigns yet"
-          body="Campaign planning is being added next. For now, start by creating a project."
+          body="Plan 7 to 90 days of posts at once. Pick a project, a topic, and your posting days, and preview the calendar before anything is written."
           action={
-            <ButtonLink href="/app/projects" variant="secondary">
-              Go to projects
-            </ButtonLink>
+            canWrite(ctx.role) ? (
+              <ButtonLink href="/app/campaigns/new">Plan a campaign</ButtonLink>
+            ) : (
+              <ButtonLink href="/app/projects" variant="secondary">
+                Go to projects
+              </ButtonLink>
+            )
           }
         />
       ) : (
@@ -42,7 +52,11 @@ export default async function CampaignsPage() {
             return (
               <li key={campaign.id} className="rounded-2xl border border-ink-100 bg-white p-5 shadow-card">
                 <div className="flex flex-wrap items-center justify-between gap-3">
-                  <h2 className="font-display text-lg font-bold">{campaign.name}</h2>
+                  <h2 className="font-display text-lg font-bold">
+                    <Link href={`/app/campaigns/${campaign.id}`} className="hover:text-brand hover:underline">
+                      {campaign.name}
+                    </Link>
+                  </h2>
                   <Badge tone={meta.tone}>{meta.label}</Badge>
                 </div>
                 <p className="mt-1 text-sm text-ink-500">

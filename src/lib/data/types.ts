@@ -12,6 +12,7 @@ export type CampaignStatus =
   | "completed"
   | "failed"
   | "cancelled";
+export type SlotStatus = "planned" | "generating" | "done" | "failed" | "skipped";
 export type ApprovalStatus = "draft" | "awaiting_approval" | "approved" | "rejected" | "cancelled";
 export type PostStatus = "scheduled" | "publishing" | "retrying" | "published" | "failed" | "cancelled";
 
@@ -48,6 +49,35 @@ export type CampaignRow = {
   generation_progress: { total?: number; completed?: number; failed?: number };
   created_at: string;
   updated_at: string;
+};
+
+/** What the campaign generator was asked to write (campaigns.brief). */
+export type CampaignBrief = {
+  topic?: string;
+  tone?: string;
+  audience?: string;
+  notes?: string;
+  cta?: string;
+  length?: string;
+  source_document_id?: string;
+  source_url?: string;
+};
+
+export type CampaignDetail = CampaignRow & { brief: CampaignBrief };
+
+export type CampaignSlotRow = {
+  id: string;
+  workspace_id: string;
+  campaign_id: string;
+  slot_index: number;
+  planned_at: string;
+  language: Language;
+  content_format: string;
+  theme: string | null;
+  status: SlotStatus;
+  attempts: number;
+  last_error_code: string | null;
+  content_item_id: string | null;
 };
 
 export type ContentItemRow = {
@@ -100,5 +130,6 @@ export type ContentItemFull = ContentItemRow & {
     repaired?: boolean;
     request?: Record<string, string>;
     source?: { document_id: string; url: string; title: string | null };
+    campaign?: { id: string; slot_id: string; slot_index: number };
   };
 };

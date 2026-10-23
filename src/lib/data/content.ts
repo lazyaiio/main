@@ -5,6 +5,7 @@ import type { ApprovalStatus, ContentItemFull, Language } from "./types";
 
 export type NewContentItem = {
   projectId: string | null;
+  campaignId?: string | null;
   language: Language;
   contentFormat: string;
   hook: string | null;
@@ -31,6 +32,7 @@ export async function insertContentItem(db: Db, ws: string, item: NewContentItem
     .insert({
       workspace_id: ws,
       project_id: item.projectId,
+      campaign_id: item.campaignId ?? null,
       language: item.language,
       content_format: item.contentFormat,
       hook: item.hook,
