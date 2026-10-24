@@ -142,3 +142,16 @@ export async function detachImageAction(formData: FormData): Promise<void> {
   redirect(`/app/content/${item.data}?notice=${moved ? "image_removed_draft" : "image_removed"}`);
 }
 
+
+/** Creates thumbnails for images that were uploaded before thumbnails existed (a few per click). */
+export async function createThumbnailsAction(): Promise<void> {
+  const ctx = await requireAppContext();
+  let result: { created: number; remaining: number };
+  try {
+    result = await media.createMissingThumbnails(ctx);
+  } catch (error) {
+    redirect(`/app/media?error=${errorCode(error)}`);
+  }
+  revalidatePath("/app/media");
+  redirect(`/app/media?notice=${result.remaining > 0 ? "thumbs_more" : "thumbs_done"}`);
+}

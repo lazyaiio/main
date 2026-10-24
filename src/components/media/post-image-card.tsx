@@ -13,13 +13,13 @@ export function PostImageCard({ itemId, image, canEdit, imageBrief }: { itemId: 
 
       {image ? (
         <div className="flex flex-wrap items-start gap-4">
-          <div className="h-32 w-44 shrink-0 overflow-hidden rounded-xl bg-ink-50">
-            {image.url ? (
+          <div className="h-24 w-24 shrink-0 overflow-hidden rounded-xl bg-ink-50">
+            {image.thumbUrl ? (
               // Signed, short-lived links are not compatible with the Next.js image optimizer.
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={image.url} alt={image.alt_text ?? ""} className="h-full w-full object-cover" />
+              <img src={image.thumbUrl} alt={image.alt_text ?? ""} className="h-full w-full object-cover" />
             ) : (
-              <span className="flex h-full items-center justify-center px-3 text-center text-xs text-ink-500">Preview unavailable. Reload the page.</span>
+              <span className="flex h-full items-center justify-center px-2 text-center text-[11px] text-ink-500">Preview unavailable</span>
             )}
           </div>
           <div className="min-w-0 flex-1 space-y-1 text-sm">

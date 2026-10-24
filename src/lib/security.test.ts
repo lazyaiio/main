@@ -21,7 +21,7 @@ describe("secret handling", () => {
   });
 
   it("marks the admin client and server client as server-only", () => {
-    for (const path of ["lib/supabase/admin.ts", "lib/supabase/server.ts", "lib/auth/session.ts", "lib/auth/admin.ts", "lib/ai/keys.ts", "lib/media/keys.ts"]) {
+    for (const path of ["lib/supabase/admin.ts", "lib/supabase/server.ts", "lib/auth/session.ts", "lib/auth/admin.ts", "lib/ai/keys.ts", "lib/media/keys.ts", "lib/social/keys.ts", "lib/data/social.ts", "lib/services/social.ts"]) {
       expect(readFileSync(join(SRC, path), "utf8")).toContain('import "server-only"');
     }
   });
@@ -35,6 +35,21 @@ describe("secret handling", () => {
   it("reads the stock photo key only in the server-only media keys module", () => {
     const offenders = files.filter((f) => readFileSync(f, "utf8").includes("IMAGE_PROVIDER_API_KEY"));
     expect(offenders.map(rel)).toEqual(["lib/media/keys.ts"]);
+  });
+
+  it("reads the Meta app secret and the token encryption key only in the server-only social keys module", () => {
+    for (const name of ["META_APP_SECRET", "TOKEN_ENCRYPTION_KEY"]) {
+      const offenders = files.filter((f) => readFileSync(f, "utf8").includes(name));
+      expect(offenders.map(rel).filter((f) => !f.endsWith(".test.ts"))).toEqual(["lib/social/keys.ts"]);
+    }
+  });
+
+  it("never logs OAuth codes, tokens, or secrets in the Facebook code", () => {
+    const social = files.filter((f) => /(^|\/)(social|services\/social|data\/social|api\/meta)/.test(rel(f)) && !f.endsWith(".test.ts"));
+    expect(social.length).toBeGreaterThan(3);
+    for (const f of social) {
+      expect(readFileSync(f, "utf8")).not.toMatch(/console\.(log|info|warn|error|debug)\s*\(/);
+    }
   });
 
   it("never exposes a secret through a NEXT_PUBLIC_ variable", () => {

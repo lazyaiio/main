@@ -14,13 +14,55 @@ Plan: [`LAZYAI_MASTER_PLAN.md`](./LAZYAI_MASTER_PLAN.md) (see section 23 for own
 | 4 | AI adapter and single-post generation | DONE per owner report (deployed, SQL run successfully); real AI quality not yet reported |
 | 5 | URL extraction | DONE per owner report (deployed, SQL run successfully); real-page results not yet reported |
 | 6 | Campaign planner and bulk generation | DONE for SQL (owner reports `ALL CAMPAIGN PLANNER TESTS PASSED`); GitHub Actions result and browser trial of the progress panel not yet reported |
-| 7 | Media and images | **IN PROGRESS** — code written, not yet verified |
-| 8 | Meta OAuth and Facebook Pages | NOT STARTED |
+| 7 | Media and images | DONE per owner report (migration 0006 and SQL test run; owner confirmed steps done). Thumbnails added in Batch 8 |
+| 8 | Meta OAuth and Facebook Pages | **IN PROGRESS** — code written, not yet verified |
 | 9 | Durable scheduler and publishing | NOT STARTED |
 | 10 | Resend and email | NOT STARTED |
 | 11 | Usage limits and hardening | NOT STARTED |
 | 12 | Deployment and DNS runbook | NOT STARTED |
 | 13 | Release readiness | NOT STARTED |
+
+---
+
+## Batch 8 — Meta OAuth and Facebook Pages (plus media thumbnails)
+
+**Status:** IN PROGRESS (code written; migrations 0007 and 0008 not applied; lint / typecheck / vitest / build not run in the sandbox; no real Facebook call and no database run).
+
+### What was built
+**Thumbnails (owner request):** every upload and stock import now also stores a small WebP preview (at most 480 px, camera rotation applied, no GPS/metadata) made with `sharp`. The library shows compact square thumbnails (2 to 8 per row), click opens the full image in a new tab; post image card uses the thumbnail. A "Create thumbnails" button fills in older images (8 per click). Migration 0007 adds `media_assets.thumb_path`, a second `register_media_asset(... p_thumb_path)` form, and `set_media_thumbnail()`.
+
+**Facebook Pages connection (live connection approved by the owner; no publishing):**
+- `SocialPublishingProvider` interface, **Meta adapter** (login URL for classic permissions or Facebook Login for Business `config_id`, code exchange, long-lived token, `debug_token`, `/me/accounts` with paging, Page check, publish text/link/photo, `appsecret_proof`, error classification) and a **mock provider** (`META_MOCK=1`, never in production).
+- **Connect flow:** "Connect Facebook" (admin/owner) -> Facebook -> `/api/meta/callback` -> choose Pages -> saved. State is checked three ways (URL, HttpOnly cookie, stored hash) plus user and workspace; attempts are one-time and expire after 10 minutes.
+- **Token safety:** Page tokens are encrypted (AES-256-GCM, bound to workspace and Page) in `social_page_tokens`; that table and `social_oauth_flows` have no browser access (service role only); no token column exists on browser-readable tables. Tokens never appear in logs, errors, or UI.
+- **Pages screen** (`/app/pages`): status, last check, **Check connection**, **Reconnect**, **Disconnect**, setup-needed box that lists missing settings by name and the redirect address to register, test-mode banner.
+- **Errors** are plain English and actionable (expired, missing permission, lost Page role, busy, denied, no Pages).
+- `docs/META_SETUP.md` is the step-by-step Meta app guide; ADR 0004 records the decisions.
+
+### Files
+New: `supabase/migrations/{0007_media_thumbnails,0008_facebook_connections}.sql`, `supabase/tests/{rls_media_thumbnails,rls_social}.sql`, `docs/{META_SETUP.md,decisions/0004-facebook-connection.md}`, `src/lib/media/thumbnail.ts` (+test), `src/lib/crypto/token-crypto.ts` (+test), `src/lib/social/{provider,meta-provider,mock-provider,flow,keys}.ts` (+tests), `src/lib/data/social.ts`, `src/lib/services/social.ts`, `src/app/app/pages/{page.tsx,actions.ts,connect/page.tsx}`, `src/app/api/meta/callback/route.ts`.
+Changed: `package.json` (adds `sharp`), `.env.example`, `src/middleware.ts` (session refresh for `/api/meta`), `src/lib/security.test.ts`, `src/lib/services/{errors,media}.ts`, `src/lib/service-messages.ts`, `src/lib/data/media.ts`, `src/lib/supabase/admin.ts`, `src/app/app/media/{page.tsx,actions.ts}`, `src/components/media/{media-grid,post-image-card}.tsx`, `docs/{BUILD_PROGRESS,NEW_SESSION_START,SUPABASE_SETUP}.md`.
+Deleted: none.
+
+### Tests / checks and results
+| Check | Result |
+|---|---|
+| Pure-logic tests (thumbnails with real `sharp` 0.34.5 images, token encryption, OAuth state, Meta adapter and mock with a fake network, error classification, HMAC checked against openssl/Python) plus all earlier tests, with a small stand-in runner under `tsx` | 249 passed, 0 failed |
+| Real `vitest`, `lint`, full `typecheck`, `next build` | **NOT RUN** (no network; `sharp` is a new dependency to be installed by CI) |
+| Partial typecheck | Only errors caused by missing React/Next packages remained |
+| No Bengali text in source | PASS (scanned) |
+| SQL 0007/0008 and their tests | **NOT RUN** (no database) |
+| Real Facebook login, real token exchange, real browser use | **NOT RUN**. The Meta adapter follows Meta's documentation but has never talked to Meta |
+
+### Risks / things to watch
+- First contact with real Meta: URL parameters for Facebook Login for Business (`config_id`, `override_default_response_type`) follow the documentation; if Facebook rejects the login URL, send the exact message.
+- `debug_token` scopes are only enforced when Facebook returns them; a missing permission otherwise shows up on "Check connection" or at publish time.
+- Needs `SUPABASE_SERVICE_ROLE_KEY` and `TOKEN_ENCRYPTION_KEY` in Vercel. Losing the encryption key means reconnecting Pages.
+- `sharp` must install on CI/Vercel (normal for Next.js; prebuilt binaries).
+- Customer-facing use needs Meta App Review and business verification (`docs/META_SETUP.md`).
+
+### Exact next action
+Owner uploads the Batch 8 zip, confirms CI, runs 0007 + `rls_media_thumbnails.sql` and 0008 + `rls_social.sql`, presses **Create thumbnails** in Media, creates the Meta app by `docs/META_SETUP.md`, adds the Vercel settings, redeploys, and connects one own Page. Then Batch 9 (durable scheduler and publishing) - live posting needs the owner's separate approval.
 
 ---
 

@@ -113,3 +113,15 @@ Admin -> AI providers. Each card shows "Key found" once the variable is detected
 2. New query -> paste all of `supabase/tests/rls_media.sql` -> **Run**. Expected: a result row `ALL MEDIA TESTS PASSED`. If you see `FAIL`, send the exact message (for example `FAIL A7`).
 3. (Optional) Stock photos: see `docs/MEDIA_PROVIDERS.md`. In Vercel add `IMAGE_PROVIDER=pexels` and `IMAGE_PROVIDER_API_KEY=<your free Pexels key>`, then redeploy. Without them, uploading your own images still works.
 4. Try it: Media -> upload a small JPG or PNG -> add alt text. Then open a post -> **Add an image** -> **Use this image**.
+
+
+---
+
+## Batch 8 additions: thumbnails (migration 0007) and Facebook connections (migration 0008)
+
+Run these **before** or right after uploading the Batch 8 files (the Media page needs 0007):
+
+1. SQL Editor -> paste `supabase/migrations/0007_media_thumbnails.sql` -> **Run**. Then paste `supabase/tests/rls_media_thumbnails.sql` -> **Run**. Expected result row: `ALL THUMBNAIL TESTS PASSED`.
+2. SQL Editor -> paste `supabase/migrations/0008_facebook_connections.sql` -> **Run**. Then paste `supabase/tests/rls_social.sql` -> **Run**. Expected result row: `ALL SOCIAL TESTS PASSED`.
+3. In Media, older images show a bar "N older images have no small preview yet": press **Create thumbnails** (a few at a time) until it disappears.
+4. Facebook: follow `docs/META_SETUP.md` (new Vercel variables: `META_APP_ID`, `META_APP_SECRET`, `META_LOGIN_CONFIG_ID`, `TOKEN_ENCRYPTION_KEY`, `SUPABASE_SERVICE_ROLE_KEY`).

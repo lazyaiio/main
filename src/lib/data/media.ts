@@ -21,6 +21,7 @@ export type MediaAssetRow = {
   id: string;
   workspace_id: string;
   storage_path: string | null;
+  thumb_path: string | null;
   source_url: string | null;
   attribution: MediaAttribution;
   alt_text: string | null;
@@ -32,7 +33,7 @@ export type MediaAssetRow = {
   created_at: string;
 };
 
-const COLUMNS = "id, workspace_id, storage_path, source_url, attribution, alt_text, mime_type, byte_size, width, height, processing_status, created_at";
+const COLUMNS = "id, workspace_id, storage_path, thumb_path, source_url, attribution, alt_text, mime_type, byte_size, width, height, processing_status, created_at";
 
 export async function listMediaAssets(db: Db, ws: string, limit = 100): Promise<MediaAssetRow[]> {
   const res = await db.from("media_assets").select(COLUMNS).eq("workspace_id", ws).order("created_at", { ascending: false }).limit(limit);
@@ -62,6 +63,7 @@ export async function registerMediaAsset(
     byteSize: number;
     width: number;
     height: number;
+    thumbPath?: string | null;
   },
 ): Promise<string> {
   const { data, error } = await db.rpc("register_media_asset", {
@@ -74,9 +76,23 @@ export async function registerMediaAsset(
     p_byte_size: args.byteSize,
     p_width: args.width,
     p_height: args.height,
+    p_thumb_path: args.thumbPath ?? null,
   });
   if (error || typeof data !== "string") throw new DataError("Could not save the image.", error?.code);
   return data;
+}
+
+/** Adds a thumbnail to an older image that has none. */
+export async function setMediaThumbnail(db: Db, assetId: string, thumbPath: string): Promise<void> {
+  const { error } = await db.rpc("set_media_thumbnail", { p_asset_id: assetId, p_thumb_path: thumbPath });
+  if (error) throw new DataError("Could not save the thumbnail.", error.code);
+}
+
+/** Downloads a stored file with the signed-in user's access. */
+export async function downloadObject(db: Db, path: string): Promise<Uint8Array> {
+  const { data, error } = await db.storage.from(MEDIA_BUCKET).download(path);
+  if (error || !data) throw new DataError("Could not read the image file.");
+  return new Uint8Array(await data.arrayBuffer());
 }
 
 export async function updateMediaMeta(

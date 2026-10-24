@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ImageIcon } from "lucide-react";
 import { z } from "zod";
-import { importStockPhotoAction } from "@/app/app/media/actions";
+import { createThumbnailsAction, importStockPhotoAction } from "@/app/app/media/actions";
 import { MediaGrid } from "@/components/media/media-grid";
 import { UploadForm } from "@/components/media/upload-form";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -14,9 +14,12 @@ import type { StockPhoto } from "@/lib/media/image-search";
 import { MEDIA_LIBRARY_MAX_BYTES, MEDIA_LIBRARY_MAX_FILES, formatBytes } from "@/lib/media/limits";
 import { messageForCode } from "@/lib/service-messages";
 import { ServiceError } from "@/lib/services/errors";
-import { getStockProviderInfo, listLibrary, searchStockPhotos } from "@/lib/services/media";
+import { countMissingThumbnails, getStockProviderInfo, listLibrary, searchStockPhotos } from "@/lib/services/media";
 
 export const metadata: Metadata = { title: "Media" };
+
+// Creating thumbnails for older images can take a little while.
+export const maxDuration = 60;
 
 type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
 
@@ -24,6 +27,8 @@ const NOTICES: Record<string, string> = {
   imported: "Photo added to your library.",
   updated: "Image details saved.",
   deleted: "Image deleted.",
+  thumbs_done: "Thumbnails created for your older images.",
+  thumbs_more: "Some thumbnails were created. Press the button again to continue.",
 };
 
 export default async function MediaPage({ searchParams }: Props) {
@@ -50,6 +55,7 @@ export default async function MediaPage({ searchParams }: Props) {
   }
 
   const { items, totalBytes } = library;
+  const missingThumbs = countMissingThumbnails(items);
 
   return (
     <div className="space-y-8">
@@ -130,7 +136,7 @@ export default async function MediaPage({ searchParams }: Props) {
               ) : null}
 
               {photos.length > 0 ? (
-                <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                <ul className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-6">
                   {photos.map((photo) => (
                     <li key={photo.providerId} className="flex flex-col overflow-hidden rounded-xl border border-ink-100">
                       <div className="aspect-[4/3] bg-ink-50">
@@ -181,6 +187,16 @@ export default async function MediaPage({ searchParams }: Props) {
             {items.length} of {MEDIA_LIBRARY_MAX_FILES} images · {formatBytes(totalBytes)} of {formatBytes(MEDIA_LIBRARY_MAX_BYTES)}
           </p>
         </div>
+        {writable && missingThumbs > 0 ? (
+          <form action={createThumbnailsAction} className="flex flex-wrap items-center gap-3 rounded-xl bg-ink-50 px-4 py-3 text-sm text-ink-600">
+            <p className="flex-1">
+              {missingThumbs} older {missingThumbs === 1 ? "image has" : "images have"} no small preview yet, so {missingThumbs === 1 ? "it loads" : "they load"} at full size.
+            </p>
+            <PendingButton variant="secondary" pendingLabel="Creating…">
+              Create thumbnails
+            </PendingButton>
+          </form>
+        ) : null}
         {items.length === 0 ? (
           <EmptyState
             icon={ImageIcon}

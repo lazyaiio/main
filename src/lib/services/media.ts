@@ -16,7 +16,9 @@ import {
   registerMediaAsset,
   removeItemMedia,
   removeObjects,
+  setMediaThumbnail,
   signedUrls,
+  downloadObject,
   updateMediaMeta,
   uploadObject,
   type MediaAssetRow,
@@ -27,6 +29,7 @@ import { inspectImage, type InspectResult } from "@/lib/media/image-inspect";
 import { getImageProvider } from "@/lib/media/keys";
 import { MAX_UPLOAD_BYTES, STOCK_IMPORTS_PER_HOUR, STOCK_SEARCHES_PER_HOUR } from "@/lib/media/limits";
 import { buildMediaPath } from "@/lib/media/paths";
+import { makeThumbnail } from "@/lib/media/thumbnail";
 import { logAudit } from "./audit";
 import { ServiceError } from "./errors";
 
@@ -36,7 +39,8 @@ function requireWrite(ctx: AppContext) {
 
 const NOT_FOUND = () => new ServiceError("not_found", "That image could not be found.");
 
-export type MediaItem = MediaAssetRow & { url: string | null };
+/** url = the full-size image, thumbUrl = the small preview (falls back to the full image for older uploads). */
+export type MediaItem = MediaAssetRow & { url: string | null; thumbUrl: string | null };
 
 /** Is stock photo search turned on, and which provider credit must be shown? */
 export function getStockProviderInfo(): { name: string; creditUrl: string } | null {
@@ -45,9 +49,13 @@ export function getStockProviderInfo(): { name: string; creditUrl: string } | nu
 }
 
 async function withUrls(db: Db, assets: MediaAssetRow[]): Promise<MediaItem[]> {
-  const paths = assets.map((a) => a.storage_path).filter((p): p is string => Boolean(p));
+  const paths = assets.flatMap((a) => [a.storage_path, a.thumb_path]).filter((p): p is string => Boolean(p));
   const urls = await signedUrls(db, paths);
-  return assets.map((a) => ({ ...a, url: a.storage_path ? (urls.get(a.storage_path) ?? null) : null }));
+  return assets.map((a) => {
+    const url = a.storage_path ? (urls.get(a.storage_path) ?? null) : null;
+    const thumbUrl = a.thumb_path ? (urls.get(a.thumb_path) ?? null) : null;
+    return { ...a, url, thumbUrl: thumbUrl ?? url };
+  });
 }
 
 export async function listLibrary(ctx: AppContext): Promise<{ items: MediaItem[]; totalBytes: number }> {
@@ -55,6 +63,21 @@ export async function listLibrary(ctx: AppContext): Promise<{ items: MediaItem[]
   const assets = await listMediaAssets(db, ctx.workspace.id, 100);
   const items = await withUrls(db, assets);
   return { items, totalBytes: assets.reduce((sum, a) => sum + (a.byte_size ?? 0), 0) };
+}
+
+/**
+ * Creates and stores the small preview. Never blocks the upload: if it fails, the image is saved
+ * without a thumbnail and the library shows the full image (a later "create thumbnails" run fixes it).
+ */
+async function storeThumbnail(ctx: AppContext, db: Db, bytes: Uint8Array): Promise<string | null> {
+  try {
+    const thumb = await makeThumbnail(bytes);
+    const thumbPath = buildMediaPath(ctx.workspace.id, crypto.randomUUID(), "webp");
+    await uploadObject(db, thumbPath, thumb.bytes, "image/webp");
+    return thumbPath;
+  } catch {
+    return null;
+  }
 }
 
 /** Saves checked image bytes: file first, then the library entry. Cleans up the file if the entry fails. */
@@ -71,11 +94,13 @@ async function saveImage(
   } catch {
     throw new ServiceError("failed", "The image could not be uploaded. Please try again.");
   }
+  const thumbPath = await storeThumbnail(ctx, db, bytes);
   let id: string;
   try {
     id = await registerMediaAsset(db, {
       workspaceId: ctx.workspace.id,
       storagePath: path,
+      thumbPath,
       sourceUrl: meta.sourceUrl,
       attribution: meta.attribution,
       altText: meta.altText,
@@ -86,7 +111,7 @@ async function saveImage(
     });
   } catch (error) {
     try {
-      await removeObjects(db, [path]);
+      await removeObjects(db, thumbPath ? [path, thumbPath] : [path]);
     } catch {
       // The stray file is harmless (private, unlisted) and can be cleaned up later.
     }
@@ -149,9 +174,10 @@ export async function deleteMedia(ctx: AppContext, id: string): Promise<void> {
   } catch {
     throw NOT_FOUND();
   }
-  if (asset.storage_path) {
+  const files = [asset.storage_path, asset.thumb_path].filter((p): p is string => Boolean(p));
+  if (files.length > 0) {
     try {
-      await removeObjects(db, [asset.storage_path]);
+      await removeObjects(db, files);
     } catch {
       // The library entry is gone; an unlisted private file may remain until cleanup.
     }
@@ -299,4 +325,39 @@ export async function detachImage(ctx: AppContext, itemId: string): Promise<{ mo
   await markEdited(db, ctx, itemId, item.approval_status);
   await logAudit(db, ctx, "content.image_removed", "content_item", itemId, {});
   return { movedToDraft: item.approval_status === "approved" };
+}
+
+// ---------------------------------------------------------------------------------------------
+// Thumbnails for images uploaded before thumbnails existed
+// ---------------------------------------------------------------------------------------------
+
+/** Creates thumbnails for up to 8 older images per run (keeps each request short). Returns how many are left. */
+export async function createMissingThumbnails(ctx: AppContext): Promise<{ created: number; remaining: number }> {
+  requireWrite(ctx);
+  const db = await getDb();
+  const assets = await listMediaAssets(db, ctx.workspace.id, 100);
+  const missing = assets.filter((a) => a.storage_path && !a.thumb_path && a.processing_status === "ready");
+
+  let created = 0;
+  for (const asset of missing.slice(0, 8)) {
+    try {
+      const original = await downloadObject(db, asset.storage_path as string);
+      const thumb = await makeThumbnail(original);
+      const thumbPath = buildMediaPath(ctx.workspace.id, crypto.randomUUID(), "webp");
+      await uploadObject(db, thumbPath, thumb.bytes, "image/webp");
+      try {
+        await setMediaThumbnail(db, asset.id, thumbPath);
+        created++;
+      } catch {
+        await removeObjects(db, [thumbPath]).catch(() => undefined);
+      }
+    } catch {
+      // Skip this image; it keeps working with its full-size preview.
+    }
+  }
+  return { created, remaining: Math.max(0, missing.length - created) };
+}
+
+export function countMissingThumbnails(items: MediaItem[]): number {
+  return items.filter((a) => a.storage_path && !a.thumb_path).length;
 }
