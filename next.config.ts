@@ -3,6 +3,10 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
+  experimental: {
+    // Image uploads go through a server action. Vercel itself rejects bodies above 4.5 MB.
+    serverActions: { bodySizeLimit: "4.5mb" },
+  },
   async headers() {
     return [
       {

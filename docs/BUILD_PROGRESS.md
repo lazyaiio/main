@@ -13,14 +13,52 @@ Plan: [`LAZYAI_MASTER_PLAN.md`](./LAZYAI_MASTER_PLAN.md) (see section 23 for own
 | 3 | Data model and dashboard | DONE (owner reports deployed and SQL run successfully) |
 | 4 | AI adapter and single-post generation | DONE per owner report (deployed, SQL run successfully); real AI quality not yet reported |
 | 5 | URL extraction | DONE per owner report (deployed, SQL run successfully); real-page results not yet reported |
-| 6 | Campaign planner and bulk generation | **IN PROGRESS** — code written, not yet verified |
-| 7 | Media and images | NOT STARTED |
+| 6 | Campaign planner and bulk generation | DONE for SQL (owner reports `ALL CAMPAIGN PLANNER TESTS PASSED`); GitHub Actions result and browser trial of the progress panel not yet reported |
+| 7 | Media and images | **IN PROGRESS** — code written, not yet verified |
 | 8 | Meta OAuth and Facebook Pages | NOT STARTED |
 | 9 | Durable scheduler and publishing | NOT STARTED |
 | 10 | Resend and email | NOT STARTED |
 | 11 | Usage limits and hardening | NOT STARTED |
 | 12 | Deployment and DNS runbook | NOT STARTED |
 | 13 | Release readiness | NOT STARTED |
+
+---
+
+## Batch 7 — Media and images
+
+**Status:** IN PROGRESS (code written; migration 0006 not applied; lint / typecheck / vitest / build not run in the sandbox; no real upload, no real stock search, no database run).
+
+### What was built
+- **Media library** (`/app/media`): upload JPG, PNG, WebP, or GIF (up to 4 MB, 8,000 px), alt text and credit, edit details, delete, usage counter (100 files / 200 MB per workspace). Images are shown with short-lived signed links from a **private** bucket.
+- **Safe uploads:** the server checks the real file bytes (magic bytes, pixel size), requires the file name and browser type to agree, and refuses SVG and everything else. Files are stored as `<workspace>/<random id>.<ext>`; user file names are never used.
+- **Database safety (migration 0006):** private `media` bucket with policy-checked paths, `register_media_asset()` as the only way to create library entries (checks the file exists in the caller's folder, validates metadata, enforces the size guard), unique file-to-entry mapping, `image.` usage-record prefix.
+- **Stock photos:** `ImageSearchProvider` interface and a Pexels adapter (off until `IMAGE_PROVIDER` and `IMAGE_PROVIDER_API_KEY` are set). Search results show provider and photographer credit; "Add to library" re-reads the photo by id on the server and downloads only from `images.pexels.com` (HTTPS, size limit, no redirects). Per-user hourly limits: 20 searches, 10 imports. Licensing review in `docs/MEDIA_PROVIDERS.md`.
+- **Images on posts:** each post page has an Image card (choose, upload and use, change, remove). One image per post; changing the image of an approved post moves it back to Draft.
+
+### Files
+New: `supabase/migrations/0006_media.sql`, `supabase/tests/rls_media.sql`, `docs/MEDIA_PROVIDERS.md`, `docs/decisions/0003-media-library.md`, `src/lib/media/{limits,image-inspect,paths,image-search,keys}.ts` (+ tests for inspect, paths, search), `src/lib/data/media.ts`, `src/lib/services/media.ts`, `src/app/app/media/{page.tsx,actions.ts}`, `src/components/media/{upload-form,media-grid,post-image-card}.tsx`.
+Changed: `src/app/app/content/[itemId]/page.tsx`, `src/lib/services/errors.ts`, `src/lib/service-messages.ts`, `src/lib/security.test.ts`, `next.config.ts` (upload body limit), `.env.example`, `docs/{BUILD_PROGRESS,SUPABASE_SETUP,NEW_SESSION_START}.md`.
+Deleted: none.
+
+### Tests / checks and results
+| Check | Result |
+|---|---|
+| Pure-logic tests (image inspection, paths, Pexels adapter with a fake network, safe download) plus all earlier pure tests, with a small stand-in runner under `tsx` | 215 passed, 0 failed |
+| Real `vitest`, `lint`, full `typecheck`, `next build` | **NOT RUN** (no network). GitHub Actions is the real check |
+| Partial typecheck | Only errors caused by missing React/Next packages remained |
+| No Bengali text in source | PASS (scanned) |
+| SQL migration 0006 and `rls_media.sql` | **NOT RUN** (no database in the sandbox) |
+| Real upload, real storage, real Pexels call, browser use | **NOT RUN** |
+
+### Risks / things to watch
+- Storage policies and the SQL test were written without a database. In particular the test inserts into `storage.objects` directly; if Supabase's storage triggers reject that, the failure message will say so, and the test (not the policy) needs adjusting.
+- Server actions have a request size limit set in `next.config.ts` (4.5 MB); Vercel's own limit is the same.
+- EXIF/GPS data is not stripped from uploads.
+- Deleting an image silently removes it from posts; scheduled posts are not built yet (Batch 9 must handle this).
+- The Pexels summary comes from public pages read during this batch; re-read their guidelines before launch.
+
+### Exact next action
+Owner uploads the Batch 7 zip, confirms CI, runs `0006_media.sql` then `rls_media.sql` (expect the result row `ALL MEDIA TESTS PASSED`), uploads a small image, attaches it to a post, and (optional) turns on Pexels. Then start Batch 8 (Meta OAuth and Facebook Pages), which needs the owner's Meta developer app details first.
 
 ---
 

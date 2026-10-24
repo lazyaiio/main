@@ -103,3 +103,13 @@ Admin -> AI providers. Each card shows "Key found" once the variable is detected
 2. New query -> paste all of `supabase/tests/rls_campaign_planner.sql` -> **Run**. Expected: `ALL CAMPAIGN PLANNER TESTS PASSED`. If you see `FAIL`, send the exact message (it names the failing check, for example `FAIL A7`).
 3. No new environment variables are required. Reminder: `AI_MAX_GENERATIONS_PER_HOUR` (default 30 per user) also limits campaigns. A 90-post campaign therefore pauses once the hourly limit is reached; press **Resume writing** later. Raise the limit only if you accept the AI cost.
 4. Try it: Campaigns -> New campaign -> fill the form -> **Preview calendar** -> **Create campaign** -> **Start writing**. Keep the page open while posts are written. Test mode (`AI_MOCK=1`) works for a free dry run.
+
+
+---
+
+## Batch 7 additions: migration 0006 (media library)
+
+1. SQL Editor -> new query -> paste all of `supabase/migrations/0006_media.sql` -> **Run** (once). It creates the private `media` storage bucket, the storage rules, and the function that registers uploads.
+2. New query -> paste all of `supabase/tests/rls_media.sql` -> **Run**. Expected: a result row `ALL MEDIA TESTS PASSED`. If you see `FAIL`, send the exact message (for example `FAIL A7`).
+3. (Optional) Stock photos: see `docs/MEDIA_PROVIDERS.md`. In Vercel add `IMAGE_PROVIDER=pexels` and `IMAGE_PROVIDER_API_KEY=<your free Pexels key>`, then redeploy. Without them, uploading your own images still works.
+4. Try it: Media -> upload a small JPG or PNG -> add alt text. Then open a post -> **Add an image** -> **Use this image**.

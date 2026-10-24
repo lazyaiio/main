@@ -7,6 +7,9 @@ export type ServiceErrorKind =
   | "rate_limited"
   | "ai_failed"
   | "source_failed"
+  | "library_full"
+  | "stock_limited"
+  | "stock_failed"
   | "invalid";
 
 /** An expected failure with a message that is safe to show to the user. */

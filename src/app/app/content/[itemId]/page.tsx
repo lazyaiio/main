@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { AlertTriangle } from "lucide-react";
 import { z } from "zod";
 import { ContentEditor } from "@/components/content/content-editor";
+import { PostImageCard } from "@/components/media/post-image-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/page-header";
@@ -18,6 +19,7 @@ import { formatDateTime } from "@/lib/format";
 import { formatLabel } from "@/lib/post-formats";
 import { languageLabel } from "@/lib/projects";
 import { messageForCode } from "@/lib/service-messages";
+import { getPostImage } from "@/lib/services/media";
 import { approvalStatus } from "@/lib/status";
 import { deleteContentAction, regenerateAction, setStatusAction } from "../actions";
 
@@ -36,6 +38,10 @@ const NOTICES: Record<string, string> = {
   created: "Draft created.",
   regenerated: "Regenerated. The post is back in Draft.",
   status: "Status updated.",
+  image_added: "Image added to the post.",
+  image_added_draft: "Image changed. The post is back in Draft so it can be approved again.",
+  image_removed: "Image removed from the post.",
+  image_removed_draft: "Image removed. The post is back in Draft so it can be approved again.",
 };
 
 export default async function ContentItemPage({ params, searchParams }: Props) {
@@ -47,9 +53,10 @@ export default async function ContentItemPage({ params, searchParams }: Props) {
   const item = await getContentItem(db, ctx.workspace.id, itemId);
   if (!item) return notFound();
 
-  const [project, similar] = await Promise.all([
+  const [project, similar, image] = await Promise.all([
     item.project_id ? getProject(db, ctx.workspace.id, item.project_id) : Promise.resolve(null),
     item.content_hash ? countSimilarByHash(db, ctx.workspace.id, item.content_hash, item.id) : Promise.resolve(0),
+    getPostImage(ctx, item.id),
   ]);
 
   const sp = await searchParams;
@@ -146,6 +153,8 @@ export default async function ContentItemPage({ params, searchParams }: Props) {
           <p className="text-ink-500">You have read-only access to this workspace.</p>
         </section>
       )}
+
+      <PostImageCard itemId={item.id} image={image} canEdit={writable} imageBrief={item.image_brief} />
 
       {item.ai_model ? (
         <p className="text-xs text-ink-400">

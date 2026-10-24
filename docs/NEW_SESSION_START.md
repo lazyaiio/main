@@ -34,9 +34,9 @@ Give this file to Claude at the start of a new chat, together with `lazyai-full-
 | 3 | Core data model, projects, content list, calendar, activity, dashboard | CI green; migration 0002 applied; the **first** `rls_core_tables.sql` run failed because of a bug in the test script (it set `id` from the browser role); the **corrected** script was delivered and its re-run result is not yet known |
 | 4 | AI layer, admin section, single-post generation | **Code written, owner verification pending.** CI failed once only because the old `bilingual.tsx` file had not been deleted (the copy-rules test caught Bengali text in it); the owner was told to delete it. Migration 0003 and its SQL test status unknown. No real AI call confirmed |
 | 5 | URL extraction (+ admin redesign) | **Code written, nothing verified.** Migration 0004 not applied; real HTTP transport untested |
-| 6 | Campaign planner and bulk generation | **Code written, owner verification pending.** Migration 0005 and `rls_campaign_planner.sql` not yet run; progress panel untested in a browser |
-| 7 | Media and images | Not started (next, after Batch 6 is verified) |
-| 8 | Meta OAuth and Facebook Pages | Not started |
+| 6 | Campaign planner and bulk generation | Migration 0005 and SQL test verified by owner (`ALL CAMPAIGN PLANNER TESTS PASSED`). CI result and browser trial of the progress panel not yet reported |
+| 7 | Media and images | **Code written, owner verification pending.** Migration 0006 and `rls_media.sql` not yet run; upload and stock search untested |
+| 8 | Meta OAuth and Facebook Pages | Not started (next, after Batch 7 is verified) |
 | 9 | Durable scheduler and publishing | Not started |
 | 10 | Resend and email | Not started |
 | 11 | Usage limits and hardening | Not started |

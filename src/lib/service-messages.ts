@@ -10,6 +10,9 @@ export const SERVICE_ERROR_MESSAGES: Record<ServiceErrorKind, string> = {
   rate_limited: "You have reached the hourly generation limit. Please try again later.",
   ai_failed: "The AI could not complete that request. Please try again in a moment.",
   source_failed: "We could not read that web page. Check the link and try again.",
+  library_full: "Your media library is full. Delete some images to add more.",
+  stock_limited: "You have reached the hourly stock photo limit. Please try again later.",
+  stock_failed: "Stock photo search is not available right now. Try again later.",
   invalid: "That change is not allowed right now.",
 };
 
