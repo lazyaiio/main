@@ -125,3 +125,13 @@ Run these **before** or right after uploading the Batch 8 files (the Media page 
 2. SQL Editor -> paste `supabase/migrations/0008_facebook_connections.sql` -> **Run**. Then paste `supabase/tests/rls_social.sql` -> **Run**. Expected result row: `ALL SOCIAL TESTS PASSED`.
 3. In Media, older images show a bar "N older images have no small preview yet": press **Create thumbnails** (a few at a time) until it disappears.
 4. Facebook: follow `docs/META_SETUP.md` (new Vercel variables: `META_APP_ID`, `META_APP_SECRET`, `META_LOGIN_CONFIG_ID`, `TOKEN_ENCRYPTION_KEY`, `SUPABASE_SERVICE_ROLE_KEY`).
+
+
+---
+
+## Batch 9 additions: legal pages, data deletion callback (0009), scheduling (0010)
+
+1. SQL Editor -> `supabase/migrations/0009_data_deletion.sql` -> **Run**, then `supabase/tests/rls_data_deletion.sql` -> **Run**. Expected result row: `ALL DATA DELETION TESTS PASSED`.
+2. SQL Editor -> `supabase/migrations/0010_scheduling.sql` -> **Run**, then `supabase/tests/rls_scheduling.sql` -> **Run**. Expected result row: `ALL SCHEDULING TESTS PASSED`.
+3. Vercel variables (then redeploy): `NEXT_PUBLIC_CONTACT_EMAIL`, `NEXT_PUBLIC_OPERATOR_NAME`, `NEXT_PUBLIC_OPERATOR_COUNTRY` (legal pages), `CRON_SECRET` (scheduler). Keep `LIVE_PUBLISHING_ENABLED` unset until you approve real posting.
+4. Scheduler: follow `docs/SCHEDULER_SETUP.md`. Meta submission: `docs/META_APP_REVIEW.md`.

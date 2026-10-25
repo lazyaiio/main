@@ -24,6 +24,11 @@ export const SERVICE_ERROR_MESSAGES: Record<ServiceErrorKind, string> = {
   social_scopes: "Facebook did not grant every permission LazyAI needs (show Pages, read engagement, and manage posts). Try again and allow all of them.",
   social_no_pages: "No Pages were found for that Facebook account. You need a role on at least one Page that lets you create posts.",
   social_failed: "Something went wrong while talking to Facebook. Try again, or reconnect the Page.",
+  schedule_not_approved: "Only approved posts can be scheduled. Approve the post first.",
+  schedule_time: "Choose a time at least a few minutes from now and within the next year.",
+  schedule_page: "Choose a connected Facebook Page where you are allowed to post.",
+  schedule_exists: "This post is already scheduled or published on that Page.",
+  schedule_state: "That change is not possible for this post in its current state.",
   invalid: "That change is not allowed right now.",
 };
 

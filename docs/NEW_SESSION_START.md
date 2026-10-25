@@ -36,9 +36,9 @@ Give this file to Claude at the start of a new chat, together with `lazyai-full-
 | 5 | URL extraction (+ admin redesign) | **Code written, nothing verified.** Migration 0004 not applied; real HTTP transport untested |
 | 6 | Campaign planner and bulk generation | Migration 0005 and SQL test verified by owner (`ALL CAMPAIGN PLANNER TESTS PASSED`). CI result and browser trial of the progress panel not yet reported |
 | 7 | Media and images | Done per owner report (0006 + SQL test run, steps done). Thumbnails added in Batch 8 |
-| 8 | Meta OAuth and Facebook Pages | **Code written, owner verification pending.** Migrations 0007/0008 and SQL tests not yet run; Meta app not yet created; no real Facebook call made. Owner approved live Facebook *connection* work; live *publishing* still needs separate approval |
-| 9 | Durable scheduler and publishing | Not started (next, after Batch 8 is verified) |
-| 10 | Resend and email | Not started |
+| 8 | Meta OAuth and Facebook Pages | Done per owner report (0007/0008 run, Meta app created, steps done). Owner approved live Facebook *connection* work only |
+| 9 | Durable scheduler and publishing (+ legal pages, Meta data-deletion callbacks) | **Code written, owner verification pending.** Migrations 0009/0010 and SQL tests not yet run; scheduler not yet set up; **real Facebook posting is gated by `LIVE_PUBLISHING_ENABLED` and needs the owner's explicit approval** |
+| 10 | Resend and email | Not started (next, after Batch 9 is verified) |
 | 11 | Usage limits and hardening | Not started |
 | 12 | Deployment and DNS runbook | Not started |
 | 13 | Release readiness | Not started |

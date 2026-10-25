@@ -88,7 +88,7 @@ export async function listScheduledPostsInRange(
 ): Promise<(ScheduledPostRow & { title: string })[]> {
   const res = await db
     .from("scheduled_posts")
-    .select("id, workspace_id, content_item_id, social_page_id, scheduled_at, status")
+    .select("id, workspace_id, content_item_id, social_page_id, scheduled_at, status, last_error")
     .eq("workspace_id", ws)
     .gte("scheduled_at", fromIso)
     .lt("scheduled_at", toIso)

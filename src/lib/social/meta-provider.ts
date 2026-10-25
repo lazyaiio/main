@@ -58,7 +58,7 @@ export function classifyGraphError(status: number, body: unknown): SocialError {
   const code = parsed.success ? parsed.data.error.code : undefined;
   const subcode = parsed.success ? parsed.data.error.error_subcode : undefined;
   const trace = parsed.success ? parsed.data.error.fbtrace_id : undefined;
-  const details = { status, code, subcode, trace };
+  const details = { status, code, subcode, trace, uncertain: status >= 500 || code === 1 || code === 2 };
 
   let kind: SocialErrorKind = "unknown";
   if (code === 190) kind = "token_expired";
@@ -111,7 +111,8 @@ export function createMetaProvider(config: MetaConfig, fetchFn: typeof fetch = f
     try {
       response = await fetchFn(url, { ...init, signal: AbortSignal.timeout(15_000), redirect: "error" });
     } catch {
-      throw new SocialError("temporary", describeSocialError("temporary"));
+      // The request may or may not have reached Facebook.
+      throw new SocialError("temporary", describeSocialError("temporary"), { uncertain: true });
     }
     let body: unknown = null;
     try {
@@ -238,14 +239,15 @@ export function createMetaProvider(config: MetaConfig, fetchFn: typeof fetch = f
         form.set("source", new Blob([input.image.bytes as BlobPart], { type: input.image.mime }), "image");
         const parsed = postAnswer.safeParse(await post(`/${page.id}/photos`, page.accessToken, form));
         const id = parsed.success ? (parsed.data.post_id ?? parsed.data.id) : undefined;
-        if (!id) throw new SocialError("unknown", describeSocialError("unknown"));
+        // An answer without a post id after a successful call: the post may exist.
+        if (!id) throw new SocialError("unknown", describeSocialError("unknown"), { uncertain: true });
         return { providerPostId: id };
       }
       // Text or link post.
       const body = new URLSearchParams({ message: input.message });
       if (input.link) body.set("link", input.link);
       const parsed = postAnswer.safeParse(await post(`/${page.id}/feed`, page.accessToken, body));
-      if (!parsed.success || !parsed.data.id) throw new SocialError("unknown", describeSocialError("unknown"));
+      if (!parsed.success || !parsed.data.id) throw new SocialError("unknown", describeSocialError("unknown"), { uncertain: true });
       return { providerPostId: parsed.data.id };
     },
   };

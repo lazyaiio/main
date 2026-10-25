@@ -49,7 +49,11 @@ export class SocialError extends Error {
     public readonly kind: SocialErrorKind,
     message: string,
     /** Safe details for support (codes only, never tokens). */
-    public readonly details: { status?: number; code?: number; subcode?: number; trace?: string } = {},
+    /**
+     * uncertain = we cannot tell whether Facebook already created the post (timeout, server error,
+     * answer without an id). Such a failure must never be retried automatically.
+     */
+    public readonly details: { status?: number; code?: number; subcode?: number; trace?: string; uncertain?: boolean } = {},
   ) {
     super(message);
     this.name = "SocialError";

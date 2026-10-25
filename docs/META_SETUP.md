@@ -68,6 +68,8 @@ LazyAI does not post anything in this step. Publishing comes in a later batch an
 | A Page shows "Needs attention" | Press **Check connection** for the reason; usually **Reconnect** fixes it. |
 
 ## Live mode (needed for other businesses' Pages)
+A ready-made checklist with draft answers for Meta's forms is in `docs/META_APP_REVIEW.md` (privacy policy, terms, data deletion, and callback addresses are built into LazyAI).
+
 Not needed to test with your own Pages. When you want customers to connect theirs:
 1. Complete **App settings -> Basic**: privacy policy URL, terms URL, app icon, category, and data deletion instructions or callback.
 2. Complete **Business verification** for your business in Meta Business Settings (documents are reviewed; this can take days to weeks).

@@ -7,6 +7,7 @@ import { DataError, getDb } from "@/lib/data/db";
 import {
   PAGE_IN_USE,
   authorizeFlow,
+  cancelPendingPostsForPage,
   closeFlow,
   countConnectedPages,
   createFlow,
@@ -360,6 +361,7 @@ export async function disconnectPage(ctx: AppContext, pageId: string): Promise<v
   const page = await getSocialPage(db, ctx.workspace.id, pageId);
   if (!page) throw new ServiceError("not_found", "That Page could not be found.");
   try {
+    await cancelPendingPostsForPage(ctx.workspace.id, page.id);
     await deleteToken(ctx.workspace.id, page.id);
     await setPageState(ctx.workspace.id, page.id, { status: "disconnected", errorCode: null });
     if ((await countConnectedPages(ctx.workspace.id, page.social_account_id)) === 0) {

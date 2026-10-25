@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { describeScheduleError } from "@/lib/schedule-text";
 import { PageHeader } from "@/components/ui/page-header";
 import { requireAppContext } from "@/lib/auth/session";
 import { buildMonthGrid, localDateKey, monthLabel, monthQueryRange, parseMonthParam, shiftMonth } from "@/lib/calendar";
@@ -108,7 +109,7 @@ export default async function CalendarPage({ searchParams }: Props) {
         </h2>
         {inMonth.length === 0 ? (
           <p className="mt-2 rounded-2xl border border-dashed border-ink-200 bg-white px-5 py-8 text-center text-sm text-ink-600">
-            Nothing is scheduled for {monthLabel(month)}. Scheduling arrives once posts can be generated and approved.
+            Nothing is scheduled for {monthLabel(month)}. Open an approved post to schedule it on a Facebook Page.
           </p>
         ) : (
           <ul className="mt-3 space-y-2">
@@ -118,7 +119,14 @@ export default async function CalendarPage({ searchParams }: Props) {
                 <li key={post.id} className="flex items-center justify-between gap-3 rounded-xl border border-ink-100 bg-white px-4 py-3">
                   <div className="min-w-0">
                     <p className="text-xs font-medium text-ink-400">{formatDateTime(post.scheduled_at, tz)}</p>
-                    <p className="truncate text-sm font-medium">{post.title}</p>
+                    <p className="truncate text-sm font-medium">
+                      <Link href={`/app/content/${post.content_item_id}`} className="hover:text-brand hover:underline">
+                        {post.title}
+                      </Link>
+                    </p>
+                    {post.status === "failed" || post.status === "retrying" ? (
+                      <p className="mt-0.5 text-xs text-amber-700">{describeScheduleError(post.last_error)}</p>
+                    ) : null}
                   </div>
                   <Badge tone={meta.tone}>{meta.label}</Badge>
                 </li>

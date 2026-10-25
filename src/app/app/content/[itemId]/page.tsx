@@ -5,6 +5,7 @@ import { AlertTriangle } from "lucide-react";
 import { z } from "zod";
 import { ContentEditor } from "@/components/content/content-editor";
 import { PostImageCard } from "@/components/media/post-image-card";
+import { ScheduleCard } from "@/components/schedule/schedule-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/page-header";
@@ -19,7 +20,9 @@ import { formatDateTime } from "@/lib/format";
 import { formatLabel } from "@/lib/post-formats";
 import { languageLabel } from "@/lib/projects";
 import { messageForCode } from "@/lib/service-messages";
+import { addDays, todayInZone } from "@/lib/campaign-plan";
 import { getPostImage } from "@/lib/services/media";
+import { getItemScheduling } from "@/lib/services/scheduling";
 import { approvalStatus } from "@/lib/status";
 import { deleteContentAction, regenerateAction, setStatusAction } from "../actions";
 
@@ -42,6 +45,11 @@ const NOTICES: Record<string, string> = {
   image_added_draft: "Image changed. The post is back in Draft so it can be approved again.",
   image_removed: "Image removed from the post.",
   image_removed_draft: "Image removed. The post is back in Draft so it can be approved again.",
+  scheduled: "Post scheduled.",
+  schedule_changed: "Schedule changed.",
+  schedule_canceled: "Schedule canceled.",
+  schedule_retried: "The post was queued to publish again.",
+  marked_published: "Marked as published.",
 };
 
 export default async function ContentItemPage({ params, searchParams }: Props) {
@@ -53,10 +61,11 @@ export default async function ContentItemPage({ params, searchParams }: Props) {
   const item = await getContentItem(db, ctx.workspace.id, itemId);
   if (!item) return notFound();
 
-  const [project, similar, image] = await Promise.all([
+  const [project, similar, image, scheduling] = await Promise.all([
     item.project_id ? getProject(db, ctx.workspace.id, item.project_id) : Promise.resolve(null),
     item.content_hash ? countSimilarByHash(db, ctx.workspace.id, item.content_hash, item.id) : Promise.resolve(0),
     getPostImage(ctx, item.id),
+    getItemScheduling(ctx, item.id),
   ]);
 
   const sp = await searchParams;
@@ -155,6 +164,15 @@ export default async function ContentItemPage({ params, searchParams }: Props) {
       )}
 
       <PostImageCard itemId={item.id} image={image} canEdit={writable} imageBrief={item.image_brief} />
+
+      <ScheduleCard
+        itemId={item.id}
+        approved={item.approval_status === "approved"}
+        canEdit={writable}
+        data={scheduling}
+        timeZone={ctx.workspace.timezone}
+        defaultWhen={`${addDays(todayInZone(new Date(), ctx.workspace.timezone), 1)}T10:00`}
+      />
 
       {item.ai_model ? (
         <p className="text-xs text-ink-400">

@@ -14,6 +14,9 @@ export const siteConfig = {
     { label: "Contact", href: "/contact" },
     { label: "Privacy", href: "/privacy" },
     { label: "Terms", href: "/terms" },
+    { label: "Acceptable use", href: "/acceptable-use" },
+    { label: "Cookies", href: "/cookies" },
+    { label: "Data deletion", href: "/data-deletion" },
   ],
 } as const;
 

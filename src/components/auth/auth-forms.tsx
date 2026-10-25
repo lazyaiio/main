@@ -64,6 +64,17 @@ export function SignupForm() {
           hint="At least 8 characters."
         />
         <FormMessage state={state} />
+        <p className="text-xs leading-relaxed text-ink-500">
+          By creating an account you agree to our{" "}
+          <Link href="/terms" target="_blank" className="font-medium text-brand hover:underline">
+            Terms of Service
+          </Link>{" "}
+          and{" "}
+          <Link href="/privacy" target="_blank" className="font-medium text-brand hover:underline">
+            Privacy Policy
+          </Link>
+          .
+        </p>
         <SubmitButton pending={pending}>Create account</SubmitButton>
       </form>
       <p className="text-center text-sm text-ink-600">

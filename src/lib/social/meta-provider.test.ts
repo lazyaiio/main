@@ -197,7 +197,19 @@ describe("error handling", () => {
     const error = err(400, 190, 463);
     expect(error.message).not.toContain("EAAB123token");
     expect(error.message).not.toContain("secret detail");
-    expect(error.details).toEqual({ status: 400, code: 190, subcode: 463, trace: "TRACE" });
+    expect(error.details).toEqual({ status: 400, code: 190, subcode: 463, trace: "TRACE", uncertain: false });
+  });
+
+  it("marks results as uncertain when we cannot tell whether a post was created", async () => {
+    expect(err(500, 2).details.uncertain).toBe(true);
+    expect(err(400, 1).details.uncertain).toBe(true);
+    expect(classifyGraphError(503, null).details.uncertain).toBe(true);
+    expect(err(400, 4).details.uncertain).toBe(false); // rate limit: Facebook refused the request
+    expect(err(403, 200).details.uncertain).toBe(false);
+    const timedOut = createMetaProvider(CONFIG, (() => Promise.reject(new Error("timeout"))) as typeof fetch);
+    await expect(timedOut.publish({ id: "111", accessToken: "t" }, { message: "Hi" })).rejects.toMatchObject({ details: { uncertain: true } });
+    const noId = createMetaProvider(CONFIG, fakeFetch(() => json({})));
+    await expect(noId.publish({ id: "111", accessToken: "t" }, { message: "Hi" })).rejects.toMatchObject({ details: { uncertain: true } });
   });
 
   it("turns network failures into a temporary error", async () => {

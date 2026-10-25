@@ -233,3 +233,75 @@ export async function countConnectedPages(ws: string, accountId: string): Promis
   if (error) throw new DataError("Could not check the Pages.");
   return count ?? 0;
 }
+
+// ---------- Data deletion (service role) ----------
+
+export type DeletionSource = "facebook_deletion" | "facebook_deauthorize";
+
+export async function createDeletionRequest(code: string, source: DeletionSource): Promise<void> {
+  unwrap(await admin().from("data_deletion_requests").insert({ code, source }), "record the deletion request");
+}
+
+export async function finishDeletionRequest(code: string, status: "completed" | "failed", matchedAccounts: number): Promise<void> {
+  await admin()
+    .from("data_deletion_requests")
+    .update({ status, matched_accounts: matchedAccounts, completed_at: new Date().toISOString() })
+    .eq("code", code);
+}
+
+export async function getDeletionStatus(code: string): Promise<{ status: "received" | "completed" | "failed"; completed_at: string | null } | null> {
+  const res = await admin().from("data_deletion_requests").select("status, completed_at").eq("code", code).maybeSingle();
+  return unwrap(res, "load the deletion request") as { status: "received" | "completed" | "failed"; completed_at: string | null } | null;
+}
+
+/**
+ * Removes everything LazyAI holds about one Facebook user: Page tokens are deleted, Pages are disconnected,
+ * scheduled posts for those Pages are canceled, and the stored Facebook name and permissions are cleared.
+ * Content the person created in LazyAI is not touched here (that is the account deletion workflow).
+ */
+export async function revokeFacebookUser(providerUserId: string): Promise<{ accounts: number; pages: number }> {
+  const db = admin();
+  const accounts = (unwrap(
+    await db.from("social_accounts").select("id").eq("provider", "facebook").eq("provider_account_id", providerUserId),
+    "find the accounts",
+  ) ?? []) as { id: string }[];
+  if (accounts.length === 0) return { accounts: 0, pages: 0 };
+  const accountIds = accounts.map((a) => a.id);
+
+  const pages = (unwrap(await db.from("social_pages").select("id").in("social_account_id", accountIds), "find the Pages") ?? []) as { id: string }[];
+  const pageIds = pages.map((p) => p.id);
+
+  if (pageIds.length > 0) {
+    unwrap(await db.from("social_page_tokens").delete().in("social_page_id", pageIds), "delete the tokens");
+    unwrap(
+      await db
+        .from("scheduled_posts")
+        .update({ status: "cancelled", last_error: "page_disconnected" })
+        .in("social_page_id", pageIds)
+        .in("status", ["scheduled", "retrying"]),
+      "cancel the scheduled posts",
+    );
+    unwrap(await db.from("social_pages").update({ status: "disconnected", last_error_code: null }).in("id", pageIds), "disconnect the Pages");
+  }
+  unwrap(
+    await db
+      .from("social_accounts")
+      .update({ status: "revoked", display_name: null, granted_scopes: [], token_expires_at: null, last_error_code: null })
+      .in("id", accountIds),
+    "clear the accounts",
+  );
+  return { accounts: accountIds.length, pages: pageIds.length };
+}
+
+/** Posts waiting for a Page that is being disconnected are canceled, so nothing is published later by surprise. */
+export async function cancelPendingPostsForPage(ws: string, pageId: string): Promise<void> {
+  unwrap(
+    await admin()
+      .from("scheduled_posts")
+      .update({ status: "cancelled", last_error: "page_disconnected", next_attempt_at: null })
+      .eq("workspace_id", ws)
+      .eq("social_page_id", pageId)
+      .in("status", ["scheduled", "retrying"]),
+    "cancel the scheduled posts",
+  );
+}

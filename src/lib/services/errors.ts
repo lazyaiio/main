@@ -21,6 +21,11 @@ export type ServiceErrorKind =
   | "social_scopes"
   | "social_no_pages"
   | "social_failed"
+  | "schedule_not_approved"
+  | "schedule_time"
+  | "schedule_page"
+  | "schedule_exists"
+  | "schedule_state"
   | "invalid";
 
 /** An expected failure with a message that is safe to show to the user. */

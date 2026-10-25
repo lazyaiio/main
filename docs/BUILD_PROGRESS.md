@@ -15,12 +15,50 @@ Plan: [`LAZYAI_MASTER_PLAN.md`](./LAZYAI_MASTER_PLAN.md) (see section 23 for own
 | 5 | URL extraction | DONE per owner report (deployed, SQL run successfully); real-page results not yet reported |
 | 6 | Campaign planner and bulk generation | DONE for SQL (owner reports `ALL CAMPAIGN PLANNER TESTS PASSED`); GitHub Actions result and browser trial of the progress panel not yet reported |
 | 7 | Media and images | DONE per owner report (migration 0006 and SQL test run; owner confirmed steps done). Thumbnails added in Batch 8 |
-| 8 | Meta OAuth and Facebook Pages | **IN PROGRESS** — code written, not yet verified |
-| 9 | Durable scheduler and publishing | NOT STARTED |
+| 8 | Meta OAuth and Facebook Pages | DONE per owner report (migrations 0007/0008 run, Meta app created, steps done); real connection result not yet reported in detail |
+| 9 | Durable scheduler and publishing | **IN PROGRESS** — code written, not yet verified; real posting is switched off by default |
 | 10 | Resend and email | NOT STARTED |
 | 11 | Usage limits and hardening | NOT STARTED |
 | 12 | Deployment and DNS runbook | NOT STARTED |
 | 13 | Release readiness | NOT STARTED |
+
+---
+
+## Batch 9 — Legal pages, data deletion callback, scheduler and publishing
+
+**Status:** IN PROGRESS (code written; migrations 0009 and 0010 not applied; lint / typecheck / vitest / build not run in the sandbox; no real Facebook call, no database run, no real scheduler call). **Real Facebook posting is OFF by default** (`LIVE_PUBLISHING_ENABLED`); the owner has approved connection work only, so publishing stays gated until the owner switches it on.
+
+### What was built
+**Mandatory pages (for the Meta submission):** Privacy Policy (`/privacy`), Terms of Service (`/terms`), Acceptable Use Policy (`/acceptable-use`), Cookie Notice (`/cookies`), Data Deletion (`/data-deletion`, with a status checker), and Contact (`/contact`), all in American English and written for how LazyAI really works (AI providers, Facebook permissions, token storage, retention, rights). The operator name, contact email, and governing country come from public Vercel settings (`NEXT_PUBLIC_OPERATOR_NAME`, `NEXT_PUBLIC_CONTACT_EMAIL`, `NEXT_PUBLIC_OPERATOR_COUNTRY`), not hard-coded. Footer, sitemap, and sign-up consent text link to them.
+**Meta callbacks:** `POST /api/meta/data-deletion` (returns confirmation code and status URL) and `POST /api/meta/deauthorize`, both verifying Meta's `signed_request` HMAC with the app secret (checked against an independent Python test vector). They disconnect the person's Pages, delete stored tokens, cancel pending posts, and clear the stored Facebook name and permissions. Migration 0009 stores only a code, source, and status (no personal data, no browser access).
+**Scheduling:** schedule an approved post to a connected Page (date and time in the workspace timezone), change the time, cancel, retry, and resolve uncertain results, all on the post page; the calendar shows failures and links to posts. Rules are enforced in the database (migration 0010): approved posts only, connected Pages where the person can post, no past times, one live entry per post and Page.
+**Publishing queue:** `/api/cron/dispatch` (needs `Authorization: Bearer <CRON_SECRET>`, fails closed) claims due posts atomically, publishes text or photo posts through the Meta adapter, retries only clear refusals (rate limit) with growing delays, never retries uncertain results automatically, fails permanent problems at once, flags Page problems on the Pages screen, skips posts more than 6 hours late, re-checks approval and Page status at publish time, and hands unused posts back when time runs out. Disconnecting a Page cancels its pending posts.
+**Triggering:** Supabase `pg_cron` + `pg_net` every minute (`docs/SCHEDULER_SETUP.md`); `vercel.json` adds a once-a-day safety net (Hobby limit).
+
+### Files
+New: `supabase/migrations/{0009_data_deletion,0010_scheduling}.sql`, `supabase/tests/{rls_data_deletion,rls_scheduling}.sql`, `docs/{SCHEDULER_SETUP,META_APP_REVIEW}.md`, `docs/decisions/0005-scheduling-and-publishing.md`, `vercel.json`, `src/lib/{legal,publish-dispatch,schedule-text}.ts`, `src/lib/social/signed-request.ts`, `src/lib/data/{scheduling,publisher}.ts`, `src/lib/services/{scheduling,publisher,data-deletion}.ts`, `src/app/api/cron/dispatch/route.ts`, `src/app/api/meta/{data-deletion,deauthorize}/route.ts`, `src/app/app/schedule/actions.ts`, `src/components/{marketing/legal-page,schedule/schedule-card}.tsx`, pages `acceptable-use`, `cookies`, `data-deletion` (+ `status`) under `src/app/(marketing)`, and tests.
+Changed: `privacy`, `terms`, `contact` pages (placeholders replaced), `src/app/(marketing)/...`, `src/lib/{site.ts,security.test.ts,service-messages.ts}`, `src/app/sitemap.ts`, `src/components/auth/auth-forms.tsx`, `src/lib/social/{keys,provider,meta-provider}.ts` (+ tests), `src/lib/data/{social,types,overview}.ts`, `src/lib/services/{errors,social}.ts`, `src/app/app/content/[itemId]/page.tsx`, `src/app/app/calendar/page.tsx`, `.env.example`, `docs/*`.
+Deleted: none.
+
+### Tests / checks and results
+| Check | Result |
+|---|---|
+| Pure-logic tests (dispatch rules and duplicate protection with fakes, backoff, message composition, cron secret check, `signed_request` vector, schedule text and time formatting, uncertain-result flags in the Meta adapter) plus all earlier tests, with a small stand-in runner under `tsx` | 276 passed, 0 failed |
+| Real `vitest`, `lint`, full `typecheck`, `next build` | **NOT RUN** (no network) |
+| Partial typecheck | Only errors caused by missing React/Next packages remained |
+| No Bengali text in source | PASS (scanned) |
+| SQL 0009/0010 and tests (including concurrent-claim, uncertain, missed-window, retry limits) | **NOT RUN** (no database) |
+| Real scheduler, real Facebook posting | **NOT RUN** (and posting is gated) |
+
+### Risks / things to watch
+- The SQL tests use `set local role service_role`; if the SQL Editor refuses that, the message will say so and the test needs adjusting (not the functions).
+- Legal text is written for LazyAI's real data flows but is not legal advice; the owner should have it reviewed, and must confirm the 30-day deletion commitment and set the contact email, operator name, and country.
+- Timing precision is about one minute; the first real publish has never run. Test with a throw-away Page first.
+- `vercel.json` has a daily cron: on Hobby, never change it to a faster schedule (deployment would fail).
+- Older posts that were scheduled before Batch 9 cannot exist (the table was empty), so no migration of data is needed.
+
+### Exact next action
+Owner uploads the Batch 9 zip, confirms CI, runs 0009 + its test and 0010 + its test, sets the public legal variables and `CRON_SECRET` in Vercel, checks the legal pages signed out, sets up the scheduler (`docs/SCHEDULER_SETUP.md`), and fills Meta's forms (`docs/META_APP_REVIEW.md`). Then, only when the owner approves real posting, set `LIVE_PUBLISHING_ENABLED=1` and test with one scheduled post on a test Page. Next batch: 10 (Resend and email), then 11 (usage limits, account deletion/export, hardening).
 
 ---
 

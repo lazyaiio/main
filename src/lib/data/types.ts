@@ -103,6 +103,7 @@ export type ScheduledPostRow = {
   social_page_id: string;
   scheduled_at: string;
   status: PostStatus;
+  last_error: string | null;
 };
 
 export type AuditEventRow = {
