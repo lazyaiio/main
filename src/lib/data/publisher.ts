@@ -34,9 +34,11 @@ export async function finishPublished(id: string, providerPostId: string): Promi
   return data === true;
 }
 
-export async function finishRetry(id: string, code: string, delaySeconds: number, maxAttempts: number): Promise<void> {
-  const { error } = await admin().rpc("finish_post_retry", { p_post_id: id, p_error: code, p_delay_seconds: delaySeconds, p_max_attempts: maxAttempts });
+/** Returns the new status: "retrying", or "failed" when the attempts ran out. */
+export async function finishRetry(id: string, code: string, delaySeconds: number, maxAttempts: number): Promise<string> {
+  const { data, error } = await admin().rpc("finish_post_retry", { p_post_id: id, p_error: code, p_delay_seconds: delaySeconds, p_max_attempts: maxAttempts });
   if (error) throw new DataError("Could not record the retry.", error.code);
+  return typeof data === "string" ? data : "retrying";
 }
 
 export async function finishFailed(id: string, code: string): Promise<void> {
@@ -69,6 +71,7 @@ export async function loadItem(ws: string, itemId: string): Promise<PublishItem 
 
 export type PublishPage = {
   id: string;
+  name: string;
   provider_page_id: string;
   social_account_id: string;
   status: string;
@@ -78,7 +81,7 @@ export type PublishPage = {
 export async function loadPage(ws: string, pageId: string): Promise<PublishPage | null> {
   const res = await admin()
     .from("social_pages")
-    .select("id, provider_page_id, social_account_id, status, capabilities")
+    .select("id, name, provider_page_id, social_account_id, status, capabilities")
     .eq("workspace_id", ws)
     .eq("id", pageId)
     .maybeSingle();

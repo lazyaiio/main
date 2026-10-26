@@ -5,6 +5,9 @@ import { redirect } from "next/navigation";
 import { firstError, profileSchema } from "@/lib/auth/schemas";
 import type { FormState } from "@/lib/auth/form-state";
 import { getAppContext } from "@/lib/auth/session";
+import { getDb } from "@/lib/data/db";
+import { saveOwnPrefs } from "@/lib/data/email";
+import { notifyWelcome, runLater } from "@/lib/services/email";
 import { createClient } from "@/lib/supabase/server";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
@@ -54,6 +57,9 @@ async function saveProfile(formData: FormData, completeOnboarding: boolean): Pro
 
   revalidatePath("/app", "layout");
 
+  // First time through onboarding: send the welcome email after the response (never blocks sign-up).
+  if (completeOnboarding && !ctx.profile.onboarded_at) runLater(() => notifyWelcome(ctx.user.id));
+
   if (completeOnboarding) redirect("/app");
   return { success: true, message: "Saved.", values };
 }
@@ -64,4 +70,22 @@ export async function completeOnboardingAction(_prev: FormState, formData: FormD
 
 export async function updateSettingsAction(_prev: FormState, formData: FormData): Promise<FormState> {
   return saveProfile(formData, false);
+}
+
+/** Email choices on the Settings page. Only the person's own row can be changed. */
+export async function updateEmailPreferencesAction(_prev: FormState, formData: FormData): Promise<FormState> {
+  const ctx = await getAppContext();
+  if (!ctx) redirect("/auth/login");
+  const on = (name: string) => formData.get(name) === "on";
+  try {
+    await saveOwnPrefs(await getDb(), ctx.user.id, {
+      campaign_complete: on("campaign_complete"),
+      publish_failures: on("publish_failures"),
+      page_alerts: on("page_alerts"),
+    });
+  } catch {
+    return { error: "We could not save your choices. Please try again." };
+  }
+  revalidatePath("/app/settings");
+  return { success: true, message: "Saved." };
 }

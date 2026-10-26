@@ -2,12 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Sparkles, type LucideIcon } from "lucide-react";
+import { LayoutDashboard, Mail, Send, Sparkles, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const items: { href: string; label: string; icon: LucideIcon; exact?: boolean }[] = [
   { href: "/admin", label: "Overview", icon: LayoutDashboard, exact: true },
   { href: "/admin/ai-providers", label: "AI providers", icon: Sparkles },
+  { href: "/admin/publishing", label: "Publishing", icon: Send },
+  { href: "/admin/email", label: "Email", icon: Mail },
 ];
 
 export function AdminNav({ orientation }: { orientation: "vertical" | "horizontal" }) {

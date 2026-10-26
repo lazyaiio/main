@@ -22,6 +22,7 @@ import { languageLabel } from "@/lib/projects";
 import { messageForCode } from "@/lib/service-messages";
 import { addDays, todayInZone } from "@/lib/campaign-plan";
 import { getPostImage } from "@/lib/services/media";
+import { isCurrentUserPlatformAdmin } from "@/lib/auth/admin";
 import { getItemScheduling } from "@/lib/services/scheduling";
 import { approvalStatus } from "@/lib/status";
 import { deleteContentAction, regenerateAction, setStatusAction } from "../actions";
@@ -172,6 +173,8 @@ export default async function ContentItemPage({ params, searchParams }: Props) {
         data={scheduling}
         timeZone={ctx.workspace.timezone}
         defaultWhen={`${addDays(todayInZone(new Date(), ctx.workspace.timezone), 1)}T10:00`}
+        nowIso={new Date().toISOString()}
+        isPlatformAdmin={await isCurrentUserPlatformAdmin()}
       />
 
       {item.ai_model ? (

@@ -11,7 +11,9 @@ import {
   type DispatchSummary,
   type DuePost,
 } from "@/lib/publish-dispatch";
-import { getSocialProvider, getTokenEncryptionKey, isPublishingEnabled } from "@/lib/social/keys";
+import { adminDb, isLiveFlagOn, recordDispatcherRun } from "@/lib/data/platform";
+import { notifyPageAttention, notifyPublishFailure, runLater } from "./email";
+import { getSocialMode, getSocialProvider, getTokenEncryptionKey, isPublishingBlockedByEnv } from "@/lib/social/keys";
 
 /**
  * Publishes the posts that are due. Called by the protected scheduler endpoint, never by a browser.
@@ -21,7 +23,9 @@ import { getSocialProvider, getTokenEncryptionKey, isPublishingEnabled } from "@
 export async function dispatchDuePosts(): Promise<DispatchSummary> {
   const provider = getSocialProvider();
   const key = getTokenEncryptionKey();
-  const enabled = Boolean(provider && key && isPublishingEnabled());
+  // Real posting needs the Admin switch (Admin -> Publishing) and no emergency stop. The pretend Facebook always runs.
+  const switchOn = getSocialMode() === "mock" || (!isPublishingBlockedByEnv() && (await isLiveFlagOn(adminDb()).catch(() => false)));
+  const enabled = Boolean(provider && key && switchOn);
 
   const claimed = new Map<string, pub.ClaimedPost>();
   const detail = (post: DuePost): pub.ClaimedPost => {
@@ -30,7 +34,24 @@ export async function dispatchDuePosts(): Promise<DispatchSummary> {
     return row;
   };
 
-  return runDispatch(
+  /** Emails the workspace owners about a post that will not go out (not when a person disconnected the Page). */
+  const announceFailure = (post: DuePost, code: string) => {
+    const row = claimed.get(post.id);
+    if (!row || code === "page_disconnected") return;
+    runLater(async () => {
+      const [item, page] = await Promise.all([pub.loadItem(row.workspace_id, row.content_item_id), pub.loadPage(row.workspace_id, row.social_page_id)]);
+      await notifyPublishFailure({
+        workspaceId: row.workspace_id,
+        itemId: row.content_item_id,
+        scheduledPostId: post.id,
+        pageName: page?.name ?? "your Facebook Page",
+        code,
+        snippet: item?.body ?? "",
+      });
+    });
+  };
+
+  const summary = await runDispatch(
     {
       now: () => Date.now(),
       enabled,
@@ -84,11 +105,16 @@ export async function dispatchDuePosts(): Promise<DispatchSummary> {
         if (recorded && row) await pub.writeSystemAudit(row.workspace_id, "post.published", "scheduled_post", post.id, {}).catch(() => undefined);
         return recorded;
       },
-      finishRetry: (post, code, delay) => pub.finishRetry(post.id, code, delay, MAX_PUBLISH_ATTEMPTS),
+      finishRetry: async (post, code, delay) => {
+        const status = await pub.finishRetry(post.id, code, delay, MAX_PUBLISH_ATTEMPTS);
+        // Out of attempts: tell the owners. (Emails never block or break publishing.)
+        if (status === "failed") announceFailure(post, code);
+      },
       finishFailed: async (post, code) => {
         await pub.finishFailed(post.id, code);
         const row = claimed.get(post.id);
         if (row) await pub.writeSystemAudit(row.workspace_id, "post.publish_failed", "scheduled_post", post.id, { code }).catch(() => undefined);
+        announceFailure(post, code);
       },
       release: (post) => pub.releasePost(post.id),
 
@@ -97,9 +123,14 @@ export async function dispatchDuePosts(): Promise<DispatchSummary> {
         const page = await pub.loadPage(row.workspace_id, row.social_page_id);
         if (!page) return;
         await setPageState(row.workspace_id, page.id, { status: "error", errorCode: problem });
+        runLater(() => notifyPageAttention({ workspaceId: row.workspace_id, pageId: page.id, pageName: page.name, problem }));
         if (problem === "token_expired") await setAccountStatus(row.workspace_id, page.social_account_id, "expired", problem);
       },
     },
     DEFAULT_DISPATCH_OPTIONS,
   );
+
+  // Leave a heartbeat so Admin -> Publishing can show that the scheduler is really running.
+  await recordDispatcherRun({ ...summary, live_switch: switchOn, configured: Boolean(provider && key) }).catch(() => undefined);
+  return summary;
 }

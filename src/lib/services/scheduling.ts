@@ -13,7 +13,8 @@ import {
   type ScheduleRow,
 } from "@/lib/data/scheduling";
 import { listSocialPages } from "@/lib/data/social";
-import { getSocialMode, isPublishingEnabled } from "@/lib/social/keys";
+import { isLiveFlagOn } from "@/lib/data/platform";
+import { getSocialMode, isPublishingBlockedByEnv } from "@/lib/social/keys";
 import { logAudit } from "./audit";
 import { ServiceError } from "./errors";
 
@@ -67,7 +68,7 @@ export async function getItemScheduling(ctx: AppContext, itemId: string): Promis
   return {
     schedules: schedules.map((s) => ({ ...s, pageName: names.get(s.social_page_id) ?? "Facebook Page" })),
     pages: pages.filter((p) => p.status === "connected" && p.capabilities.can_publish === true).map((p) => ({ id: p.id, name: p.name })),
-    publishingEnabled: isPublishingEnabled(),
+    publishingEnabled: getSocialMode() === "mock" || (!isPublishingBlockedByEnv() && (await isLiveFlagOn(db))),
     mock: getSocialMode() === "mock",
   };
 }

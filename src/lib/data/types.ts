@@ -63,7 +63,7 @@ export type CampaignBrief = {
   source_url?: string;
 };
 
-export type CampaignDetail = CampaignRow & { brief: CampaignBrief };
+export type CampaignDetail = CampaignRow & { brief: CampaignBrief; created_by: string | null };
 
 export type CampaignSlotRow = {
   id: string;

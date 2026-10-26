@@ -28,6 +28,7 @@ import { DataError, getDb } from "@/lib/data/db";
 import { getProject } from "@/lib/data/projects";
 import type { CampaignDetail, CampaignStatus, ProjectRow } from "@/lib/data/types";
 import { logAudit } from "./audit";
+import { notifyCampaignFinished, runLater } from "./email";
 import { ServiceError } from "./errors";
 import { generate, metadataFor, recordUsage, remainingHourlyAllowance, usableProviders, withSourceLink } from "./generation";
 import { loadSourceMaterial, readSource, type SourceMaterial } from "./sources";
@@ -368,6 +369,11 @@ export async function runCampaignBatch(ctx: AppContext, campaignId: string): Pro
       completed: latest.generation_progress.completed ?? 0,
       failed: latest.generation_progress.failed ?? 0,
     });
+    // Tell the person who planned it (never blocks or breaks generation).
+    if ((latest.status === "ready" || latest.status === "failed") && latest.created_by) {
+      const finished = { userId: latest.created_by, workspaceId: ws, campaignId, name: latest.name, completed: latest.generation_progress.completed ?? 0, failed: latest.generation_progress.failed ?? 0, total: latest.requested_item_count };
+      runLater(() => notifyCampaignFinished(finished));
+    }
   }
   const message =
     summary.duplicates > 0 || summary.failures > 0

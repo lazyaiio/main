@@ -4,14 +4,14 @@ LazyAI publishes scheduled posts when a protected address, `/api/cron/dispatch`,
 
 ## What protects it
 - The address answers only requests that carry your secret: `Authorization: Bearer <CRON_SECRET>`. Without the secret, or when no secret is set, it answers 401 and does nothing.
-- Real Facebook posting is **off** until you set `LIVE_PUBLISHING_ENABLED=1`. Until then, scheduled posts simply wait (nothing is claimed or sent).
+- Real Facebook posting is **off** until a platform admin switches it on in the app: **Admin -> Publishing -> Switch live publishing ON**. Until then, scheduled posts simply wait (nothing is claimed or sent).
 - Only **approved** posts on **connected** Pages are published. A post that is edited after scheduling must be approved again.
 - A post that was being published when something broke is never retried automatically (it might already be on Facebook). You see "We could not confirm whether this post reached Facebook" and choose: "It is on my Page" or "post it again".
 - A post more than 6 hours late is not published silently; you choose Retry.
 
 ## Steps
 1. **Make a secret.** Use your password manager to create 24 or more random letters and digits.
-2. **Vercel -> Settings -> Environment Variables:** add `CRON_SECRET` = that secret. (Keep `LIVE_PUBLISHING_ENABLED` unset for now.) **Redeploy.**
+2. **Vercel -> Settings -> Environment Variables:** add `CRON_SECRET` = that secret. **Redeploy.**
 3. **Supabase -> Database -> Extensions:** enable **pg_cron** and **pg_net**.
 4. **Supabase -> SQL Editor:** run the following after replacing `YOUR-DOMAIN` (for example `your-project.vercel.app`) and `YOUR_CRON_SECRET`:
 
@@ -39,11 +39,22 @@ select status_code, content from net._http_response order by created desc limit 
 
 To stop it: `select cron.unschedule('lazyai-dispatch');`
 
+## Where to see what is happening: Admin -> Publishing
+Open **Admin -> Publishing** (you must be a platform admin). It shows, with green/yellow/red marks:
+1. whether the Facebook settings are complete,
+2. whether `CRON_SECRET` is set,
+3. **whether the scheduler has called the site** and when it last ran (if it says "never", the Supabase cron job is not set up or the secret does not match),
+4. whether the **live publishing switch** is ON,
+and the queue (due now, waiting, failed, published in the last 24 hours). The button **Publish due posts now** runs the publisher once by hand, which is also a good way to test without the scheduler.
+
 ## Turning live publishing on (after your approval)
-1. In the app, connect a **test Page** and schedule one approved post a few minutes ahead. It will wait ("Live publishing is not switched on yet").
-2. When you are ready for real posting: Vercel -> add `LIVE_PUBLISHING_ENABLED` = `1`, redeploy. The next minute, due posts are published.
+1. Connect a **test Page** and schedule one approved post a few minutes ahead. It will wait ("Live publishing is switched off").
+2. When you are ready for real posting: **Admin -> Publishing -> tick the box -> Switch live publishing ON**. No redeploy is needed. The next scheduler run (within a minute) publishes due posts.
 3. Check the post on the Page and in LazyAI (status "Published").
-To stop real posting at any time: remove the variable (or set it to anything else) and redeploy; scheduled posts wait again.
+To stop real posting at any time: **Admin -> Publishing -> Switch live publishing OFF**. (Emergency stop from the hosting settings: `LIVE_PUBLISHING_ENABLED=0` and redeploy.)
+
+## Time zones in one minute
+The server runs on UTC. LazyAI saves each schedule as an exact moment and converts using the **workspace time zone** shown in Settings (default Asia/Dhaka). The time you type is read as workspace time, whatever the server or your computer uses. The schedule box shows the current time in the workspace time zone and what your choice means on your computer.
 
 ## Other ways to call it
 Any service that can send an HTTP request every minute with the header works (for example cron-job.org): address `https://YOUR-DOMAIN/api/cron/dispatch`, method GET or POST, header `Authorization: Bearer <CRON_SECRET>`.

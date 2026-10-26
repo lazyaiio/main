@@ -33,7 +33,7 @@ For each permission Meta asks for a description and a screencast. Draft answers 
 - **A way to log in to LazyAI:** create a separate reviewer account (email and password) in your live site, with a workspace, and put the credentials in the review form. Do not use your own account.
 - **A Page they can use:** Meta reviewers test with their own accounts and Pages through the test instructions, or you can add them as testers. Describe the steps: sign in, Facebook Pages, Connect Facebook, choose a Page, create or open an approved post, Schedule, see it published.
 - **Screencast (about 2 minutes, with captions):** 1) sign in to LazyAI; 2) Facebook Pages -> Connect Facebook -> the Facebook permission dialog -> choose a Page; 3) open a post, approve it, schedule it for a few minutes ahead; 4) show it published on the Facebook Page; 5) show Disconnect and the Data Deletion page.
-- **Publishing:** reviewers' test needs real posting, so switch on `LIVE_PUBLISHING_ENABLED=1` and the scheduler (`docs/SCHEDULER_SETUP.md`) before you submit.
+- **Publishing:** reviewers' test needs real posting, so switch on live publishing (Admin -> Publishing) and set up the scheduler (`docs/SCHEDULER_SETUP.md`) before you submit.
 
 ## 5. Going Live
 After approval, switch the app from Development to **Live** (top bar of the app dashboard). Then people without a role on the app can connect their Pages.

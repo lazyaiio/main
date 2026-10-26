@@ -135,3 +135,20 @@ Run these **before** or right after uploading the Batch 8 files (the Media page 
 2. SQL Editor -> `supabase/migrations/0010_scheduling.sql` -> **Run**, then `supabase/tests/rls_scheduling.sql` -> **Run**. Expected result row: `ALL SCHEDULING TESTS PASSED`.
 3. Vercel variables (then redeploy): `NEXT_PUBLIC_CONTACT_EMAIL`, `NEXT_PUBLIC_OPERATOR_NAME`, `NEXT_PUBLIC_OPERATOR_COUNTRY` (legal pages), `CRON_SECRET` (scheduler). Keep `LIVE_PUBLISHING_ENABLED` unset until you approve real posting.
 4. Scheduler: follow `docs/SCHEDULER_SETUP.md`. Meta submission: `docs/META_APP_REVIEW.md`.
+
+
+---
+
+## Batch 9 fix: publishing switch and diagnostics (migration 0011)
+
+1. SQL Editor -> `supabase/migrations/0011_platform_settings.sql` -> **Run**, then `supabase/tests/rls_platform_settings.sql` -> **Run**. Expected result row: `ALL PLATFORM SETTINGS TESTS PASSED`.
+2. Open **Admin -> Publishing** in the app. The live publishing switch is there (not in Vercel). The page shows whether the scheduler is running.
+
+
+---
+
+## Batch 10 additions: email (migration 0012)
+
+1. SQL Editor -> `supabase/migrations/0012_email.sql` -> **Run**, then `supabase/tests/rls_email.sql` -> **Run**. Expected result row: `ALL EMAIL TESTS PASSED`.
+2. Follow `docs/EMAIL_SETUP.md` (Resend account, domain, API key, three Vercel settings, webhook, Supabase SMTP). Without it the app works; notifications are skipped.
+3. Open **Admin -> Email** to check the setup and send a test email. People choose which emails they get under **Settings -> Email notifications**.

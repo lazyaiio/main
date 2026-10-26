@@ -21,7 +21,7 @@ describe("secret handling", () => {
   });
 
   it("marks the admin client and server client as server-only", () => {
-    for (const path of ["lib/supabase/admin.ts", "lib/supabase/server.ts", "lib/auth/session.ts", "lib/auth/admin.ts", "lib/ai/keys.ts", "lib/media/keys.ts", "lib/social/keys.ts", "lib/data/social.ts", "lib/services/social.ts", "lib/data/publisher.ts", "lib/services/publisher.ts", "lib/data/scheduling.ts", "lib/services/scheduling.ts", "lib/services/data-deletion.ts"]) {
+    for (const path of ["lib/supabase/admin.ts", "lib/supabase/server.ts", "lib/auth/session.ts", "lib/auth/admin.ts", "lib/ai/keys.ts", "lib/media/keys.ts", "lib/social/keys.ts", "lib/data/social.ts", "lib/services/social.ts", "lib/data/publisher.ts", "lib/services/publisher.ts", "lib/email/keys.ts", "lib/data/email.ts", "lib/services/email.ts", "lib/data/scheduling.ts", "lib/services/scheduling.ts", "lib/services/data-deletion.ts"]) {
       expect(readFileSync(join(SRC, path), "utf8")).toContain('import "server-only"');
     }
   });
@@ -39,9 +39,17 @@ describe("secret handling", () => {
 
   it("reads the Meta app secret and the token encryption key only in the server-only social keys module", () => {
     for (const name of ["META_APP_SECRET", "TOKEN_ENCRYPTION_KEY", "CRON_SECRET", "LIVE_PUBLISHING_ENABLED"]) {
-      const offenders = files.filter((f) => readFileSync(f, "utf8").includes(name));
+      // Messages may mention the setting names; only reading them from the environment is restricted.
+      const reads = new RegExp(`process\\.env(\\.|\\[["'])${name}`);
+      const offenders = files.filter((f) => reads.test(readFileSync(f, "utf8")));
       expect(offenders.map(rel).filter((f) => !f.endsWith(".test.ts"))).toEqual(["lib/social/keys.ts"]);
     }
+  });
+
+  it("reads the Resend key and webhook secret only in the server-only email keys module", () => {
+    // Messages may mention the setting names; only reading them from the environment is restricted.
+    const offenders = files.filter((f) => /process\.env\.RESEND_/.test(readFileSync(f, "utf8")));
+    expect(offenders.map(rel)).toEqual(["lib/email/keys.ts"]);
   });
 
   it("never logs OAuth codes, tokens, or secrets in the Facebook code", () => {

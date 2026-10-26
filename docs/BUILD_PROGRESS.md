@@ -16,17 +16,59 @@ Plan: [`LAZYAI_MASTER_PLAN.md`](./LAZYAI_MASTER_PLAN.md) (see section 23 for own
 | 6 | Campaign planner and bulk generation | DONE for SQL (owner reports `ALL CAMPAIGN PLANNER TESTS PASSED`); GitHub Actions result and browser trial of the progress panel not yet reported |
 | 7 | Media and images | DONE per owner report (migration 0006 and SQL test run; owner confirmed steps done). Thumbnails added in Batch 8 |
 | 8 | Meta OAuth and Facebook Pages | DONE per owner report (migrations 0007/0008 run, Meta app created, steps done); real connection result not yet reported in detail |
-| 9 | Durable scheduler and publishing | **IN PROGRESS** — code written, not yet verified; real posting is switched off by default |
-| 10 | Resend and email | NOT STARTED |
+| 9 | Durable scheduler and publishing | DONE per owner report (deployed). Owner reported posts not publishing: fixed in a follow-up (Admin switch, diagnostics, time zone clarity; migration 0011) |
+| 10 | Resend and email | **IN PROGRESS** — code written, not yet verified |
 | 11 | Usage limits and hardening | NOT STARTED |
 | 12 | Deployment and DNS runbook | NOT STARTED |
 | 13 | Release readiness | NOT STARTED |
 
 ---
 
+## Batch 9 follow-up and Batch 10 — Publishing diagnostics, then email
+
+**Status:** IN PROGRESS (code written; migrations 0011 and 0012 not applied; lint / typecheck / vitest / build not run in the sandbox; no real email sent).
+
+### Follow-up: "scheduled posts do not publish"
+Owner report: posts scheduled but not published; the banner said an admin must turn publishing on, but there was no place to do it; confusion about server time versus computer time. Causes and fixes:
+- The only switch was an environment variable (`LIVE_PUBLISHING_ENABLED=1`) that was not documented in the screen. **Fix:** a real switch in **Admin -> Publishing** (migration 0011, `platform_settings`, platform admins only, with a confirmation box). The environment variable is now only an emergency stop (`=0`).
+- No way to see whether the scheduler runs. **Fix:** every scheduler run leaves a heartbeat. Admin -> Publishing shows green/yellow/red checks (Facebook settings, `CRON_SECRET`, scheduler last seen, switch state), the queue counts (due now, waiting, failed, published in 24 h), and a **Publish due posts now** button that runs the publisher by hand without the scheduler.
+- Overdue posts gave no hint. **Fix:** the post page says "This post is overdue" and why, and links platform admins to Admin -> Publishing.
+- Time zones: the schedule box now shows the current time in the workspace time zone, what the chosen time means on the person's computer, a warning (with a link to Settings) when the computer's time zone differs from the workspace's, and a message when the time has already passed. The server time zone (UTC) never matters: schedules are converted with the workspace time zone. Shared helpers moved to `src/lib/zone-time.ts`.
+
+### Batch 10: email (Resend)
+- Notices: welcome (once, after onboarding), campaign finished, post not published (retries exhausted, permanent failure, or unclear result), Facebook Page needs attention. Sent after the response; failures never break the product. Duplicates impossible (unique key + Resend idempotency key).
+- Settings -> Email notifications (three choices; bounces and complaints pause an address). Admin -> Email (setup checks, test email to yourself, delivery log without addresses or text).
+- Signed delivery webhook `/api/email/webhook` (Svix signature, 5-minute replay window, checked against an independent Python vector).
+- `docs/EMAIL_SETUP.md` (Resend domain, DNS records to copy, API key, Vercel settings, webhook, Supabase SMTP for sign-in emails) and ADR 0006.
+
+### Files
+New: `supabase/migrations/{0011_platform_settings,0012_email}.sql`, `supabase/tests/{rls_platform_settings,rls_email}.sql`, `docs/{EMAIL_SETUP.md,decisions/0006-email.md}`, `src/lib/zone-time.ts`, `src/lib/data/{platform,email}.ts`, `src/lib/email/{provider,templates,keys}.ts` (+ test), `src/lib/services/email.ts`, `src/components/schedule/when-field.tsx`, `src/components/admin/{run-publisher-form,send-test-email-form}.tsx`, `src/components/app/email-preferences-form.tsx`, `src/app/admin/publishing/{page.tsx,actions.ts}`, `src/app/admin/email/{page.tsx,actions.ts}`, `src/app/api/email/webhook/route.ts`.
+Changed: `src/lib/campaign-plan.ts` (time helpers moved), `src/lib/social/keys.ts`, `src/lib/services/{publisher,scheduling,campaigns}.ts`, `src/lib/data/{publisher,types}.ts`, `src/components/schedule/schedule-card.tsx`, `src/components/admin/admin-nav.tsx`, `src/app/app/actions.ts`, `src/app/app/settings/page.tsx`, `src/app/app/content/[itemId]/page.tsx`, `src/lib/security.test.ts`, `.env.example`, `docs/*`.
+Deleted: none.
+
+### Tests / checks and results
+| Check | Result |
+|---|---|
+| Pure-logic tests (email sender and error mapping without leaking the key, Svix webhook verification with an independent vector and replay protection, delivery event mapping, templates incl. HTML escaping and header-injection safety) plus all earlier tests, with a small stand-in runner under `tsx` | 292 passed, 0 failed |
+| Real `vitest`, `lint`, full `typecheck`, `next build` | **NOT RUN** (no network) |
+| Partial typecheck | Only errors caused by missing React/Next packages remained |
+| No Bengali text in source | PASS (scanned) |
+| SQL 0011/0012 and tests | **NOT RUN** (no database) |
+| Real email delivery, real Resend webhook | **NOT RUN** |
+
+### Risks / things to watch
+- `after()` (Next.js 15) runs email work after the response; if it is unavailable in some context the code falls back to running it immediately.
+- The Resend account, domain, DNS records, and webhook must be set up by the owner; until then notifications are skipped and logged.
+- Supabase's own sign-in emails are separate: point them at Resend SMTP (dashboard setting) or they stay on Supabase's limited default sender.
+
+### Exact next action
+Owner uploads the zip, confirms CI, runs 0011 + 0012 and their tests, opens **Admin -> Publishing** to switch live publishing on (when approved) and to read the checks, then sets up Resend by `docs/EMAIL_SETUP.md`. Next batch: 11 (usage limits and hardening, account deletion/export).
+
+---
+
 ## Batch 9 — Legal pages, data deletion callback, scheduler and publishing
 
-**Status:** IN PROGRESS (code written; migrations 0009 and 0010 not applied; lint / typecheck / vitest / build not run in the sandbox; no real Facebook call, no database run, no real scheduler call). **Real Facebook posting is OFF by default** (`LIVE_PUBLISHING_ENABLED`); the owner has approved connection work only, so publishing stays gated until the owner switches it on.
+**Status:** IN PROGRESS (code written; migrations 0009 and 0010 not applied; lint / typecheck / vitest / build not run in the sandbox; no real Facebook call, no database run, no real scheduler call). **Real Facebook posting is OFF by default** (switch in Admin -> Publishing; migration 0011); the owner has approved connection work only, so publishing stays gated until the owner switches it on.
 
 ### What was built
 **Mandatory pages (for the Meta submission):** Privacy Policy (`/privacy`), Terms of Service (`/terms`), Acceptable Use Policy (`/acceptable-use`), Cookie Notice (`/cookies`), Data Deletion (`/data-deletion`, with a status checker), and Contact (`/contact`), all in American English and written for how LazyAI really works (AI providers, Facebook permissions, token storage, retention, rights). The operator name, contact email, and governing country come from public Vercel settings (`NEXT_PUBLIC_OPERATOR_NAME`, `NEXT_PUBLIC_CONTACT_EMAIL`, `NEXT_PUBLIC_OPERATOR_COUNTRY`), not hard-coded. Footer, sitemap, and sign-up consent text link to them.

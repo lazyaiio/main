@@ -84,12 +84,9 @@ export function getCronSecret(): string | null {
 }
 
 /**
- * Whether the dispatcher may actually publish. The pretend Facebook always may. The real one only when
- * an admin has switched live publishing on (LIVE_PUBLISHING_ENABLED=1), so connecting a Page never
- * starts posting by surprise.
+ * Emergency stop from the environment: LIVE_PUBLISHING_ENABLED=0 forces real posting off, whatever the
+ * Admin switch says. The normal on/off switch lives in Admin -> Publishing (stored in the database).
  */
-export function isPublishingEnabled(): boolean {
-  const mode = getSocialMode();
-  if (mode === "mock") return true;
-  return mode === "meta" && text(process.env.LIVE_PUBLISHING_ENABLED) === "1";
+export function isPublishingBlockedByEnv(): boolean {
+  return text(process.env.LIVE_PUBLISHING_ENABLED) === "0";
 }

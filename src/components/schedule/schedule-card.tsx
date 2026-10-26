@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { cancelScheduleAction, markSeenOnPageAction, rescheduleAction, retryScheduleAction, scheduleAction } from "@/app/app/schedule/actions";
 import { Badge } from "@/components/ui/badge";
+import { WhenField } from "@/components/schedule/when-field";
 import { PendingButton } from "@/components/ui/pending-button";
 import { formatDateTime } from "@/lib/format";
 import { describeScheduleError, toLocalInputValue } from "@/lib/schedule-text";
@@ -17,6 +18,8 @@ export function ScheduleCard({
   data,
   timeZone,
   defaultWhen,
+  nowIso,
+  isPlatformAdmin,
 }: {
   itemId: string;
   approved: boolean;
@@ -24,6 +27,8 @@ export function ScheduleCard({
   data: ItemScheduling;
   timeZone: string;
   defaultWhen: string;
+  nowIso: string;
+  isPlatformAdmin: boolean;
 }) {
   const live = data.schedules.filter((s) => s.status !== "cancelled");
   const cancelled = data.schedules.filter((s) => s.status === "cancelled");
@@ -38,7 +43,18 @@ export function ScheduleCard({
         </p>
       ) : !data.publishingEnabled ? (
         <p role="status" className="rounded-xl bg-amber-50 px-3.5 py-2.5 text-sm text-amber-800">
-          Live publishing is not switched on yet. You can schedule posts now, but they wait until an admin turns publishing on.
+          Live publishing is switched off for the whole site, so scheduled posts wait.{" "}
+          {isPlatformAdmin ? (
+            <>
+              You are a platform admin:{" "}
+              <Link href="/admin/publishing" className="font-semibold underline">
+                open Admin, Publishing
+              </Link>{" "}
+              to switch it on and to check that the scheduler is running.
+            </>
+          ) : (
+            "A platform admin can switch it on under Admin, Publishing."
+          )}
         </p>
       ) : null}
 
@@ -67,16 +83,11 @@ export function ScheduleCard({
                 ))}
               </select>
             </div>
-            <div className="space-y-1.5">
-              <label htmlFor="schedule-when" className="block text-sm font-medium text-ink-700">
-                Date and time
-              </label>
-              <input id="schedule-when" name="when" type="datetime-local" required defaultValue={defaultWhen} className={INPUT} />
-            </div>
+            <WhenField id="schedule-when" defaultValue={defaultWhen} workspaceTimeZone={timeZone} nowIso={nowIso} />
             <PendingButton variant="primary" pendingLabel="Scheduling…">
               Schedule post
             </PendingButton>
-            <p className="basis-full text-xs text-ink-500">Times are in your workspace timezone ({timeZone}). You can change or cancel until the post goes out.</p>
+            <p className="basis-full text-xs text-ink-500">You can change or cancel until the post goes out.</p>
           </form>
         )
       ) : null}
@@ -102,6 +113,21 @@ export function ScheduleCard({
                 {!approved && (s.status === "scheduled" || s.status === "retrying") ? (
                   <p role="alert" className="rounded-xl bg-amber-50 px-3.5 py-2.5 text-sm text-amber-900">
                     This post is not approved any more. Approve it again before its time, or it will not be published.
+                  </p>
+                ) : null}
+
+                {s.status === "scheduled" && new Date(s.scheduled_at).getTime() < new Date(nowIso).getTime() - 3 * 60_000 ? (
+                  <p role="status" className="rounded-xl bg-amber-50 px-3.5 py-2.5 text-sm text-amber-900">
+                    This post is overdue. Posting only happens when live publishing is switched on and the scheduler is running.
+                    {isPlatformAdmin ? (
+                      <>
+                        {" "}
+                        <Link href="/admin/publishing" className="font-semibold underline">
+                          Check Admin, Publishing
+                        </Link>
+                        .
+                      </>
+                    ) : null}
                   </p>
                 ) : null}
 
@@ -146,7 +172,7 @@ export function ScheduleCard({
                         <form action={rescheduleAction} className="mt-2 flex flex-wrap items-end gap-2">
                           <input type="hidden" name="itemId" value={itemId} />
                           <input type="hidden" name="scheduleId" value={s.id} />
-                          <input name="when" type="datetime-local" required defaultValue={toLocalInputValue(s.scheduled_at, timeZone)} aria-label="New date and time" className={INPUT} />
+                          <WhenField id={`when-${s.id}`} label="New date and time" defaultValue={toLocalInputValue(s.scheduled_at, timeZone)} workspaceTimeZone={timeZone} nowIso={nowIso} compact />
                           <PendingButton pendingLabel="Saving…">Save</PendingButton>
                         </form>
                       </details>

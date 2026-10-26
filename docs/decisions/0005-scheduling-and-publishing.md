@@ -13,7 +13,7 @@ Posts must go out at the scheduled time without duplicates, even when a request 
 - Posts more than 6 hours late are not published silently (`missed_window`).
 - At publish time the dispatcher re-checks that the post is still approved and the Page is still connected. Disconnecting a Page (or removing the app on Facebook) cancels its pending posts.
 - **Triggering:** Supabase `pg_cron` + `pg_net` call `/api/cron/dispatch` every minute (free); Vercel's daily cron is a safety net. The endpoint requires `Authorization: Bearer <CRON_SECRET>` and fails closed.
-- **Live gate:** real Facebook posting only happens when `LIVE_PUBLISHING_ENABLED=1`. The pretend Facebook (test mode) always works. Until the gate is open nothing is claimed, so posts are not consumed or failed.
+- **Live gate:** real Facebook posting only happens when a platform admin switches it on in Admin -> Publishing (stored in `platform_settings`, migration 0011; `LIVE_PUBLISHING_ENABLED=0` in the environment is an emergency stop). The pretend Facebook (test mode) always works. Every scheduler run leaves a heartbeat so the Admin screen shows whether the scheduler is alive. Until the gate is open nothing is claimed, so posts are not consumed or failed.
 - Text posts and photo posts are supported (photo caption = post text). Link posts rely on the link in the text. Facebook's own scheduled-post feature is not used, so edit and cancel stay in LazyAI's control.
 
 ## Consequences
