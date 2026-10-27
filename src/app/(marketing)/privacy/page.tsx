@@ -180,7 +180,7 @@ export default function PrivacyPage() {
         <li>complain to your local data protection authority.</li>
       </ul>
       <p>
-        You can manage much of this yourself in the app: edit or delete content, remove images, and disconnect Pages. For anything else, email{" "}
+        You can manage much of this yourself in the app: edit or delete content, remove images, disconnect Pages, download a copy of your data, and delete your account (Settings). For anything else, email{" "}
         <ContactEmail />. We may ask you to confirm your identity first, and we will reply within the time the law requires and, for deletion, within{" "}
         {DELETION_DAYS} days.
       </p>

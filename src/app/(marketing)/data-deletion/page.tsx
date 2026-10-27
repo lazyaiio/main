@@ -28,9 +28,16 @@ export default function DataDeletionPage() {
         </li>
       </ul>
 
-      <h2>Option 2: Delete your LazyAI account and data</h2>
+      <h2>Option 2: Delete your LazyAI account yourself</h2>
       <p>
-        Send an email to <ContactEmail /> from the address you used to sign up, with the subject “Delete my LazyAI data”. Tell us whether you want us to delete the
+        Sign in, open <strong>Settings</strong>, and use <strong>Delete my account</strong> at the bottom (you confirm with your password and by typing DELETE).
+        This permanently deletes your account, your workspace, and everything in it, including your Facebook connections. You can first use{" "}
+        <strong>Download my data</strong> in the same place to get a copy.
+      </p>
+
+      <h2>Option 3: Ask us to delete your data</h2>
+      <p>
+        If you cannot sign in, send an email to <ContactEmail /> from the address you used to sign up, with the subject “Delete my LazyAI data”. Tell us whether you want us to delete the
         whole account or only some data. We may reply to confirm it is really you. We complete verified requests within {DELETION_DAYS} days and confirm by
         email.
       </p>

@@ -1,6 +1,7 @@
 import "server-only";
 import type { AppContext } from "@/lib/auth/session";
 import type { Db } from "@/lib/data/db";
+import { redactObject } from "@/lib/redact";
 
 /**
  * Best-effort audit trail. Goes through a database function that checks membership and sets the
@@ -20,7 +21,7 @@ export async function logAudit(
       p_action: action,
       p_entity_type: entityType,
       p_entity_id: entityId,
-      p_metadata: metadata,
+      p_metadata: redactObject(metadata),
     });
   } catch {
     // The user's action already succeeded; an audit hiccup must not break it.

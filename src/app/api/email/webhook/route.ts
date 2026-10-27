@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { applyDeliveryStatus, suppressUser } from "@/lib/data/email";
 import { isSuppressingStatus, parseDeliveryEvent, verifyWebhook } from "@/lib/email/provider";
 import { getEmailConfig } from "@/lib/email/keys";
+import { describeError, logError } from "@/lib/log";
 
 export const dynamic = "force-dynamic";
 
@@ -30,7 +31,8 @@ export async function POST(request: NextRequest) {
   try {
     const result = await applyDeliveryStatus(event.emailId, event.status);
     if (result?.userId && isSuppressingStatus(event.status)) await suppressUser(result.userId);
-  } catch {
+  } catch (error) {
+    logError("email.webhook_failed", describeError(error));
     // Ask Resend to try again later.
     return NextResponse.json({ error: "temporary" }, { status: 500 });
   }

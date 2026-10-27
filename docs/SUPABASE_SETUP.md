@@ -152,3 +152,13 @@ Run these **before** or right after uploading the Batch 8 files (the Media page 
 1. SQL Editor -> `supabase/migrations/0012_email.sql` -> **Run**, then `supabase/tests/rls_email.sql` -> **Run**. Expected result row: `ALL EMAIL TESTS PASSED`.
 2. Follow `docs/EMAIL_SETUP.md` (Resend account, domain, API key, three Vercel settings, webhook, Supabase SMTP). Without it the app works; notifications are skipped.
 3. Open **Admin -> Email** to check the setup and send a test email. People choose which emails they get under **Settings -> Email notifications**.
+
+
+---
+
+## Batch 11 additions: plans, limits, rate limits (migration 0013)
+
+1. SQL Editor -> `supabase/migrations/0013_plans_and_limits.sql` -> **Run**. Then run `supabase/tests/rls_plans_limits.sql` (expected result row: `ALL PLANS AND LIMITS TESTS PASSED`) and `supabase/tests/rls_account_deletion.sql` (expected: `ALL ACCOUNT DELETION TESTS PASSED`).
+   Existing workspaces start on the **Free** plan (100 AI posts a month, 500 posts, 3 Pages, 100 images, 200 MB, 10 open campaigns). If your own workspace is already above a limit, nothing is deleted; you just cannot add more until you are below it. To give yourself more room, use **Admin -> Plans** (switch your workspace to Standard).
+2. Open **Settings**: new sections **Plan and usage**, **Your data** (download), and **Delete my account**. Admin -> **Plans** lists plans and changes a workspace's plan.
+3. GitHub: turn on Dependabot alerts and secret scanning (Settings -> Code security). See `docs/SECURITY.md`.

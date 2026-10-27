@@ -60,6 +60,14 @@ describe("secret handling", () => {
     }
   });
 
+  it("sends the standard security headers", () => {
+    const config = readFileSync(join(process.cwd(), "next.config.ts"), "utf8");
+    for (const header of ["X-Content-Type-Options", "X-Frame-Options", "Referrer-Policy", "Permissions-Policy", "Strict-Transport-Security", "Cross-Origin-Opener-Policy", "Content-Security-Policy"]) {
+      expect(config).toContain(header);
+    }
+    expect(config).toContain("frame-ancestors 'none'");
+  });
+
   it("never exposes a secret through a NEXT_PUBLIC_ variable", () => {
     for (const f of files) {
       expect(readFileSync(f, "utf8")).not.toMatch(/NEXT_PUBLIC_[A-Z_]*(SERVICE|SECRET|PRIVATE)/);

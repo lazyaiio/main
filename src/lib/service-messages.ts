@@ -29,6 +29,10 @@ export const SERVICE_ERROR_MESSAGES: Record<ServiceErrorKind, string> = {
   schedule_page: "Choose a connected Facebook Page where you are allowed to post.",
   schedule_exists: "This post is already scheduled or published on that Page.",
   schedule_state: "That change is not possible for this post in its current state.",
+  plan_limit: "You have reached the limit of your plan for this. Remove something you no longer need, or contact us to raise the limit.",
+  too_many_requests: "You are doing that too often. Please wait a few minutes and try again.",
+  account_password: "The password is not correct.",
+  account_has_members: "Your workspace has other members. Remove them first, or contact us, before deleting the account.",
   invalid: "That change is not allowed right now.",
 };
 

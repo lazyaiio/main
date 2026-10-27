@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   PrepareError,
   backoffSeconds,
+  checkCronAuth,
   composePostMessage,
   decideAfterError,
   isAuthorizedCron,
@@ -64,6 +65,20 @@ describe("composePostMessage", () => {
   it("works with nothing extra and ignores empty tags", () => {
     expect(composePostMessage({ body: "Hello", cta: null, hashtags: [] })).toBe("Hello");
     expect(composePostMessage({ body: "Hello", cta: "  ", hashtags: ["", "#", " "] })).toBe("Hello");
+  });
+});
+
+describe("checkCronAuth", () => {
+  const secret = "a-long-cron-secret-123456";
+  it("says why a request was refused, without revealing the secret", () => {
+    expect(checkCronAuth(`Bearer ${secret}`, secret)).toBe("ok");
+    expect(checkCronAuth(`Bearer wrong-secret-1234567`, secret)).toBe("invalid");
+    expect(checkCronAuth(`Bearer ${secret} `, secret)).toBe("ok"); // stray trailing space from copy and paste
+    expect(checkCronAuth(null, secret)).toBe("missing");
+    expect(checkCronAuth("Basic abc", secret)).toBe("missing");
+    expect(checkCronAuth("Bearer ", secret)).toBe("missing");
+    expect(checkCronAuth(`Bearer ${secret}`, null)).toBe("not_configured");
+    expect(checkCronAuth(null, null)).toBe("not_configured");
   });
 });
 

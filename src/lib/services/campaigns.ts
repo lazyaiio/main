@@ -29,6 +29,7 @@ import { getProject } from "@/lib/data/projects";
 import type { CampaignDetail, CampaignStatus, ProjectRow } from "@/lib/data/types";
 import { logAudit } from "./audit";
 import { notifyCampaignFinished, runLater } from "./email";
+import { remainingMonthlyGenerations } from "./plans";
 import { ServiceError } from "./errors";
 import { generate, metadataFor, recordUsage, remainingHourlyAllowance, usableProviders, withSourceLink } from "./generation";
 import { loadSourceMaterial, readSource, type SourceMaterial } from "./sources";
@@ -46,6 +47,7 @@ function translate(error: unknown, fallback: string): never {
   if (error instanceof DataError) {
     if (error.code === PG_NOT_ALLOWED) throw new ServiceError("forbidden", "You do not have permission to do that.");
     if (error.code === PG_NOT_FOUND) throw new ServiceError("not_found", "That item could not be found.");
+    if (error.code === "53400") throw new ServiceError("plan_limit", "You have reached the limit of your plan for open campaigns. Finish or cancel one first, or contact us to raise the limit.");
     if (error.code === PG_INVALID) throw new ServiceError("invalid", fallback);
     throw new ServiceError("failed", "Something went wrong. Please try again.");
   }
@@ -262,6 +264,9 @@ export async function runCampaignBatch(ctx: AppContext, campaignId: string): Pro
     }
   }
 
+  if ((await remainingMonthlyGenerations(db, ctx).catch(() => Number.POSITIVE_INFINITY)) <= 0) {
+    return stopWith("Paused: your plan\u2019s AI posts for this month are used up. The count resets at the start of next month, or contact us to raise the limit.");
+  }
   const allowance = await remainingHourlyAllowance(db, ctx);
   const existing = await listCampaignPostTexts(db, ws, campaignId);
   const total = campaign.requested_item_count;
@@ -361,6 +366,7 @@ export async function runCampaignBatch(ctx: AppContext, campaignId: string): Pro
 
   if (summary.stop === "not_configured") return stopWith(NOT_CONFIGURED_MESSAGE);
   if (summary.stop === "rate_limited") return stopWith(RATE_LIMIT_MESSAGE);
+  if (summary.stop === "plan_limit") return stopWith("Paused: you have reached the post limit of your plan. Delete posts you no longer need, or contact us to raise the limit.");
 
   const latest = (await getCampaign(db, ws, campaignId)) ?? campaign;
   if (campaign.status === "generating" && latest.status !== "generating") {

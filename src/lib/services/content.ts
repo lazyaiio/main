@@ -14,6 +14,7 @@ import { getProject } from "@/lib/data/projects";
 import type { ApprovalStatus, Language } from "@/lib/data/types";
 import { logAudit } from "./audit";
 import { ServiceError } from "./errors";
+import { withPlanLimit } from "./plans";
 
 function requireWrite(ctx: AppContext) {
   if (!canWrite(ctx.role)) throw new ServiceError("forbidden", "You do not have permission to do that.");
@@ -33,7 +34,7 @@ export async function createManualPost(
     if (!project) throw new ServiceError("not_found", "That project could not be found.");
   }
 
-  const id = await insertContentItem(db, ctx.workspace.id, {
+  const id = await withPlanLimit(() => insertContentItem(db, ctx.workspace.id, {
     projectId: input.projectId,
     language: input.language,
     contentFormat: "text",
@@ -47,7 +48,7 @@ export async function createManualPost(
     aiModel: null,
     promptVersion: null,
     usageMetadata: {},
-  });
+  }));
   if (!id) throw new ServiceError("failed", "We could not create the post.");
   await logAudit(db, ctx, "content.created", "content_item", id, { language: input.language });
   return id;

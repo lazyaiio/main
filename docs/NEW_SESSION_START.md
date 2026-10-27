@@ -38,9 +38,9 @@ Give this file to Claude at the start of a new chat, together with `lazyai-full-
 | 7 | Media and images | Done per owner report (0006 + SQL test run, steps done). Thumbnails added in Batch 8 |
 | 8 | Meta OAuth and Facebook Pages | Done per owner report (0007/0008 run, Meta app created, steps done). Owner approved live Facebook *connection* work only |
 | 9 | Durable scheduler and publishing (+ legal pages, Meta data-deletion callbacks) | **Code written, owner verification pending.** Migrations 0009/0010 and SQL tests not yet run; scheduler not yet set up; **real Facebook posting is gated by the Admin -> Publishing switch (migration 0011) and needs the owner's explicit approval** |
-| 10 | Resend and email (+ publishing diagnostics follow-up) | **Code written, owner verification pending.** Migrations 0011/0012 and SQL tests not yet run; Resend not yet set up |
-| 11 | Usage limits and hardening (+ account deletion/export) | Not started (next, after Batch 10 is verified) |
-| 12 | Deployment and DNS runbook | Not started |
+| 10 | Resend and email (+ publishing diagnostics follow-up) | Done per owner report |
+| 11 | Usage limits and hardening (+ account deletion/export) | **Code written, owner verification pending.** Migration 0013 and its SQL tests not yet run |
+| 12 | Deployment and DNS runbook | Not started (next, after Batch 11 is verified) |
 | 13 | Release readiness | Not started |
 
 `docs/BUILD_PROGRESS.md` is the detailed log for each batch (what was built, files, tests, risks, next action). Update it at the end of every batch.

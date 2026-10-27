@@ -38,6 +38,7 @@ import {
 import { getRedirectUri, getSocialProvider, getSocialSetup, getTokenEncryptionKey } from "@/lib/social/keys";
 import { SocialError, type SocialErrorKind } from "@/lib/social/provider";
 import { logAudit } from "./audit";
+import { enforceRate } from "./plans";
 import { ServiceError, type ServiceErrorKind } from "./errors";
 
 function requireAdmin(ctx: AppContext) {
@@ -303,6 +304,7 @@ export async function connectPages(ctx: AppContext, flowId: string, selectedIds:
     if (error instanceof DataError && error.code === PAGE_IN_USE) {
       throw new ServiceError("social_page_in_use", "One of those Pages is already connected to another LazyAI workspace.");
     }
+    if (error instanceof DataError && error.code === "53400") throw new ServiceError("plan_limit", "You have reached the limit of connected Pages for your plan. Disconnect a Page first, or contact us to raise the limit.");
     if (error instanceof ServiceError) throw error;
     throw new ServiceError("failed", "Something went wrong. Please try again.");
   }
@@ -325,6 +327,7 @@ export async function checkPageConnection(ctx: AppContext, pageId: string): Prom
   if (page.status === "disconnected") throw new ServiceError("invalid", "That Page is disconnected. Connect it again first.");
   const provider = getSocialProvider();
   if (!provider) throw new ServiceError("social_not_configured", "Facebook connection is not set up yet.");
+  await enforceRate(db, "page_check", 30, 3600); // each check is a call to Facebook
 
   const cipher = await getTokenCiphertext(ctx.workspace.id, page.id);
   if (!cipher) {

@@ -18,9 +18,45 @@ Plan: [`LAZYAI_MASTER_PLAN.md`](./LAZYAI_MASTER_PLAN.md) (see section 23 for own
 | 8 | Meta OAuth and Facebook Pages | DONE per owner report (migrations 0007/0008 run, Meta app created, steps done); real connection result not yet reported in detail |
 | 9 | Durable scheduler and publishing | DONE per owner report (deployed). Owner reported posts not publishing: fixed in a follow-up (Admin switch, diagnostics, time zone clarity; migration 0011) |
 | 10 | Resend and email | **IN PROGRESS** — code written, not yet verified |
-| 11 | Usage limits and hardening | NOT STARTED |
 | 12 | Deployment and DNS runbook | NOT STARTED |
 | 13 | Release readiness | NOT STARTED |
+
+---
+
+## Batch 11 — Usage limits, hardening, account deletion and export
+
+**Status:** IN PROGRESS (code written; migration 0013 not applied; lint / typecheck / vitest / build not run in the sandbox; no database run).
+
+### What was built
+- **Plans and limits enforced in the database** (migration 0013): `plans` (Free, Standard), per-workspace plan and overrides, limits for AI posts per month, posts, connected Pages, images, image storage, open campaigns. Triggers and functions refuse over-limit writes, including direct API calls. Services show plain messages; a campaign that reaches a limit pauses. Settings shows **Plan and usage** with bars. Admin -> **Plans** changes a workspace's plan.
+- **Rate limiting** (`rate_limit_hit`): image uploads (30/h), thumbnail runs (20/h), Facebook checks (30/h), data export (5/day), account deletion attempts (5/h).
+- **Account export** (`/api/account/export`, Settings -> Download my data): JSON of the person's own data via an allow-list; secrets, tokens, image files, and storage paths never included.
+- **Account deletion** (Settings -> Delete my account): password again + typed DELETE, blocked while other members exist, image files removed, then the sign-in account is deleted and database cascades remove the workspace and everything in it. Database side proven by `rls_account_deletion.sql`.
+- **Logging hygiene:** `src/lib/log.ts` + `src/lib/redact.ts` (key-name and value-shape redaction), audit metadata redacted, project-wide secret scan test, `.env.example` must stay value-free.
+- **Hardening:** HSTS, COOP, X-Permitted-Cross-Domain-Policies, and a safe CSP subset; Dependabot weekly; weekly `npm audit` summary workflow (never blocks deploys). `docs/SECURITY.md` covers special limits, key rotation, and incident steps. Data Deletion and Privacy pages now mention self-service deletion and download.
+
+### Files
+New: `supabase/migrations/0013_plans_and_limits.sql`, `supabase/tests/{rls_plans_limits,rls_account_deletion}.sql`, `docs/{SECURITY.md,decisions/0007-limits-and-hardening.md}`, `.github/{dependabot.yml,workflows/security.yml}`, `src/lib/{plans,redact,log,account-export,secret-scan.test}.ts` (+ tests), `src/lib/data/{plans,export,account}.ts`, `src/lib/services/{plans,account}.ts`, `src/app/api/account/export/route.ts`, `src/app/app/account-actions.ts`, `src/app/admin/plans/{page.tsx,actions.ts}`, `src/components/app/{plan-usage-card,delete-account-form}.tsx`.
+Changed: `next.config.ts`, `src/lib/{security.test.ts,service-messages.ts,campaign-batch.ts,campaign-failure.ts}` (+ test), `src/lib/services/{errors,generation,content,campaigns,social,media,audit}.ts`, `src/app/app/settings/page.tsx`, `src/components/admin/admin-nav.tsx`, `src/app/api/{cron/dispatch,email/webhook}/route.ts`, privacy and data-deletion pages, `docs/*`.
+Deleted: none.
+
+### Tests / checks and results
+| Check | Result |
+|---|---|
+| Pure-logic tests (plan arithmetic, redaction of keys/tokens/JWTs, export allow-list, plan-limit handling in campaigns, secret scan of the whole project, security headers) plus all earlier tests, with a stand-in runner under `tsx` | 315 passed, 0 failed |
+| Real `vitest`, `lint`, full `typecheck`, `next build` | **NOT RUN** (no network) |
+| Partial typecheck | Only errors caused by missing React/Next packages remained |
+| No Bengali text in source | PASS (scanned) |
+| SQL 0013 and its two tests | **NOT RUN** (no database) |
+
+### Risks / things to watch
+- Existing workspaces start on Free; an already-above-limit workspace is not trimmed, it just cannot add more.
+- `delete auth user` relies on `workspaces.owner_id ... on delete cascade` and on every tenant table cascading from the workspace; the SQL test checks this for the main tables.
+- A full script-blocking CSP is deferred on purpose.
+- Account deletion needs the Supabase service key (already required for Facebook features).
+
+### Exact next action
+Owner uploads the Batch 11 zip, confirms CI, runs 0013 and its two tests, checks Settings (Plan and usage, Download my data), and reads docs/SECURITY.md. Next batch: 12 (deployment and DNS runbook), then 13 (release readiness).
 
 ---
 

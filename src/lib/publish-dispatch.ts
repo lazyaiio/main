@@ -88,14 +88,26 @@ export function composePostMessage(item: { body: string; cta: string | null; has
   return message;
 }
 
+export type CronAuth = "ok" | "not_configured" | "missing" | "invalid";
+
+/**
+ * Checks the "Authorization: Bearer <secret>" header of a scheduler request and says WHY it failed, so a
+ * wrong setup is easy to find: "not_configured" = this site has no valid CRON_SECRET (missing, too short,
+ * or not redeployed); "missing" = the caller sent no Bearer header; "invalid" = the secrets differ.
+ * The reason reveals nothing that helps a guesser: it never includes or hints at the secret itself.
+ */
+export function checkCronAuth(header: string | null | undefined, secret: string | null): CronAuth {
+  if (!secret) return "not_configured";
+  const match = header ? /^Bearer (.+)$/.exec(header.trim()) : null;
+  if (!match?.[1]) return "missing";
+  const given = Buffer.from(match[1].trim());
+  const expected = Buffer.from(secret);
+  return given.length === expected.length && timingSafeEqual(given, expected) ? "ok" : "invalid";
+}
+
 /** Checks the "Authorization: Bearer <secret>" header of a scheduler request. Fails closed when no secret is set. */
 export function isAuthorizedCron(header: string | null | undefined, secret: string | null): boolean {
-  if (!secret || !header) return false;
-  const match = /^Bearer (.+)$/.exec(header.trim());
-  if (!match?.[1]) return false;
-  const given = Buffer.from(match[1]);
-  const expected = Buffer.from(secret);
-  return given.length === expected.length && timingSafeEqual(given, expected);
+  return checkCronAuth(header, secret) === "ok";
 }
 
 // ---------------------------------------------------------------------------------------------

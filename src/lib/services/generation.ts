@@ -13,6 +13,7 @@ import { countRecentAiUsage, listEnabledProviders, recordAiUsage } from "@/lib/d
 import { getContentItem, insertContentItem, updateContentItem } from "@/lib/data/content";
 import { getDb, type Db } from "@/lib/data/db";
 import { getProject } from "@/lib/data/projects";
+import { enforceMonthlyGenerations, remainingMonthlyGenerations, withPlanLimit } from "./plans";
 import { logAudit } from "./audit";
 import { ServiceError } from "./errors";
 import { loadSourceMaterial, readSource, type SourceMaterial } from "./sources";
@@ -45,7 +46,9 @@ export async function getAiAvailability(): Promise<{ available: boolean; usingMo
 export async function remainingHourlyAllowance(db: Db, ctx: AppContext): Promise<number> {
   const since = new Date(Date.now() - 60 * 60 * 1000).toISOString();
   const used = await countRecentAiUsage(db, ctx.workspace.id, ctx.user.id, since);
-  return Math.max(0, getMaxGenerationsPerHour() - used);
+  const hourly = Math.max(0, getMaxGenerationsPerHour() - used);
+  // The plan's monthly allowance also counts.
+  return Math.min(hourly, await remainingMonthlyGenerations(db, ctx).catch(() => Number.POSITIVE_INFINITY));
 }
 
 async function enforceRateLimit(db: Db, ctx: AppContext) {
@@ -54,6 +57,7 @@ async function enforceRateLimit(db: Db, ctx: AppContext) {
   if (used >= getMaxGenerationsPerHour()) {
     throw new ServiceError("rate_limited", "You have reached the hourly generation limit. Please try again later.");
   }
+  await enforceMonthlyGenerations(db, ctx);
 }
 
 export async function generate(
@@ -155,7 +159,7 @@ export async function generatePost(ctx: AppContext, request: PostRequest): Promi
 
   let id: string | null = null;
   try {
-    id = await insertContentItem(db, ctx.workspace.id, {
+    id = await withPlanLimit(() => insertContentItem(db, ctx.workspace.id, {
       projectId: project.id,
       language: request.language,
       contentFormat: request.format,
@@ -170,7 +174,7 @@ export async function generatePost(ctx: AppContext, request: PostRequest): Promi
       aiModel: generated.model,
       promptVersion: generated.promptVersion,
       usageMetadata: metadataFor(generated, request, source),
-    });
+    }));
   } finally {
     await recordUsage(db, ctx, "ai.generate_post", generated, id ?? undefined);
   }

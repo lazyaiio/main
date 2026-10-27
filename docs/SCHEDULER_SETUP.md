@@ -35,9 +35,40 @@ select cron.schedule(
 select status, return_message, start_time from cron.job_run_details order by start_time desc limit 5;
 select status_code, content from net._http_response order by created desc limit 5;
 ```
-`status_code` 200 and content like `{"ok":true,"disabled":true,...}` means it works and publishing is still switched off (as intended). `401` means the secret in the SQL does not match `CRON_SECRET` in Vercel.
+`status_code` 200 and content like `{"ok":true,"disabled":true,...}` means it works and publishing is still switched off (as intended). `401` means the secret does not match: see "If the check shows 401" below.
 
 To stop it: `select cron.unschedule('lazyai-dispatch');`
+
+## If the check shows 401 ("unauthorized")
+The address answered, but refused the secret. The answer now includes a reason:
+```sql
+select status_code, content from net._http_response order by created desc limit 3;
+```
+| `content` shows | Meaning | Fix |
+|---|---|---|
+| `"reason":"not_configured"` | The website has no usable `CRON_SECRET`: it is missing, shorter than 16 characters, set only for Preview instead of **Production**, or you did not redeploy after adding it. | Vercel -> Settings -> Environment Variables: add `CRON_SECRET` (Production, 24+ letters and digits), then **Deployments -> Redeploy**. |
+| `"reason":"invalid"` | The secret in the Supabase cron job is different from `CRON_SECRET` in Vercel. Common causes: the placeholder `YOUR_CRON_SECRET` was left in the SQL, a typo, quotes or spaces pasted around the value in Vercel, or the secret was changed in Vercel later. | Use a secret with only letters and digits (no quotes, spaces, or symbols). Put the **same** value in both places, then redo the cron job as below. |
+| `"reason":"missing"` | The request had no `Authorization: Bearer ...` header (the SQL was edited incorrectly). | Redo the cron job exactly as in step 4. |
+| (an HTML page, not JSON) | Vercel's own protection (Deployment Protection) is blocking the call, or the address is wrong. | Vercel -> Settings -> Deployment Protection: make sure Production is not behind login, and use your production domain. |
+
+**Redo the cron job with the new secret** (SQL Editor; replace both placeholders):
+```sql
+select cron.unschedule('lazyai-dispatch');
+
+select cron.schedule(
+  'lazyai-dispatch',
+  '* * * * *',
+  $$
+  select net.http_post(
+    url := 'https://YOUR-DOMAIN/api/cron/dispatch',
+    headers := jsonb_build_object('Authorization', 'Bearer YOUR_CRON_SECRET', 'Content-Type', 'application/json'),
+    body := '{}'::jsonb,
+    timeout_milliseconds := 55000
+  );
+  $$
+);
+```
+Wait two minutes and run the check again. `status_code` 200 means it works. You can also open **Admin -> Publishing**: "Scheduler is calling this site" turns green after the first successful call.
 
 ## Where to see what is happening: Admin -> Publishing
 Open **Admin -> Publishing** (you must be a platform admin). It shows, with green/yellow/red marks:

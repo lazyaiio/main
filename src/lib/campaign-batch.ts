@@ -29,7 +29,7 @@ export type FailureInfo = {
   /** Do not count this attempt against the slot (the problem was not the slot's fault). */
   refund: boolean;
   /** Stop the whole round after this failure. */
-  stop: "rate_limited" | "not_configured" | null;
+  stop: "rate_limited" | "not_configured" | "plan_limit" | null;
 };
 
 export type SaveResult = { kind: "saved"; itemId: string } | { kind: "duplicate" };
@@ -65,7 +65,7 @@ export type BatchSummary = {
   failures: number;
   /** Slots handed back without trying (out of time, or the round was stopped). */
   returned: number;
-  stop: "rate_limited" | "not_configured" | null;
+  stop: "rate_limited" | "not_configured" | "plan_limit" | null;
 };
 
 export const DEFAULT_BATCH_OPTIONS: BatchOptions = { maxSlots: 3, budgetMs: 45_000, minSlotMs: 15_000 };

@@ -21,7 +21,11 @@ export function classifyFailure(error: unknown): FailureInfo {
         return { code: "unexpected", retry: true, refund: false, stop: null };
     }
   }
-  if (name === "DataError") return { code: "save_failed", retry: true, refund: false, stop: null };
+  if (name === "DataError") {
+    // 53400 = the plan's limit was reached: stop the round and keep the slot for later.
+    if ((error as Error & { code?: string }).code === "53400") return { code: "plan_limit", retry: true, refund: true, stop: "plan_limit" };
+    return { code: "save_failed", retry: true, refund: false, stop: null };
+  }
   return { code: "unexpected", retry: true, refund: false, stop: null };
 }
 
@@ -44,6 +48,8 @@ export function describeSlotError(code: string | null): string | null {
       return "AI generation is not set up.";
     case "rate_limited":
       return "The hourly generation limit was reached.";
+    case "plan_limit":
+      return "Your plan limit was reached.";
     case "out_of_time":
       return "Waiting for the next round.";
     default:

@@ -32,6 +32,7 @@ import { buildMediaPath } from "@/lib/media/paths";
 import { makeThumbnail } from "@/lib/media/thumbnail";
 import { logAudit } from "./audit";
 import { ServiceError } from "./errors";
+import { enforceRate } from "./plans";
 
 function requireWrite(ctx: AppContext) {
   if (!canWrite(ctx.role)) throw new ServiceError("forbidden", "You do not have permission to do that.");
@@ -134,11 +135,13 @@ export async function uploadImage(
   if (!(file instanceof File) || file.size === 0) throw new ServiceError("invalid", "Choose an image to upload.");
   if (file.size > MAX_UPLOAD_BYTES) throw new ServiceError("invalid", "That image is larger than 4 MB. Choose a smaller file.");
 
+  const db = await getDb();
+  await enforceRate(db, "media_upload", 30, 3600); // decoding and resizing images is the costly part
+
   const bytes = new Uint8Array(await file.arrayBuffer());
   const info = inspectImage(bytes, { fileName: file.name, declaredType: file.type });
   if (!info.ok) throw new ServiceError("invalid", info.message);
 
-  const db = await getDb();
   const attribution: MediaAttribution = input.credit ? { credit_text: input.credit } : {};
   return saveImage(ctx, db, bytes, info, {
     sourceUrl: null,
@@ -335,6 +338,7 @@ export async function detachImage(ctx: AppContext, itemId: string): Promise<{ mo
 export async function createMissingThumbnails(ctx: AppContext): Promise<{ created: number; remaining: number }> {
   requireWrite(ctx);
   const db = await getDb();
+  await enforceRate(db, "media_thumbnails", 20, 3600);
   const assets = await listMediaAssets(db, ctx.workspace.id, 100);
   const missing = assets.filter((a) => a.storage_path && !a.thumb_path && a.processing_status === "ready");
 

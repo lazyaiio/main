@@ -24,6 +24,10 @@ describe("classifyFailure", () => {
     expect(classifyFailure(named("ServiceError", { kind: "invalid" })).retry).toBe(false);
   });
 
+  it("stops the round when the plan limit is reached", () => {
+    expect(classifyFailure(named("DataError", { code: "53400" }))).toEqual({ code: "plan_limit", retry: true, refund: true, stop: "plan_limit" });
+  });
+
   it("treats database errors and surprises as retryable", () => {
     expect(classifyFailure(named("DataError")).code).toBe("save_failed");
     expect(classifyFailure(new Error("???")).code).toBe("unexpected");
@@ -33,7 +37,7 @@ describe("classifyFailure", () => {
 
 describe("describeSlotError", () => {
   it("returns friendly English text for every code the system stores", () => {
-    for (const code of ["ai_failed", "duplicate", "timeout", "invalid_settings", "save_failed", "not_configured", "rate_limited", "out_of_time", "other"]) {
+    for (const code of ["ai_failed", "duplicate", "timeout", "invalid_settings", "save_failed", "not_configured", "rate_limited", "plan_limit", "out_of_time", "other"]) {
       expect(describeSlotError(code)?.length).toBeGreaterThan(5);
     }
     expect(describeSlotError(null)).toBeNull();

@@ -26,6 +26,10 @@ export type ServiceErrorKind =
   | "schedule_page"
   | "schedule_exists"
   | "schedule_state"
+  | "plan_limit"
+  | "too_many_requests"
+  | "account_password"
+  | "account_has_members"
   | "invalid";
 
 /** An expected failure with a message that is safe to show to the user. */
