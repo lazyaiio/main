@@ -1,0 +1,32 @@
+name: Security checks
+
+# Looks for known vulnerabilities in the packages you ship. It reports in the run summary and never
+# blocks a deploy (a new advisory should not stop an urgent fix); read it weekly.
+on:
+  schedule:
+    - cron: "17 3 * * 1"
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ["package.json"]
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install --no-audit --no-fund --ignore-scripts
+      - name: Audit production dependencies
+        continue-on-error: true
+        run: |
+          echo "## npm audit (production dependencies)" >> "$GITHUB_STEP_SUMMARY"
+          npm audit --omit=dev --audit-level=high 2>&1 | tee audit.txt
+          status=${PIPESTATUS[0]}
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          head -c 6000 audit.txt >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          exit $status

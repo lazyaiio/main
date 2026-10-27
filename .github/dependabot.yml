@@ -1,0 +1,17 @@
+# Weekly update proposals for npm packages and GitHub Actions. Dependabot opens pull requests;
+# nothing changes until you merge one. (Turn on "Dependabot security updates" under
+# GitHub -> Settings -> Code security as well.)
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: "/"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      minor-and-patch:
+        update-types: ["minor", "patch"]
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
