@@ -1,6 +1,10 @@
 # Weekly update proposals for npm packages and GitHub Actions. Dependabot opens pull requests;
 # nothing changes until you merge one. (Turn on "Dependabot security updates" under
 # GitHub -> Settings -> Code security as well.)
+#
+# Major version jumps (for example Tailwind 3 -> 4, TypeScript 5 -> 7, Zod 3 -> 4) change how the
+# code must be written, so they are NOT proposed automatically. They are planned by hand, one at a
+# time. See docs/DEPLOYMENT_RUNBOOK.md, section "Dependabot pull requests".
 version: 2
 updates:
   - package-ecosystem: npm
@@ -8,6 +12,9 @@ updates:
     schedule:
       interval: weekly
     open-pull-requests-limit: 5
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
     groups:
       minor-and-patch:
         update-types: ["minor", "patch"]
