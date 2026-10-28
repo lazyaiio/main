@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Gauge, LayoutDashboard, Mail, Send, Sparkles, type LucideIcon } from "lucide-react";
+import { Gauge, LayoutDashboard, Mail, Rocket, Send, Sparkles, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const items: { href: string; label: string; icon: LucideIcon; exact?: boolean }[] = [
@@ -11,6 +11,7 @@ const items: { href: string; label: string; icon: LucideIcon; exact?: boolean }[
   { href: "/admin/publishing", label: "Publishing", icon: Send },
   { href: "/admin/email", label: "Email", icon: Mail },
   { href: "/admin/plans", label: "Plans", icon: Gauge },
+  { href: "/admin/deployment", label: "Deployment", icon: Rocket },
 ];
 
 export function AdminNav({ orientation }: { orientation: "vertical" | "horizontal" }) {

@@ -17,9 +17,56 @@ Plan: [`LAZYAI_MASTER_PLAN.md`](./LAZYAI_MASTER_PLAN.md) (see section 23 for own
 | 7 | Media and images | DONE per owner report (migration 0006 and SQL test run; owner confirmed steps done). Thumbnails added in Batch 8 |
 | 8 | Meta OAuth and Facebook Pages | DONE per owner report (migrations 0007/0008 run, Meta app created, steps done); real connection result not yet reported in detail |
 | 9 | Durable scheduler and publishing | DONE per owner report (deployed). Owner reported posts not publishing: fixed in a follow-up (Admin switch, diagnostics, time zone clarity; migration 0011) |
-| 10 | Resend and email | **IN PROGRESS** — code written, not yet verified |
-| 12 | Deployment and DNS runbook | NOT STARTED |
+| 10 | Resend and email | DONE per owner report |
+| 11 | Usage limits and hardening (+ account deletion/export) | DONE per owner report (deployed to Production). Migration 0013 and its SQL tests: owner to confirm (Admin -> Deployment shows the migration row) |
+| 12 | Deployment and DNS runbook | **Code and docs written, owner verification pending** (Admin -> Deployment page, runbook, Dependabot fix) |
 | 13 | Release readiness | NOT STARTED |
+
+---
+
+## Batch 12 — Deployment and DNS runbook
+
+**Status:** CODE AND DOCS WRITTEN, owner verification pending. No DNS, domain, or live setting was changed.
+
+### Vercel results reviewed first (Batch 11 follow-up)
+- Batch 11 (`c403445`) and the later GitHub upload (`985eea5`) are both **Ready** in Production. The live site is fine.
+- The 9 other deploys are Dependabot **Preview** builds from `dependabot/...` branches, created because Batch 11 added `.github/dependabot.yml`. Two failed: `tailwindcss 3.4.19 -> 4.3.3` (Tailwind 4 drops `tailwind.config.ts` style setup, the `tailwindcss` PostCSS plugin, and `@tailwind` directives, all used here) and `typescript 5.9.3 -> 7.0.2` (new compiler major version). Neither touches `main`, so **no application code fix was needed**.
+- Related only through configuration: the Batch 11 Dependabot file allowed major upgrades. Fixed by ignoring semver-major npm updates (ADR 0008). `tailwind-merge 2 -> 3` and `zod 3 -> 4` went green on Vercel but must **not** be merged now (tailwind-merge 3 only supports Tailwind 4; Zod 4 changes error and email/url APIs; Vercel does not run the tests).
+
+### What was built
+- `.github/dependabot.yml`: no automatic major npm upgrades; minor and patch stay grouped.
+- Admin -> Deployment (`/admin/deployment`): environment, app address checks (https, no path, matches the opened host in production, preview warning), presence checks for every setting (never values; red only in production), one-table-per-migration database probe, copy-ready addresses for Supabase, Meta, Resend and the scheduler, and a smoke-test page list.
+- `src/lib/deployment-checks.ts` (+ test): pure logic, mirrors the real key rules.
+- Docs: `docs/DEPLOYMENT_RUNBOOK.md` (environments, domain, DNS, Resend DNS, DMARC, rollback, Dependabot handling), `docs/GO_LIVE_UPGRADE_CHECKLIST.md`, ADR 0008. `docs/SECURITY.md` links to the runbook.
+
+### Files changed
+New: `src/lib/deployment-checks.ts`, `src/lib/deployment-checks.test.ts`, `src/app/admin/deployment/page.tsx`, `docs/DEPLOYMENT_RUNBOOK.md`, `docs/GO_LIVE_UPGRADE_CHECKLIST.md`, `docs/decisions/0008-deployment-and-dependency-policy.md`.
+Changed: `.github/dependabot.yml`, `src/components/admin/admin-nav.tsx`, `docs/BUILD_PROGRESS.md`, `docs/NEW_SESSION_START.md`, `docs/SECURITY.md`. Deleted: none. No database migration.
+
+### Tests / checks and results
+| Check | Result |
+|---|---|
+| New unit tests (10), run under a stand-in runner with tsx | PASS |
+| Batch 12 files vs copy rules (no Bengali, no British spellings) and secret-pattern scan | PASS |
+| `npm run lint` / typecheck / full test suite / build | **NOT RUN** (no network, no `node_modules`); owner's GitHub Actions and Vercel build are the real check |
+
+### Owner steps
+1. Upload the Batch 12 files, confirm GitHub Actions and the Vercel build are green.
+2. Close the failed or major Dependabot pull requests without merging (tailwindcss, typescript, tailwind-merge, zod). For the minor-and-patch group and the two `actions/*` pull requests, merge only if the GitHub Actions checks on that pull request are green.
+3. Confirm Batch 11 migration `0013` and its SQL tests were run (Admin -> Deployment shows a "Database setup" row for it).
+4. Open Admin -> Deployment and read every row.
+
+### Decisions
+- No automatic major upgrades; planned by hand after launch.
+- Production environment variable `NEXT_PUBLIC_APP_URL` set for Production only.
+- Domain, DNS, and paid upgrades are documented but **not performed** (approval required).
+
+### Known issues / risks
+- The migration probe relies on the error code the API returns for a missing table; if Supabase changes it, a row shows "Could not be checked" rather than a false "missing".
+- Files 0006 to 0010 are not probed (functions or tables browsers cannot read); their SQL tests cover them.
+
+### Exact next action
+Owner verifies the steps above and reports the Deployment page rows that are not green. Then **Batch 13 — Release readiness** (accessibility, performance, App Review preparation, final security review).
 
 ---
 

@@ -36,3 +36,5 @@ Never put these in GitHub, chat, or screenshots. If one was exposed, rotate it f
 2. **Rotate** the exposed secret (table above).
 3. **Check activity:** the Activity page (per workspace) and Admin -> Email/Publishing logs show who did what and when.
 4. **Tell people** if their data may be affected, as the Privacy Policy promises, and note what happened.
+
+See also `docs/DEPLOYMENT_RUNBOOK.md` for deploys, rollbacks, and how to handle Dependabot pull requests.
