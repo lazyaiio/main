@@ -27,7 +27,7 @@ export default async function AiProvidersPage() {
           <p className="text-sm text-ink-500">API keys found</p>
           <p className="mt-2 font-display text-3xl font-extrabold">
             {keysFound}
-            <span className="text-lg font-semibold text-ink-400"> / {settings.length}</span>
+            <span className="text-lg font-semibold text-ink-500"> / {settings.length}</span>
           </p>
         </div>
         <div className="rounded-2xl border border-ink-100 bg-white p-5 shadow-card">

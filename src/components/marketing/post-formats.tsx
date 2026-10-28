@@ -34,7 +34,7 @@ export function PostFormats() {
         <div className="grid gap-4 sm:grid-cols-2">
           {samples.map((sample) => (
             <article key={sample.format} className="rounded-2xl bg-white p-5 text-ink">
-              <p className="text-xs font-semibold uppercase tracking-wide text-ink-400">{sample.format}</p>
+              <p className="text-xs font-semibold uppercase tracking-wide text-ink-500">{sample.format}</p>
               <p className="mt-3 text-sm leading-relaxed">{sample.text}</p>
             </article>
           ))}

@@ -29,7 +29,7 @@ export default async function ActivityPage() {
           {events.map((event) => (
             <li key={event.id} className="flex flex-wrap items-center justify-between gap-2 px-5 py-3.5">
               <p className="text-sm font-medium">{describeAuditEvent(event)}</p>
-              <p className="text-xs text-ink-400">
+              <p className="text-xs text-ink-500">
                 {event.actor_user_id === ctx.user.id ? "You" : event.actor_user_id ? "Teammate" : "LazyAI"} ·{" "}
                 {formatDateTime(event.created_at, ctx.workspace.timezone)}
               </p>

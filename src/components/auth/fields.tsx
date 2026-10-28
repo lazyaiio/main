@@ -4,7 +4,7 @@ import type { FormState } from "@/lib/auth/form-state";
 import { cn } from "@/lib/utils";
 
 const inputClass =
-  "h-11 w-full rounded-xl border border-ink-200 bg-white px-3.5 text-sm text-ink placeholder:text-ink-400 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20";
+  "h-11 w-full rounded-xl border border-ink-200 bg-white px-3.5 text-sm text-ink placeholder:text-ink-500 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20";
 
 export function Field({
   label,

@@ -64,9 +64,9 @@ export default async function ProjectsPage({ searchParams }: Props) {
                     <h2 className="min-w-0 truncate font-display text-lg font-bold">{project.name}</h2>
                     {project.status === "archived" ? <Badge>Archived</Badge> : null}
                   </div>
-                  <p className="mt-1 text-xs font-medium text-ink-400">{type}</p>
+                  <p className="mt-1 text-xs font-medium text-ink-500">{type}</p>
                   <p className="mt-2 break-words text-sm text-ink-600">{excerpt(project.input_value, 100)}</p>
-                  <p className="mt-4 text-xs text-ink-400">
+                  <p className="mt-4 text-xs text-ink-500">
                     {project.languages.map(languageLabel).join(" · ")} · {formatDate(project.created_at, ctx.workspace.timezone)}
                   </p>
                 </Link>

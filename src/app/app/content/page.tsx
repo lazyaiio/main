@@ -107,7 +107,7 @@ export default async function ContentPage({ searchParams }: Props) {
                   className="block rounded-2xl border border-ink-100 bg-white p-5 shadow-card transition-colors hover:border-brand-200"
                 >
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <p className="text-xs font-medium text-ink-400">
+                  <p className="text-xs font-medium text-ink-500">
                     {languageLabel(item.language)} · {formatDate(item.created_at, ctx.workspace.timezone)}
                   </p>
                   <Badge tone={meta.tone}>{meta.label}</Badge>

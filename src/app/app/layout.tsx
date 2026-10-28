@@ -29,7 +29,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           <div className="min-w-0">
             <p className="truncate text-sm font-semibold">{ctx.workspace.name}</p>
             <p className="truncate text-xs text-ink-500">{ctx.user.email}</p>
-            <p className="mt-0.5 text-xs text-ink-400">{ctx.workspace.timezone}</p>
+            <p className="mt-0.5 text-xs text-ink-500">{ctx.workspace.timezone}</p>
           </div>
           <form action={signOutAction}>
             <button
@@ -49,7 +49,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           </Link>
           <AppNav orientation="horizontal" isAdmin={isAdmin} />
         </div>
-        <main className="mx-auto max-w-5xl p-4 sm:p-6 md:p-10">{children}</main>
+        <main id="main-content" tabIndex={-1} className="outline-none mx-auto max-w-5xl p-4 sm:p-6 md:p-10">{children}</main>
       </div>
     </div>
   );

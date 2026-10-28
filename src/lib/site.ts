@@ -11,6 +11,7 @@ export const siteConfig = {
   ],
   footer: [
     { label: "Pricing", href: "/pricing" },
+    { label: "Help", href: "/help" },
     { label: "Contact", href: "/contact" },
     { label: "Privacy", href: "/privacy" },
     { label: "Terms", href: "/terms" },

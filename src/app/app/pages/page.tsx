@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/ui/page-header";
 import { PendingButton } from "@/components/ui/pending-button";
+import { isCurrentUserPlatformAdmin } from "@/lib/auth/admin";
 import { canAdmin } from "@/lib/auth/permissions";
 import { requireAppContext } from "@/lib/auth/session";
 import { formatDateTime } from "@/lib/format";
@@ -39,6 +40,7 @@ export default async function FacebookPagesPage({ searchParams }: Props) {
   const ctx = await requireAppContext();
   const sp = await searchParams;
   const admin = canAdmin(ctx.role);
+  const operator = await isCurrentUserPlatformAdmin();
   const { setup, pages } = await getPagesOverview(ctx);
 
   const notice = typeof sp.notice === "string" ? NOTICES[sp.notice] : undefined;
@@ -83,11 +85,11 @@ export default async function FacebookPagesPage({ searchParams }: Props) {
         <section aria-label="Setup needed" className="max-w-2xl space-y-3 rounded-2xl border border-amber-200 bg-amber-50 p-6">
           <h2 className="font-display text-lg font-bold text-amber-900">Facebook connection is not set up yet</h2>
           <p className="text-sm text-amber-900">
-            {admin
-              ? "Create a Meta app and add its settings in Vercel. The step-by-step guide is docs/META_SETUP.md in the project."
-              : "Ask a workspace owner or admin to finish the Facebook setup."}
+            {operator
+              ? "Create a Meta app and add its settings in Vercel. The step-by-step guide is docs/META_SETUP.md in the project. Admin -> Deployment shows what is still missing."
+              : "Connecting Facebook is not available yet. We are finishing the setup, so please check back soon or contact us."}
           </p>
-          {admin && setup.missing.length > 0 ? (
+          {operator && setup.missing.length > 0 ? (
             <div className="text-sm text-amber-900">
               <p className="font-medium">Still missing in Vercel:</p>
               <ul className="mt-1 list-disc pl-5">
@@ -99,7 +101,7 @@ export default async function FacebookPagesPage({ searchParams }: Props) {
               </ul>
             </div>
           ) : null}
-          {admin ? (
+          {operator ? (
             <p className="text-sm text-amber-900">
               Redirect address to register in the Meta app: <code className="break-all rounded bg-white px-1.5 py-0.5">{setup.redirectUri}</code>
             </p>

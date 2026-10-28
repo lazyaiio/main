@@ -17,7 +17,13 @@ const rel = (f: string) => relative(SRC, f).split("\\").join("/");
 describe("secret handling", () => {
   it("references the Supabase service-role key only in the server-only admin client", () => {
     const offenders = files.filter((f) => readFileSync(f, "utf8").includes("SUPABASE_SERVICE_ROLE_KEY"));
-    expect(offenders.map(rel)).toEqual(["lib/supabase/admin.ts"]);
+    // lib/deployment-checks.ts only asks "is this name set?" about an object it is handed. It never reads the environment itself.
+    expect(offenders.map(rel).sort()).toEqual(["lib/deployment-checks.ts", "lib/supabase/admin.ts"]);
+  });
+
+  it("never reads the environment inside the deployment checks (the page passes the settings in)", () => {
+    const text = readFileSync(join(SRC, "lib/deployment-checks.ts"), "utf8");
+    expect(/process\.env\s*[.\[]/.test(text)).toBe(false);
   });
 
   it("marks the admin client and server client as server-only", () => {
@@ -34,7 +40,7 @@ describe("secret handling", () => {
 
   it("reads the stock photo key only in the server-only media keys module", () => {
     const offenders = files.filter((f) => readFileSync(f, "utf8").includes("IMAGE_PROVIDER_API_KEY"));
-    expect(offenders.map(rel)).toEqual(["lib/media/keys.ts"]);
+    expect(offenders.map(rel).sort()).toEqual(["lib/deployment-checks.ts", "lib/media/keys.ts"]);
   });
 
   it("reads the Meta app secret and the token encryption key only in the server-only social keys module", () => {

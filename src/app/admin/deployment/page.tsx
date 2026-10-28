@@ -25,7 +25,7 @@ function Icon({ state }: { state: CheckState }) {
   if (state === "ok") return <CheckCircle2 className="h-5 w-5 shrink-0 text-emerald-600" aria-label="OK" />;
   if (state === "warn") return <CircleAlert className="h-5 w-5 shrink-0 text-amber-600" aria-label="Needs attention" />;
   if (state === "bad") return <CircleX className="h-5 w-5 shrink-0 text-red-600" aria-label="Problem" />;
-  return <MinusCircle className="h-5 w-5 shrink-0 text-ink-300" aria-label="Not in use" />;
+  return <MinusCircle className="h-5 w-5 shrink-0 text-ink-500" aria-label="Not in use" />;
 }
 
 function CheckRow({ check }: { check: DeployCheck }) {

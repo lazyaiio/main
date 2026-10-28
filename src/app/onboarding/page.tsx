@@ -15,7 +15,7 @@ export default async function OnboardingPage() {
   if (ctx.profile.onboarded_at) redirect("/app");
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-ink-50 px-4 py-12">
+    <main id="main-content" tabIndex={-1} className="outline-none flex min-h-screen flex-col items-center justify-center bg-ink-50 px-4 py-12">
       <Link href="/" aria-label="LazyAI home" className="mb-8 rounded-lg">
         <Logo className="h-9" priority />
       </Link>

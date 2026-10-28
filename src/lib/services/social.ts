@@ -73,7 +73,7 @@ function fromSocialError(error: unknown): never {
 
 function secret(): string {
   const key = getTokenEncryptionKey();
-  if (!key) throw new ServiceError("social_not_configured", "Facebook connection is not set up yet. An admin needs to finish the Meta app setup.");
+  if (!key) throw new ServiceError("social_not_configured", "Facebook connection is not available yet. Please try again later or contact us.");
   return key;
 }
 

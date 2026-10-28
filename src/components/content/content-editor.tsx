@@ -32,7 +32,7 @@ export function ContentEditor({ itemId, defaults }: { itemId: string; defaults: 
           defaultValue={v?.body ?? defaults.body}
           onChange={(event) => setLength(event.target.value.length)}
         />
-        <p className="text-right text-xs text-ink-400">{length.toLocaleString("en-US")} characters</p>
+        <p className="text-right text-xs text-ink-500">{length.toLocaleString("en-US")} characters</p>
       </div>
       <Field label="Call to action" name="cta" maxLength={300} defaultValue={v?.cta ?? defaults.cta} />
       <Field

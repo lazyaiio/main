@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Noto_Sans_Bengali, Plus_Jakarta_Sans } from "next/font/google";
 import { getPublicEnv } from "@/lib/env";
+import { SkipLink } from "@/components/ui/skip-link";
 import { siteConfig } from "@/lib/site";
 import "./globals.css";
 
@@ -37,7 +38,10 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en-US" className={`${sans.variable} ${display.variable} ${bengali.variable}`}>
-      <body className="font-sans">{children}</body>
+      <body className="font-sans">
+        <SkipLink />
+        {children}
+      </body>
     </html>
   );
 }

@@ -13,7 +13,7 @@ export const SERVICE_ERROR_MESSAGES: Record<ServiceErrorKind, string> = {
   library_full: "Your media library is full. Delete some images to add more.",
   stock_limited: "You have reached the hourly stock photo limit. Please try again later.",
   stock_failed: "Stock photo search is not available right now. Try again later.",
-  social_not_configured: "Facebook connection is not set up yet. An admin needs to finish the Meta app setup (see docs/META_SETUP.md).",
+  social_not_configured: "Facebook connection is not available yet. Please try again later or contact us.",
   social_denied: "The connection was canceled, or Facebook permissions were not granted. Try again and allow every permission shown.",
   social_attempt_expired: "That connection attempt expired or was already used. Start again with Connect Facebook.",
   social_page_in_use: "One of those Pages is already connected to another LazyAI workspace.",

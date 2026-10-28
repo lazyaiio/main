@@ -39,9 +39,9 @@ Give this file to Claude at the start of a new chat, together with `lazyai-full-
 | 8 | Meta OAuth and Facebook Pages | Done per owner report (0007/0008 run, Meta app created, steps done). Owner approved live Facebook *connection* work only |
 | 9 | Durable scheduler and publishing (+ legal pages, Meta data-deletion callbacks) | **Code written, owner verification pending.** Migrations 0009/0010 and SQL tests not yet run; scheduler not yet set up; **real Facebook posting is gated by the Admin -> Publishing switch (migration 0011) and needs the owner's explicit approval** |
 | 10 | Resend and email (+ publishing diagnostics follow-up) | Done per owner report |
-| 11 | Usage limits and hardening (+ account deletion/export) | **Code written, owner verification pending.** Migration 0013 and its SQL tests not yet run |
-| 12 | Deployment and DNS runbook | **Code and docs written, owner verification pending.** Admin -> Deployment page, runbook, Dependabot major-upgrade fix. No DNS/domain changes made (need approval) |
-| 13 | Release readiness | Not started (next, after Batch 12 is verified) |
+| 11 | Usage limits and hardening (+ account deletion/export) | DONE per owner report (migration 0013 run) |
+| 12 | Deployment and DNS runbook | DONE per owner report |
+| 13 | Release readiness | **Code and docs written, owner verification pending.** Launch NOT approved |
 
 `docs/BUILD_PROGRESS.md` is the detailed log for each batch (what was built, files, tests, risks, next action). Update it at the end of every batch.
 

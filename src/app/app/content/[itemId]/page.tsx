@@ -178,7 +178,7 @@ export default async function ContentItemPage({ params, searchParams }: Props) {
       />
 
       {item.ai_model ? (
-        <p className="text-xs text-ink-400">
+        <p className="text-xs text-ink-500">
           Written with AI ({item.ai_provider} · {item.ai_model}). Always review AI text for accuracy before publishing.
         </p>
       ) : null}

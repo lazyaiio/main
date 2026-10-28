@@ -51,7 +51,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           </div>
           <AdminNav orientation="horizontal" />
         </div>
-        <main className="mx-auto max-w-4xl p-4 sm:p-6 md:p-10">{children}</main>
+        <main id="main-content" tabIndex={-1} className="outline-none mx-auto max-w-4xl p-4 sm:p-6 md:p-10">{children}</main>
       </div>
     </div>
   );

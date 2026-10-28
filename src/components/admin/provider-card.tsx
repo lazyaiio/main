@@ -49,7 +49,7 @@ export function ProviderCard({
 
         <aside className="space-y-4 rounded-xl bg-ink-50 p-4">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-ink-400">API key</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-ink-500">API key</p>
             {keyDetected ? (
               <p className="mt-1.5 flex items-center gap-2 text-sm font-medium text-emerald-700">
                 <CheckCircle2 className="h-4 w-4" aria-hidden="true" /> Key found

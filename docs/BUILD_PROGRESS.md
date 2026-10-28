@@ -19,14 +19,58 @@ Plan: [`LAZYAI_MASTER_PLAN.md`](./LAZYAI_MASTER_PLAN.md) (see section 23 for own
 | 9 | Durable scheduler and publishing | DONE per owner report (deployed). Owner reported posts not publishing: fixed in a follow-up (Admin switch, diagnostics, time zone clarity; migration 0011) |
 | 10 | Resend and email | DONE per owner report |
 | 11 | Usage limits and hardening (+ account deletion/export) | DONE per owner report (deployed to Production). Migration 0013 and its SQL tests: owner to confirm (Admin -> Deployment shows the migration row) |
-| 12 | Deployment and DNS runbook | **Code and docs written, owner verification pending** (Admin -> Deployment page, runbook, Dependabot fix) |
-| 13 | Release readiness | NOT STARTED |
+| 12 | Deployment and DNS runbook | DONE per owner report (uploaded, Vercel green). Dependabot major upgrades disabled |
+| 13 | Release readiness | **Code and docs written, owner verification pending** (accessibility fixes, /help, release tests, checklist) |
+
+---
+
+## Batch 13 — Release readiness
+
+**Status:** CODE AND DOCS WRITTEN, owner verification pending. Launch is NOT approved. No live posting, DNS, or paid change was made.
+
+### Follow-up from Batch 12
+Batch 12's `deployment-checks.ts` names several keys, which the older `security.test.ts` (allowlist of files that may mention them) would reject. Fixed in Batch 12 follow-up inside this batch: the test now lists that file explicitly and a new test proves it never reads the environment itself. Owner: check the GitHub Actions tab (Vercel does not run tests).
+Owner reported: 0013 migration done; Batch 12 deployed; Deployment page rows green.
+
+### What was built
+- Accessibility: skip link and `id="main-content"` on every page; low-contrast gray text (`text-ink-300/400`) moved to `text-ink-500`; reduced-motion rule covers animations and transitions.
+- Customer safety: operator-only setup hints (Vercel, Meta app, repo file names) now show only to platform admins; customers get plain wording. The `social_not_configured` message no longer mentions a repo file.
+- Public `/help` page (English), linked in the footer and sitemap.
+- `src/lib/release-readiness.test.ts`: status labels match the database enums, every service error and publishing failure code has plain words, alt text, skip link, zoom, contrast, new-tab link safety, reduced motion, smoke pages exist.
+- Docs: `RELEASE_CHECKLIST.md` (automated checks, 30-minute walk-through, test-Page publishing flow, launch approval wording), `KNOWN_LIMITATIONS.md`, `INCIDENTS.md`, ADR 0009.
+
+### Files changed
+New: `src/components/ui/skip-link.tsx`, `src/app/(marketing)/help/page.tsx`, `src/lib/release-readiness.test.ts`, `docs/RELEASE_CHECKLIST.md`, `docs/KNOWN_LIMITATIONS.md`, `docs/INCIDENTS.md`, `docs/decisions/0009-release-readiness.md`.
+Changed: `src/app/layout.tsx`, `src/app/globals.css`, `src/app/sitemap.ts`, `src/lib/site.ts`, `src/lib/service-messages.ts`, `src/lib/services/social.ts`, `src/lib/security.test.ts`, `src/app/app/pages/page.tsx`, `src/app/admin/deployment/page.tsx` (icon contrast), main-landmark ids in the marketing, auth, app, admin, onboarding and not-found layouts/pages, gray-text fixes in about 14 component and page files, `docs/BUILD_PROGRESS.md`, `docs/NEW_SESSION_START.md`. Deleted: none. No database migration.
+
+### Tests / checks and results
+| Check | Result |
+|---|---|
+| New release-readiness tests (11), stand-in runner under tsx | PASS |
+| security, copy-rules, secret-scan, site tests, stand-in runner | PASS |
+| Lint, typecheck, full test suite, build | **NOT RUN** here (no network or `node_modules`); GitHub Actions and Vercel are the real check |
+| Real browser end-to-end tests, real screen reader, real phones | NOT DONE (manual checklist in RELEASE_CHECKLIST.md) |
+
+### Owner steps
+1. Upload the Batch 13 files; confirm GitHub Actions (all steps) and the Vercel build are green.
+2. Close the major Dependabot pull requests (tailwindcss, typescript, tailwind-merge, zod) without merging.
+3. Do the walk-through in `docs/RELEASE_CHECKLIST.md` sections 2 and 4. Section 3 (real posting on a test Page) only when you decide to.
+4. Read `docs/KNOWN_LIMITATIONS.md`.
+
+### Decisions
+Accessibility and message quality are guarded by tests (ADR 0009). Launch needs the owner's written approval (RELEASE_CHECKLIST.md section 6).
+
+### Known issues / risks
+Meta App Review, a verified Resend domain, a lawyer's review of the legal pages, and paid plans are outside approvals still to do. Major package upgrades are postponed.
+
+### Exact next action
+Owner verifies and reports Actions/Vercel results and the walk-through findings. Then fix what they found. Launch only after written approval.
 
 ---
 
 ## Batch 12 — Deployment and DNS runbook
 
-**Status:** CODE AND DOCS WRITTEN, owner verification pending. No DNS, domain, or live setting was changed.
+**Status:** DONE per owner report. No DNS, domain, or live setting was changed.
 
 ### Vercel results reviewed first (Batch 11 follow-up)
 - Batch 11 (`c403445`) and the later GitHub upload (`985eea5`) are both **Ready** in Production. The live site is fine.

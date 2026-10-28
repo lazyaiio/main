@@ -27,7 +27,7 @@ export function ProductPreview() {
             {queue.map((item) => (
               <li key={item.title} className="flex items-center justify-between gap-3 px-4 py-3.5">
                 <div className="min-w-0">
-                  <p className="text-xs font-medium text-ink-400">{item.when}</p>
+                  <p className="text-xs font-medium text-ink-500">{item.when}</p>
                   <p className="truncate text-sm font-medium">{item.title}</p>
                 </div>
                 <Badge tone={item.tone} className="shrink-0">
@@ -45,7 +45,7 @@ export function ProductPreview() {
                 </span>
                 <div>
                   <p className="text-xs font-semibold">Your Page</p>
-                  <p className="text-[11px] text-ink-400">Tip</p>
+                  <p className="text-[11px] text-ink-500">Tip</p>
                 </div>
               </div>
               <p className="mt-3 text-sm leading-relaxed">

@@ -23,7 +23,7 @@ export function SiteFooter() {
         </nav>
       </div>
       <div className="border-t border-ink-100">
-        <p className="mx-auto max-w-6xl px-4 py-5 text-xs text-ink-400 sm:px-6">
+        <p className="mx-auto max-w-6xl px-4 py-5 text-xs text-ink-500 sm:px-6">
           © {new Date().getFullYear()} LazyAI. LazyAI is not affiliated with or endorsed by Meta.
         </p>
       </div>

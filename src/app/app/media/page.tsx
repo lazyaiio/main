@@ -109,7 +109,7 @@ export default async function MediaPage({ searchParams }: Props) {
                     defaultValue={query}
                     maxLength={100}
                     placeholder="For example: coffee shop"
-                    className="h-11 w-full rounded-xl border border-ink-200 bg-white px-3.5 text-sm text-ink placeholder:text-ink-400 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
+                    className="h-11 w-full rounded-xl border border-ink-200 bg-white px-3.5 text-sm text-ink placeholder:text-ink-500 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
                   />
                 </div>
                 <PendingButton variant="secondary" pendingLabel="Searching…">

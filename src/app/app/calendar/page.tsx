@@ -80,7 +80,7 @@ export default async function CalendarPage({ searchParams }: Props) {
                   key={day.iso}
                   className={cn(
                     "min-h-16 border-r border-ink-100 p-1.5 last:border-r-0 sm:min-h-24 sm:p-2",
-                    !day.inMonth && "bg-ink-50/60 text-ink-300",
+                    !day.inMonth && "bg-ink-50/60 text-ink-500",
                   )}
                 >
                   <span
@@ -118,7 +118,7 @@ export default async function CalendarPage({ searchParams }: Props) {
               return (
                 <li key={post.id} className="flex items-center justify-between gap-3 rounded-xl border border-ink-100 bg-white px-4 py-3">
                   <div className="min-w-0">
-                    <p className="text-xs font-medium text-ink-400">{formatDateTime(post.scheduled_at, tz)}</p>
+                    <p className="text-xs font-medium text-ink-500">{formatDateTime(post.scheduled_at, tz)}</p>
                     <p className="truncate text-sm font-medium">
                       <Link href={`/app/content/${post.content_item_id}`} className="hover:text-brand hover:underline">
                         {post.title}
