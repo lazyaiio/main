@@ -68,7 +68,7 @@ describe("failure messages", () => {
     const written = new Set<string>();
     const sources = ["lib/services/publisher.ts", "lib/publish-dispatch.ts"].map((p) => read(join(SRC, p)));
     for (const text of sources) {
-      for (const m of text.matchAll(/(?:PrepareError\(|code: |finishFailed\(post, )"([a-z_]+)"/g)) written.add(m[1]);
+      for (const m of text.matchAll(/(?:PrepareError\(|code: |finishFailed\(post, )"([a-z_]+)"/g)) written.add(m[1] as string);
     }
     const generic = describeScheduleError("some_code_nobody_wrote");
     // "unexpected" is the deliberate catch-all: it is shown with the generic retry-or-reconnect advice.
