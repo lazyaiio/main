@@ -1,13 +1,15 @@
 import "server-only";
-import { createPexelsProvider, type ImageSearchProvider } from "./image-search";
+import type { StockProviderKey } from "./image-search";
 
 /**
- * The only place that reads stock photo settings from the environment.
- * IMAGE_PROVIDER=pexels plus IMAGE_PROVIDER_API_KEY turns stock search on; otherwise it stays off.
+ * The only place that reads stock photo keys from the environment (the fallback when no key was saved in
+ * Admin -> Stock photos). Accepts the older IMAGE_PROVIDER + IMAGE_PROVIDER_API_KEY pair, or PEXELS_API_KEY /
+ * PIXABAY_API_KEY / UNSPLASH_ACCESS_KEY.
  */
-export function getImageProvider(): ImageSearchProvider | null {
-  const name = (process.env.IMAGE_PROVIDER ?? "").trim().toLowerCase();
-  if (name !== "pexels") return null;
-  const key = (process.env.IMAGE_PROVIDER_API_KEY ?? "").trim();
-  return key ? createPexelsProvider(key) : null;
+export function getEnvStockKey(key: StockProviderKey): string | null {
+  const text = (v: string | undefined) => (v ?? "").trim();
+  const legacy = text(process.env.IMAGE_PROVIDER).toLowerCase() === key ? text(process.env.IMAGE_PROVIDER_API_KEY) : "";
+  const named =
+    key === "pexels" ? text(process.env.PEXELS_API_KEY) : key === "pixabay" ? text(process.env.PIXABAY_API_KEY) : text(process.env.UNSPLASH_ACCESS_KEY);
+  return legacy || named || null;
 }

@@ -18,6 +18,8 @@ export type BatchSlot = {
   language: "en" | "bn";
   format: string;
   theme: string | null;
+  /** When the post is planned to go out (ISO), if known. */
+  plannedAt?: string;
   /** How many times this slot has been claimed, including this round. */
   attempts: number;
 };

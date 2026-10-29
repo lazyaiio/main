@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { ProductPreview } from "./product-preview";
 
 const reassurances = [
-  "You review everything before it is scheduled",
+  "Nothing is posted unless you schedule it",
   "You choose which Page LazyAI can use",
   "“Published” only appears after Facebook confirms it",
 ];
@@ -23,7 +23,7 @@ export function Hero() {
             Work less. <span className="text-brand">Publish more.</span>
           </h1>
           <p className="mt-5 max-w-xl text-lg leading-relaxed text-ink-600">
-            Give LazyAI a topic or a website. Get a content plan, review the posts, and publish
+            Give LazyAI a topic or a website. Get a content plan, edit the posts, and publish
             them on schedule — in English or Bengali.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">

@@ -116,18 +116,6 @@ export async function releaseSlotRpc(
   if (error) throw rpcFailure(error, "update the post");
 }
 
-/** Moves every draft post of the campaign to "needs review". Returns how many moved. */
-export async function submitCampaignDrafts(db: Db, ws: string, campaignId: string): Promise<number> {
-  const res = await db
-    .from("content_items")
-    .update({ approval_status: "awaiting_approval" })
-    .eq("workspace_id", ws)
-    .eq("campaign_id", campaignId)
-    .eq("approval_status", "draft")
-    .select("id");
-  return ((unwrap(res, "submit the posts") as unknown[] | null) ?? []).length;
-}
-
 export async function countCampaignPostsByStatus(db: Db, ws: string, campaignId: string): Promise<Record<string, number>> {
   const res = await db.from("content_items").select("approval_status").eq("workspace_id", ws).eq("campaign_id", campaignId).limit(200);
   const rows = (unwrap(res, "count the posts") ?? []) as { approval_status: string }[];

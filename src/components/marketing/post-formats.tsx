@@ -27,7 +27,7 @@ export function PostFormats() {
           </h2>
           <p className="mt-4 max-w-lg text-lg leading-relaxed text-ink-300">
             Tips, checklists, questions, myth-vs-fact posts, how-tos, and stories. Each post is
-            written natively in English or Bengali, and you review it before it goes anywhere.
+            written natively in English or Bengali, and nothing goes out unless you schedule it.
           </p>
         </div>
 

@@ -117,7 +117,7 @@ export default async function PublishingAdminPage({ searchParams }: Props) {
           <div>
             <h2 className="font-display text-lg font-bold">Live publishing</h2>
             <p className="mt-1 max-w-xl text-sm text-ink-600">
-              When ON, approved posts are published to the Facebook Pages at their scheduled time. When OFF, scheduled posts wait and nothing is posted.
+              When ON, scheduled posts are published to the Facebook Pages at their scheduled time. When OFF, scheduled posts wait and nothing is posted.
             </p>
           </div>
           <Badge tone={liveOn && !blocked ? "green" : "amber"}>{liveOn && !blocked ? "ON" : "OFF"}</Badge>

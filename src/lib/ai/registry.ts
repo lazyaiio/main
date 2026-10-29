@@ -35,8 +35,8 @@ export const PROVIDERS: Record<ProviderId, ProviderInfo> = {
     id: "openrouter",
     label: "OpenRouter",
     envVar: "OPENROUTER_API_KEY",
-    defaultModel: "meta-llama/llama-3.3-70b-instruct:free",
-    note: "One key for many models, including some free ones. Free model names end in :free. Availability changes often.",
+    defaultModel: "openrouter/free",
+    note: "One key for many models. Use openrouter/free to let OpenRouter pick a working free model for each request (free model names change often, so a fixed name can stop working without notice).",
   },
 };
 

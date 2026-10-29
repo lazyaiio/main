@@ -22,28 +22,25 @@ export type DashboardStats = {
   projects: number;
   pagesConnected: number;
   contentTotal: number;
-  drafts: number;
-  awaitingReview: number;
-  approved: number;
+  /** Posts that are ready to schedule (not canceled). */
+  ready: number;
   scheduled: number;
   published: number;
   failed: number;
 };
 
 export async function getDashboardStats(db: Db, ws: string): Promise<DashboardStats> {
-  const [projects, pagesConnected, contentTotal, drafts, awaitingReview, approved, scheduled, published, failed] =
+  const [projects, pagesConnected, contentTotal, ready, scheduled, published, failed] =
     await Promise.all([
       countRows(db, "content_projects", ws, { column: "status", values: ["active"] }),
       countRows(db, "social_pages", ws, { column: "status", values: ["connected"] }),
       countRows(db, "content_items", ws),
-      countRows(db, "content_items", ws, { column: "approval_status", values: ["draft"] }),
-      countRows(db, "content_items", ws, { column: "approval_status", values: ["awaiting_approval"] }),
-      countRows(db, "content_items", ws, { column: "approval_status", values: ["approved"] }),
+      countRows(db, "content_items", ws, { column: "approval_status", values: ["approved", "draft", "awaiting_approval", "rejected"] }),
       countRows(db, "scheduled_posts", ws, { column: "status", values: ["scheduled", "publishing", "retrying"] }),
       countRows(db, "scheduled_posts", ws, { column: "status", values: ["published"] }),
       countRows(db, "scheduled_posts", ws, { column: "status", values: ["failed"] }),
     ]);
-  return { projects, pagesConnected, contentTotal, drafts, awaitingReview, approved, scheduled, published, failed };
+  return { projects, pagesConnected, contentTotal, ready, scheduled, published, failed };
 }
 
 export async function listCampaigns(db: Db, ws: string, limit = 50): Promise<CampaignRow[]> {
@@ -56,13 +53,7 @@ export async function listCampaigns(db: Db, ws: string, limit = 50): Promise<Cam
   return (unwrap(res, "load campaigns") ?? []) as CampaignRow[];
 }
 
-export const CONTENT_FILTERS: readonly ("all" | ApprovalStatus)[] = [
-  "all",
-  "draft",
-  "awaiting_approval",
-  "approved",
-  "rejected",
-];
+export const CONTENT_FILTERS: readonly ("all" | ApprovalStatus)[] = ["all", "approved", "cancelled"];
 
 export async function listContent(
   db: Db,

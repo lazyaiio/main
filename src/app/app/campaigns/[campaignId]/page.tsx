@@ -7,7 +7,6 @@ import {
   pauseCampaignAction,
   retryFailedAction,
   startCampaignAction,
-  submitCampaignReviewAction,
 } from "@/app/app/campaigns/actions";
 import { CampaignRunner } from "@/components/campaigns/campaign-runner";
 import { PlanTable } from "@/components/campaigns/plan-table";
@@ -19,6 +18,7 @@ import { canWrite } from "@/lib/auth/permissions";
 import { requireAppContext } from "@/lib/auth/session";
 import { countCampaignPostsByStatus, getCampaign, listCampaignSlots } from "@/lib/data/campaigns";
 import { getDb } from "@/lib/data/db";
+import { isBackgroundWriterActive } from "@/lib/data/platform";
 import { getProject } from "@/lib/data/projects";
 import { formatDate } from "@/lib/format";
 import { languageLabel } from "@/lib/projects";
@@ -38,13 +38,11 @@ type Props = {
 
 const NOTICES: Record<string, string> = {
   created: "Campaign created. Press Start writing when you are ready.",
-  started: "Writing started. Keep this page open while the posts are written.",
+  started: "Writing started. Your posts will appear in Content as they are written.",
   paused: "Paused. Your progress is saved.",
   canceled: "Campaign canceled. Posts that were already written are kept.",
   retrying: "Failed posts were put back in the queue.",
   nothing_to_retry: "There are no failed posts to retry.",
-  submitted: "All drafts were sent for review.",
-  nothing_to_submit: "There are no drafts to send for review.",
 };
 
 function ControlForm({
@@ -93,7 +91,6 @@ export default async function CampaignPage({ params, searchParams }: Props) {
   const state = runStateOf(campaign);
   const meta = campaignStatus[campaign.status];
   const status = campaign.status;
-  const drafts = postCounts.draft ?? 0;
   const hasFailed = slots.some((slot) => slot.status === "failed");
   const canStart = status === "draft" || status === "paused";
   const canCancel = ["draft", "generating", "paused", "ready", "failed"].includes(status);
@@ -132,6 +129,7 @@ export default async function CampaignPage({ params, searchParams }: Props) {
       <CampaignRunner
         campaignId={campaign.id}
         canRun={writable}
+        backgroundActive={await isBackgroundWriterActive()}
         initial={{
           status: state.status,
           total: state.total,
@@ -160,20 +158,12 @@ export default async function CampaignPage({ params, searchParams }: Props) {
           {canRetry ? (
             <ControlForm action={retryFailedAction} campaignId={campaign.id} label="Retry failed posts" pendingLabel="Retrying…" />
           ) : null}
-          {drafts > 0 ? (
-            <ControlForm
-              action={submitCampaignReviewAction}
-              campaignId={campaign.id}
-              label={`Send ${drafts} ${drafts === 1 ? "draft" : "drafts"} for review`}
-              pendingLabel="Sending…"
-            />
-          ) : null}
           {canCancel ? (
             <ControlForm action={cancelCampaignAction} campaignId={campaign.id} label="Cancel campaign" pendingLabel="Canceling…" variant="ghost" />
           ) : null}
-          {(postCounts.draft ?? 0) + (postCounts.awaiting_approval ?? 0) + (postCounts.approved ?? 0) > 0 ? (
+          {Object.values(postCounts).reduce((sum, n) => sum + n, 0) > 0 ? (
             <ButtonLink href="/app/content" variant="secondary">
-              Review posts
+              View posts
             </ButtonLink>
           ) : null}
         </div>
@@ -198,7 +188,9 @@ export default async function CampaignPage({ params, searchParams }: Props) {
       {slots.length > 0 ? <PlanTable slots={slots} timeZone={ctx.workspace.timezone} /> : null}
 
       <p className="text-xs text-ink-500">
-        Posts are saved as drafts. Nothing is published or scheduled from here yet: you review and approve each post first.
+        {campaign.brief.auto_schedule === "1"
+          ? "Each post is scheduled automatically for its planned time on the Page you chose. AI can make mistakes, so open the posts you care about and read them. You can edit, reschedule, or cancel any post before it goes out."
+          : "Written posts are saved in Content, ready for you to schedule. Nothing is published unless you schedule it."}
       </p>
     </div>
   );

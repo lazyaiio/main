@@ -44,7 +44,7 @@ export default function DataDeletionPage() {
 
       <h2>What gets deleted</h2>
       <ul>
-        <li>your account details and workspace content: projects, campaigns, drafts, approvals, and schedules;</li>
+        <li>your account details and workspace content: projects, campaigns, posts, and schedules;</li>
         <li>images you uploaded and stock photos you added, including their small previews;</li>
         <li>your Facebook connection data: Page access tokens, Facebook ID and name, and Page details.</li>
       </ul>

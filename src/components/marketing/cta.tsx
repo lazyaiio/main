@@ -9,7 +9,7 @@ export function FinalCta() {
           Ready to publish more with less effort?
         </h2>
         <p className="mx-auto mt-3 max-w-xl text-brand-100">
-          Create your first campaign, review it, and schedule it in minutes.
+          Create your first campaign and schedule it in minutes.
         </p>
         <div className="mt-8 flex justify-center">
           <ButtonLink href="/auth/signup" variant="light" size="lg">

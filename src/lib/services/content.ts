@@ -54,8 +54,8 @@ export async function createManualPost(
   return id;
 }
 
-/** Returns true when the edit moved an approved post back to draft. */
-export async function updateContent(ctx: AppContext, id: string, input: ContentFormInput): Promise<{ movedToDraft: boolean }> {
+/** Saves the edits. There is no review step, so saving never changes the post's status. */
+export async function updateContent(ctx: AppContext, id: string, input: ContentFormInput): Promise<void> {
   requireWrite(ctx);
   const db = await getDb();
 
@@ -67,13 +67,6 @@ export async function updateContent(ctx: AppContext, id: string, input: ContentF
   const cta = input.cta || null;
   const imageBrief = input.imageBrief || null;
 
-  const changed =
-    item.body !== input.body ||
-    (item.hook ?? null) !== hook ||
-    (item.cta ?? null) !== cta ||
-    JSON.stringify(item.hashtags ?? []) !== JSON.stringify(hashtags);
-  const movedToDraft = changed && item.approval_status === "approved";
-
   const ok = await updateContentItem(db, ctx.workspace.id, id, {
     hook,
     body: input.body,
@@ -81,12 +74,10 @@ export async function updateContent(ctx: AppContext, id: string, input: ContentF
     hashtags,
     image_brief: imageBrief,
     content_hash: hashContent(input.body),
-    ...(movedToDraft ? { approval_status: "draft" as const } : {}),
   });
   if (!ok) throw NOT_FOUND();
 
   await logAudit(db, ctx, "content.updated", "content_item", id, {});
-  return { movedToDraft };
 }
 
 export async function setContentStatus(ctx: AppContext, id: string, to: ApprovalStatus): Promise<void> {

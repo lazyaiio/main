@@ -108,11 +108,15 @@ export function CampaignForm({
   defaultProjectId,
   defaultStartDate,
   available,
+  pages,
+  stockAvailable,
 }: {
   projects: CampaignFormProject[];
   defaultProjectId: string;
   defaultStartDate: string;
   available: boolean;
+  pages: { id: string; name: string }[];
+  stockAvailable: boolean;
 }) {
   const initial: PlanFormState = {};
   const [state, formAction, pending] = useActionState(planCampaignAction, initial);
@@ -257,6 +261,43 @@ export function CampaignForm({
         <Field label="Audience (optional)" name="audience" maxLength={200} defaultValue={v?.audience ?? ""} />
         <Field label="Call to action (optional)" name="cta" maxLength={200} defaultValue={v?.cta ?? ""} hint="For example: Message us to book." />
         <TextAreaField label="Notes for the writer (optional)" name="notes" maxLength={500} defaultValue={v?.notes ?? ""} />
+      </section>
+
+      <section className="space-y-4 rounded-2xl border border-ink-100 bg-white p-5 shadow-card">
+        <h2 className="font-display text-lg font-bold">Images and scheduling</h2>
+        {stockAvailable ? (
+          <label className="flex cursor-pointer items-start gap-3 text-sm text-ink">
+            <input type="checkbox" name="autoImage" defaultChecked={v ? v.autoImage === "on" : true} className="mt-0.5 h-4 w-4 accent-brand" />
+            <span>
+              <span className="font-medium">Add a free stock photo to each post</span>
+              <span className="block text-xs text-ink-500">Chosen from the post’s image idea. You can change any photo later.</span>
+            </span>
+          </label>
+        ) : (
+          <p className="text-xs text-ink-500">Automatic photos are off until an admin sets up a stock photo provider.</p>
+        )}
+        {pages.length > 0 ? (
+          <div className="space-y-3">
+            <label className="flex cursor-pointer items-start gap-3 text-sm text-ink">
+              <input type="checkbox" name="autoSchedule" defaultChecked={v?.autoSchedule === "on"} className="mt-0.5 h-4 w-4 accent-brand" />
+              <span>
+                <span className="font-medium">Schedule each post automatically</span>
+                <span className="block text-xs text-ink-500">
+                  Each post is scheduled for its planned time as soon as it is written, without a review. AI can make mistakes, so only turn this on if you are comfortable with that. You can edit or cancel any post before it goes out.
+                </span>
+              </span>
+            </label>
+            <SelectField label="Facebook Page" name="pageId" defaultValue={v?.pageId ?? pages[0]?.id ?? ""}>
+              {pages.map((page) => (
+                <option key={page.id} value={page.id}>
+                  {page.name}
+                </option>
+              ))}
+            </SelectField>
+          </div>
+        ) : (
+          <p className="text-xs text-ink-500">Connect a Facebook Page to schedule posts automatically.</p>
+        )}
       </section>
 
       <FormMessage state={state} />

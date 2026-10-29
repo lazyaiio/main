@@ -30,7 +30,7 @@ function mapError(error: unknown): never {
   if (error.code === "P0002") throw new ServiceError("not_found", "That post or Page could not be found.");
   if (error.code === "23505") throw new ServiceError("schedule_exists", "This post is already scheduled or published on that Page.");
   if (error.code === "22023") {
-    if (text.includes("not approved")) throw new ServiceError("schedule_not_approved", "Only approved posts can be scheduled.");
+    if (text.includes("not approved")) throw new ServiceError("schedule_not_approved", "Canceled posts cannot be scheduled.");
     if (text.includes("invalid time")) throw new ServiceError("schedule_time", "Choose a time at least a few minutes from now and within the next year.");
     if (text.includes("page") || text.includes("cannot publish")) throw new ServiceError("schedule_page", "Choose a connected Facebook Page where you are allowed to post.");
     if (text.startsWith("cannot")) throw new ServiceError("schedule_state", "That change is not possible for this post in its current state.");

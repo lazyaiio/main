@@ -27,7 +27,7 @@ export default function AcceptableUsePage() {
 
       <h2>2. How you must use the Service</h2>
       <ul>
-        <li>Review every post before approving it. Do not publish AI drafts without checking them.</li>
+        <li>Read every post before it goes out. Do not publish AI-written text without checking it, and take extra care if you use automatic scheduling.</li>
         <li>Only connect Facebook Pages that you are allowed to manage, and only publish content you are allowed to publish there.</li>
         <li>Follow the Meta Platform Terms, Facebook Community Standards, and any rules that apply to your industry or country.</li>
         <li>Do not use the Service for spam, bulk unsolicited promotion, engagement manipulation, or to evade Facebook’s limits or enforcement.</li>
@@ -40,7 +40,7 @@ export default function AcceptableUsePage() {
       <ul>
         <li>Do not ask the AI to create content that breaks section 1, or try to make it ignore its safeguards.</li>
         <li>Do not enter passwords, payment card numbers, government ID numbers, or other sensitive personal information into topics, notes, or links.</li>
-        <li>You are responsible for facts, claims, and rights in anything you approve. See our <Link href="/terms">Terms of Service</Link>.</li>
+        <li>You are responsible for facts, claims, and rights in anything you publish. See our <Link href="/terms">Terms of Service</Link>.</li>
       </ul>
 
       <h2>4. Enforcement</h2>

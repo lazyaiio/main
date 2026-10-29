@@ -107,8 +107,14 @@ export const campaignFormSchema = z
     themes: z
       .array(z.string().trim().min(1).max(120, "Each angle must be 120 characters or fewer."))
       .max(MAX_THEMES, `Use at most ${MAX_THEMES} angles.`),
+    autoImage: z.boolean().default(false),
+    autoSchedule: z.boolean().default(false),
+    pageId: z.union([z.string().uuid(), z.literal("")]).optional(),
   })
   .superRefine((value, ctx) => {
+    if (value.autoSchedule && !value.pageId) {
+      ctx.addIssue({ code: "custom", path: ["pageId"], message: "Choose the Facebook Page to schedule on." });
+    }
     if (!value.sourceUrl && (!value.topic || value.topic.length < 2)) {
       ctx.addIssue({ code: "custom", path: ["topic"], message: "Enter a topic (at least 2 characters) or paste an article link." });
     }
@@ -152,6 +158,9 @@ export function readCampaignForm(formData: FormData) {
     notes: str("notes") || undefined,
     cta: str("cta") || undefined,
     themes: parseThemes(str("themes")),
+    autoImage: str("autoImage") === "on",
+    autoSchedule: str("autoSchedule") === "on",
+    pageId: str("pageId"),
   };
 }
 
@@ -282,6 +291,9 @@ export type CampaignBriefInput = {
   length: string;
   sourceDocumentId: string | null;
   sourceUrl: string | null;
+  autoImage?: boolean;
+  autoSchedule?: boolean;
+  pageId?: string | null;
 };
 
 export function briefToJson(brief: CampaignBriefInput): Record<string, string> {
@@ -293,6 +305,11 @@ export function briefToJson(brief: CampaignBriefInput): Record<string, string> {
   if (brief.cta) json.cta = brief.cta;
   if (brief.sourceDocumentId) json.source_document_id = brief.sourceDocumentId;
   if (brief.sourceUrl) json.source_url = brief.sourceUrl;
+  if (brief.autoImage) json.auto_image = "1";
+  if (brief.autoSchedule && brief.pageId) {
+    json.auto_schedule = "1";
+    json.page_id = brief.pageId;
+  }
   return json;
 }
 

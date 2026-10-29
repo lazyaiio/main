@@ -1,0 +1,5 @@
+Batch 14 (with Unsplash) upload order
+1. Supabase SQL Editor: run supabase/migrations/0014_background_generation_and_simple_posts.sql (skip if already run)
+2. Supabase SQL Editor: run supabase/tests/rls_background_generation.sql (skip if already run)
+3. Upload every file in this zip to GitHub, same folders. Nothing is deleted.
+4. After Vercel deploys: Admin -> Stock photos -> paste the Pixabay and Unsplash keys -> Save -> Test search.

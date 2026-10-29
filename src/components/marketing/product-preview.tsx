@@ -4,8 +4,8 @@ import { Badge, type BadgeTone } from "@/components/ui/badge";
 const queue: { when: string; title: string; status: string; tone: BadgeTone }[] = [
   { when: "Today · 9:00", title: "Tip: Reply to every comment", status: "Published", tone: "green" },
   { when: "Today · 20:00", title: "Myth vs fact: Big budget needed?", status: "Scheduled", tone: "brand" },
-  { when: "Fri · 9:00", title: "Checklist: Your weekly routine", status: "Needs review", tone: "amber" },
-  { when: "Fri · 20:00", title: "Story: A day in a small shop", status: "Draft", tone: "neutral" },
+  { when: "Fri · 9:00", title: "Checklist: Your weekly routine", status: "Ready", tone: "brand" },
+  { when: "Fri · 20:00", title: "Story: A day in a small shop", status: "Ready", tone: "brand" },
 ];
 
 /** Static, illustrative preview. Not live data. */
@@ -56,7 +56,7 @@ export function ProductPreview() {
               </div>
               <div className="mt-3 flex gap-2">
                 <span className="rounded-lg bg-brand px-3 py-1.5 text-xs font-semibold text-white">
-                  Approve
+                  Schedule
                 </span>
                 <span className="rounded-lg border border-ink-200 px-3 py-1.5 text-xs font-semibold text-ink-600">
                   Edit

@@ -21,8 +21,8 @@ export default async function DashboardPage() {
     { label: "Set up your workspace", done: true, href: null },
     { label: "Connect a Facebook Page", done: stats.pagesConnected > 0, href: "/app/pages" },
     { label: "Create your first project", done: stats.projects > 0, href: "/app/projects/new" },
-    { label: "Generate and review posts", done: stats.contentTotal > 0, href: "/app/content" },
-    { label: "Schedule approved posts", done: stats.scheduled + stats.published > 0, href: "/app/calendar" },
+    { label: "Generate your posts", done: stats.contentTotal > 0, href: "/app/content" },
+    { label: "Schedule your posts", done: stats.scheduled + stats.published > 0, href: "/app/calendar" },
   ];
   const doneCount = steps.filter((s) => s.done).length;
   const activeCampaigns = campaigns.filter((c) => c.status === "planning" || c.status === "generating");
@@ -49,7 +49,7 @@ export default async function DashboardPage() {
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <StatCard label="Connected Pages" value={stats.pagesConnected} href="/app/pages" />
-        <StatCard label="Awaiting review" value={stats.awaitingReview} href="/app/content?status=awaiting_approval" />
+        <StatCard label="Ready posts" value={stats.ready} href="/app/content?status=approved" />
         <StatCard label="Scheduled" value={stats.scheduled} href="/app/calendar" />
         <StatCard label="Published" value={stats.published} href="/app/calendar" />
       </div>

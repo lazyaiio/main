@@ -619,3 +619,34 @@ Owner uploads the zip, reports the CI and Vercel results (green, or paste the er
 - ADR-0001: Next.js App Router + PostgreSQL-backed job queue (`docs/decisions/0001-framework-and-queue.md`).
 - Owner answers: GitHub via browser drag-and-drop (100-file limit); Vercel Hobby; free tiers until launch.
 - Files: `docs/LAZYAI_MASTER_PLAN.md`, `docs/BUILD_PROGRESS.md`, `docs/decisions/0001-framework-and-queue.md`, `docs/brand/LogoLogo.source.png`, `.gitignore`.
+
+---
+
+## Batch 14: writing engine fixes and simpler posts (code written, NOT yet verified)
+
+**Owner requests covered:** 1 (images in campaigns + stock keys in Admin), 2 (500-750 word length), 5 (writing continues with the browser closed), 6 (no review/approve), 9 (OpenRouter model).
+
+**What changed**
+- **Migration `0014`** (run in Supabase SQL Editor, then `supabase/tests/rls_background_generation.sql`, expect `ALL BACKGROUND GENERATION TESTS PASSED`): campaign functions accept the service role (background writer); `system_schedule_post`, `system_register_media_asset` (service role only); posts default to `approved` ("ready") and old draft/awaiting/rejected posts become ready.
+- **No review step:** statuses shown as Ready / Canceled; saving or attaching an image no longer changes status; "Submit for review" and campaign "send for review" removed; marketing, help and legal wording updated.
+- **Length:** new `extra_long` (500 to 750 words); AI token budget per length and language (`maxTokensFor`); body limit raised to 9000 characters.
+- **Stock photos:** `Admin -> Stock photos` (encrypted keys, Pexels + Pixabay, test button); `lib/media/stock-providers.ts`, `stock-query.ts`, `data/stock-settings.ts`; `lib/media/keys.ts` now only reads environment fallbacks. Photo references are now `pexels:ID` / `pixabay:ID`. Downloads follow at most 2 redirects, only inside the provider's hosts.
+- **Campaign extras:** form fields "Add a free stock photo" and "Schedule each post automatically" (off by default) with a Page picker; stored in the campaign brief (`auto_image`, `auto_schedule`, `page_id`). `services/campaign-finish.ts` adds the photo and schedules at the planned time after each post.
+- **Background writing:** `services/campaign-worker.ts` is called by `/api/cron/dispatch` after publishing. Campaign page tells people whether background writing is active (scheduler heartbeat).
+- **OpenRouter:** default model `openrouter/free`; admin hint.
+
+**Tests added/changed:** `stock-query.test.ts`, `post-formats.test.ts`, Pixabay cases in `image-search.test.ts`, `content.test.ts` rewritten for the new status rules.
+
+**Verified in the build sandbox (no network):** TypeScript syntax check of every file (0 errors); every import resolves to a file; pure tests `stock-query` and `post-formats` pass with a stand-in runner.
+**NOT verified:** npm install, lint, full typecheck, vitest, build, the SQL (not run on a database), real Pexels/Pixabay calls, real AI calls, real scheduling.
+
+**Risks to check first**
+1. Run `0014` before deploying the code (the code assumes the new functions exist).
+2. The service-role check reads `request.jwt.claims`; the SQL test confirms it works on your project.
+3. Automatic scheduling publishes AI text without a person reading it. It is off by default; real posting still needs Admin -> Publishing switched on.
+4. Pixabay's image host redirects were handled defensively, but not tested against the live service.
+
+**Next:** Batch 15 (plans, pricing page, bKash).
+
+### Batch 14.1 (Unsplash, parallel stock search, optional Pexels)
+Unsplash provider (with required download reporting), all enabled providers searched in parallel with mixed results, Pexels optional, env fallbacks `UNSPLASH_ACCESS_KEY` / `PIXABAY_API_KEY` / `PEXELS_API_KEY`, new tests. No new migration.

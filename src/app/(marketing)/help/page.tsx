@@ -4,13 +4,13 @@ import { ContactEmail } from "@/components/marketing/legal-page";
 
 export const metadata: Metadata = {
   title: "Help",
-  description: "How to connect a Facebook Page, create and approve posts, schedule them, and fix common problems.",
+  description: "How to connect a Facebook Page, create posts, schedule them, and fix common problems.",
 };
 
 const toc = [
   { id: "start", label: "Getting started" },
   { id: "write", label: "Writing posts" },
-  { id: "approve", label: "Approving and scheduling" },
+  { id: "approve", label: "Scheduling your posts" },
   { id: "status", label: "What each status means" },
   { id: "fix", label: "When something goes wrong" },
   { id: "images", label: "Images" },
@@ -23,7 +23,7 @@ export default function HelpPage() {
       <header className="border-b border-ink-100 pb-8">
         <h1 className="font-display text-3xl font-extrabold tracking-tight sm:text-4xl">Help</h1>
         <p className="mt-4 text-lg leading-relaxed text-ink-600">
-          LazyAI prepares Facebook posts for you. Nothing is published until you approve it and choose a time.
+          LazyAI prepares Facebook posts for you. Nothing is published until you schedule it for a time you choose.
         </p>
         <nav aria-label="On this page" className="mt-6">
           <ul className="flex flex-wrap gap-x-5 gap-y-1.5 text-sm">
@@ -55,12 +55,11 @@ export default function HelpPage() {
           <li><strong>From an article:</strong> paste a link and LazyAI reads the page to write a post from it. Pages behind a login or a paywall cannot be read.</li>
           <li><strong>A whole campaign:</strong> open Campaigns to plan many posts at once. They are written in small batches, so a long campaign can take a few minutes, and you can leave and come back.</li>
         </ul>
-        <p>AI can make mistakes. Read every post before you approve it.</p>
+        <p>AI can make mistakes. Read every post before it goes out.</p>
 
-        <h2 id="approve">Approving and scheduling</h2>
+        <h2 id="approve">Scheduling your posts</h2>
         <ol>
-          <li>A new post starts as a <strong>draft</strong>. Choose <strong>Submit for review</strong> when it is ready.</li>
-          <li>Choose <strong>Approve</strong>. Only approved posts can be scheduled.</li>
+          <li>A new post is <strong>ready</strong> right away. Read it, and edit it if you like. Saving never changes its status.</li>
           <li>On the post, pick the connected Page and a date and time, then schedule it. The time must be a few minutes from now or later.</li>
           <li>Use <strong>Calendar</strong> to see what is planned. You can change the time or cancel a scheduled post at any time before it goes out.</li>
         </ol>

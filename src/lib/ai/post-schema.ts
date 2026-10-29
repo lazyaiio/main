@@ -55,7 +55,7 @@ export function cleanHashtags(tags: string[]): string[] {
 /** What we require back from the model. */
 export const postOutputSchema = z.object({
   hook: optionalText(300),
-  body: z.string().trim().min(1, "body is empty").max(5000, "body is too long"),
+  body: z.string().trim().min(1, "body is empty").max(9000, "body is too long"),
   cta: optionalText(300),
   hashtags: z
     .array(z.string())

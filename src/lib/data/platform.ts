@@ -59,3 +59,17 @@ export async function recordDispatcherRun(summary: Record<string, number | boole
   const { error } = await adminDb().rpc("record_dispatcher_run", { p_summary: summary });
   if (error) throw new DataError("Could not record the run.", error.code);
 }
+
+/**
+ * True when the every-minute scheduler has called this site recently. Used to tell people whether their
+ * campaign keeps being written after they close the page. Reads only the time of the last run.
+ */
+export async function isBackgroundWriterActive(maxAgeMs = 5 * 60 * 1000): Promise<boolean> {
+  try {
+    const beat = await getHeartbeat(adminDb());
+    if (!beat?.at) return false;
+    return Date.now() - new Date(beat.at).getTime() <= maxAgeMs;
+  } catch {
+    return false;
+  }
+}

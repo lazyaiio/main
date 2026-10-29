@@ -11,6 +11,8 @@ import { requireAppContext } from "@/lib/auth/session";
 import { addDays, todayInZone } from "@/lib/campaign-plan";
 import { getDb } from "@/lib/data/db";
 import { listProjects } from "@/lib/data/projects";
+import { listSocialPages } from "@/lib/data/social";
+import { hasStockProvider } from "@/lib/media/stock-providers";
 import { getAiAvailability } from "@/lib/services/generation";
 
 export const metadata: Metadata = { title: "New campaign" };
@@ -24,6 +26,8 @@ export default async function NewCampaignPage({ searchParams }: Props) {
   const params = await searchParams;
   const projects = (await listProjects(await getDb(), ctx.workspace.id)).filter((p) => p.status === "active");
   const availability = await getAiAvailability();
+  const pages = (await listSocialPages(await getDb(), ctx.workspace.id)).filter((p) => p.status === "connected" && p.capabilities.can_publish === true);
+  const stockAvailable = await hasStockProvider();
 
   const requested = typeof params.project === "string" ? params.project : "";
   const defaultProjectId = projects.find((p) => p.id === requested)?.id ?? projects[0]?.id ?? "";
@@ -36,7 +40,7 @@ export default async function NewCampaignPage({ searchParams }: Props) {
       </Link>
       <PageHeader
         title="New campaign"
-        description="Choose what to write about and when to post. You see the proposed calendar first, and you review every post before it is scheduled."
+        description="Choose what to write about and when to post. You see the proposed calendar first. Posts are saved in Content, or scheduled for you if you choose that below."
       />
 
       {projects.length === 0 ? (
@@ -50,6 +54,8 @@ export default async function NewCampaignPage({ searchParams }: Props) {
         <div className="max-w-3xl">
           <CampaignForm
             available={availability.available}
+            pages={pages.map((p) => ({ id: p.id, name: p.name }))}
+            stockAvailable={stockAvailable}
             defaultProjectId={defaultProjectId}
             defaultStartDate={defaultStartDate}
             projects={projects.map((p) => ({

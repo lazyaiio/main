@@ -89,3 +89,7 @@ The server runs on UTC. LazyAI saves each schedule as an exact moment and conver
 
 ## Other ways to call it
 Any service that can send an HTTP request every minute with the header works (for example cron-job.org): address `https://YOUR-DOMAIN/api/cron/dispatch`, method GET or POST, header `Authorization: Bearer <CRON_SECRET>`.
+
+
+## Batch 14: the same scheduler now also writes campaigns
+The every-minute call to `/api/cron/dispatch` now does two things: it publishes due posts, and then it writes the next few posts of every campaign that is "generating" (with the time that is left of the 60 seconds). This is what lets a campaign keep going after the browser is closed. Nothing new has to be set up. If **Admin -> Publishing** shows the scheduler as running, background writing works. If the scheduler is not running, campaigns are written only while their page is open.

@@ -28,19 +28,29 @@ describe("hashtags", () => {
   });
 });
 
-describe("approval workflow", () => {
-  it("only allows sensible transitions", () => {
-    expect(canTransition("draft", "awaiting_approval")).toBe(true);
-    expect(canTransition("draft", "approved")).toBe(false);
-    expect(canTransition("awaiting_approval", "approved")).toBe(true);
-    expect(canTransition("rejected", "approved")).toBe(false);
-    expect(allowedTransitions("approved")).toEqual(["draft", "cancelled"]);
+describe("post status (no review step)", () => {
+  it("lets a ready post be canceled and a canceled post be restored", () => {
+    expect(allowedTransitions("approved")).toEqual(["cancelled"]);
+    expect(allowedTransitions("cancelled")).toEqual(["approved"]);
+    expect(canTransition("approved", "cancelled")).toBe(true);
+    expect(canTransition("cancelled", "approved")).toBe(true);
   });
 
-  it("protects approved and in-review posts from deletion", () => {
-    expect(isDeletable("draft")).toBe(true);
-    expect(isDeletable("approved")).toBe(false);
-    expect(isDeletable("awaiting_approval")).toBe(false);
+  it("never sends a post back to a review state", () => {
+    expect(canTransition("approved", "draft")).toBe(false);
+    expect(canTransition("approved", "awaiting_approval")).toBe(false);
+    expect(canTransition("cancelled", "rejected")).toBe(false);
+  });
+
+  it("treats older values as ready", () => {
+    expect(canTransition("draft", "approved")).toBe(true);
+    expect(canTransition("awaiting_approval", "approved")).toBe(true);
+    expect(canTransition("rejected", "approved")).toBe(true);
+  });
+
+  it("allows deleting any post (a schedule still protects its post in the database)", () => {
+    expect(isDeletable("approved")).toBe(true);
+    expect(isDeletable("cancelled")).toBe(true);
   });
 });
 

@@ -140,7 +140,7 @@ export function checkSettings(source: EnvSource): DeployCheck[] {
     { id: "legal-name", group: "Legal pages", label: "Operator name", required: false, ok: text(source.NEXT_PUBLIC_OPERATOR_NAME).length > 0, missing: "NEXT_PUBLIC_OPERATOR_NAME is not set; the pages say \"LazyAI\"." },
     { id: "legal-email", group: "Legal pages", label: "Contact email", required: true, ok: EMAIL_RE.test(text(source.NEXT_PUBLIC_CONTACT_EMAIL)), missing: "NEXT_PUBLIC_CONTACT_EMAIL is missing or invalid. Meta and the privacy pages need a real contact." },
     { id: "legal-country", group: "Legal pages", label: "Governing country", required: true, ok: text(source.NEXT_PUBLIC_OPERATOR_COUNTRY).length > 0, missing: "NEXT_PUBLIC_OPERATOR_COUNTRY is not set (the Terms name it)." },
-    { id: "image-provider", group: "Optional", label: "Stock photo search", required: false, ok: text(source.IMAGE_PROVIDER).toLowerCase() === "pexels" && text(source.IMAGE_PROVIDER_API_KEY).length > 0, present: "On (Pexels).", missing: "Off. Uploading your own images still works." },
+    { id: "image-provider", group: "Optional", label: "Stock photo search", required: false, ok: text(source.IMAGE_PROVIDER_API_KEY).length > 0 || text(source.PEXELS_API_KEY).length > 0 || text(source.PIXABAY_API_KEY).length > 0 || text(source.UNSPLASH_ACCESS_KEY).length > 0, present: "A key was found in the environment.", missing: "No environment key. You can add Pixabay or Unsplash keys in Admin, Stock photos. Uploading your own images works without it." },
   ];
 
   const checks = rules.map(fromRule).map((check) => {

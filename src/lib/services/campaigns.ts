@@ -21,12 +21,13 @@ import {
   releaseSlotRpc,
   retryFailedSlotsRpc,
   startCampaignRpc,
-  submitCampaignDrafts,
 } from "@/lib/data/campaigns";
 import { deleteContentItem, insertContentItem } from "@/lib/data/content";
 import { DataError, getDb } from "@/lib/data/db";
 import { getProject } from "@/lib/data/projects";
+import { listSocialPages } from "@/lib/data/social";
 import type { CampaignDetail, CampaignStatus, ProjectRow } from "@/lib/data/types";
+import { finishCampaignPost } from "./campaign-finish";
 import { logAudit } from "./audit";
 import { notifyCampaignFinished, runLater } from "./email";
 import { remainingMonthlyGenerations } from "./plans";
@@ -99,6 +100,13 @@ export async function createCampaign(ctx: AppContext, input: CampaignFormInput):
   if (input.sourceUrl) source = await readSource(ctx, project.id, input.sourceUrl);
 
   const db = await getDb();
+  if (input.autoSchedule) {
+    const pages = await listSocialPages(db, ctx.workspace.id);
+    const page = pages.find((p) => p.id === input.pageId);
+    if (!page || page.status !== "connected" || page.capabilities.can_publish !== true) {
+      throw new ServiceError("invalid", "Choose a connected Facebook Page where you are allowed to post.");
+    }
+  }
   let id: string;
   try {
     id = await createCampaignWithSlots(db, {
@@ -116,6 +124,9 @@ export async function createCampaign(ctx: AppContext, input: CampaignFormInput):
         length: input.length,
         sourceDocumentId: source?.documentId ?? null,
         sourceUrl: source?.url ?? null,
+        autoImage: input.autoImage,
+        autoSchedule: input.autoSchedule,
+        pageId: input.pageId || null,
       }),
       slots: slotsToJson(slots),
     });
@@ -176,17 +187,6 @@ export async function retryFailedPosts(ctx: AppContext, campaignId: string): Pro
   } catch (error) {
     translate(error, "There is nothing to retry right now.");
   }
-}
-
-/** Sends every draft post of the campaign to review. Returns how many moved. */
-export async function submitCampaignForReview(ctx: AppContext, campaignId: string): Promise<number> {
-  requireWrite(ctx);
-  const db = await getDb();
-  const campaign = await getCampaign(db, ctx.workspace.id, campaignId);
-  if (!campaign) throw new ServiceError("not_found", "That campaign could not be found.");
-  const count = await submitCampaignDrafts(db, ctx.workspace.id, campaignId);
-  if (count > 0) await logAudit(db, ctx, "campaign.submitted_for_review", "campaign", campaignId, { posts: count });
-  return count;
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -275,6 +275,8 @@ export async function runCampaignBatch(ctx: AppContext, campaignId: string): Pro
   type Generated = Awaited<ReturnType<typeof generate>>;
   type Draft = { hook: string | null; body: string; generated: Generated; request: PostRequest };
 
+  const imageBriefs = new Map<string, string | null>();
+
   const deps: BatchDeps<Draft> = {
     now: () => Date.now(),
     allowance,
@@ -288,6 +290,7 @@ export async function runCampaignBatch(ctx: AppContext, campaignId: string): Pro
           language: row.language,
           format: row.content_format,
           theme: row.theme,
+          plannedAt: row.planned_at,
           attempts: row.attempts,
         }),
       );
@@ -347,6 +350,7 @@ export async function runCampaignBatch(ctx: AppContext, campaignId: string): Pro
           },
         });
         if (!id) throw new ServiceError("failed", "We could not save the generated post.");
+        imageBriefs.set(slot.id, generated.output.image_brief || null);
         return { kind: "saved", itemId: id };
       } catch (error) {
         // The same wording already exists in this campaign (unique index): try again with a new angle.
@@ -354,7 +358,21 @@ export async function runCampaignBatch(ctx: AppContext, campaignId: string): Pro
         throw error;
       }
     },
-    complete: (slot, itemId) => completeSlotRpc(db, slot.id, itemId),
+    complete: async (slot, itemId) => {
+      const accepted = await completeSlotRpc(db, slot.id, itemId);
+      if (accepted) {
+        await finishCampaignPost({
+          workspaceId: ws,
+          userId: campaign.created_by,
+          brief,
+          itemId,
+          plannedAt: slot.plannedAt ?? null,
+          imageBrief: imageBriefs.get(slot.id) ?? null,
+        });
+        imageBriefs.delete(slot.id);
+      }
+      return accepted;
+    },
     discard: async (itemId) => {
       await deleteContentItem(db, ws, itemId);
     },

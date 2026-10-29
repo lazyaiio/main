@@ -25,7 +25,7 @@ const PAUSE_BETWEEN_ROUNDS_MS = 400;
  * for one small round of posts at a time (a few posts per request, never the whole campaign).
  * All progress is stored in the database, so closing the page only pauses the work.
  */
-export function CampaignRunner({ campaignId, initial, canRun }: { campaignId: string; initial: RunnerState; canRun: boolean }) {
+export function CampaignRunner({ campaignId, initial, canRun, backgroundActive }: { campaignId: string; initial: RunnerState; canRun: boolean; backgroundActive: boolean }) {
   const router = useRouter();
   const [state, setState] = useState<RunnerState>(initial);
   const [error, setError] = useState<string | null>(null);
@@ -100,8 +100,9 @@ export function CampaignRunner({ campaignId, initial, canRun }: { campaignId: st
 
       {generating && canRun ? (
         <p className="rounded-xl bg-brand-50 px-3.5 py-2.5 text-sm text-brand-700" role="status">
-          Posts are written in small batches while this page is open. If you close it, your progress is saved and you can
-          continue later.
+          {backgroundActive
+            ? "Posts keep being written in the background, a few every minute, even if you close this page. Keeping it open just makes it faster."
+            : "Posts are written in small batches while this page is open. If you close it, your progress is saved and you can continue later. (Writing in the background needs the every-minute scheduler. An admin can check it under Admin, Publishing.)"}
         </p>
       ) : null}
       {generating && !canRun ? (

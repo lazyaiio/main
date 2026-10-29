@@ -13,7 +13,7 @@ import { ServiceError } from "@/lib/services/errors";
 import { generatePost, regeneratePost } from "@/lib/services/generation";
 
 const uuid = z.string().uuid();
-const STATUSES = ["draft", "awaiting_approval", "approved", "rejected", "cancelled"] as const;
+const STATUSES = ["approved", "cancelled"] as const;
 
 const str = (formData: FormData, key: string) => {
   const v = formData.get(key);
@@ -98,15 +98,9 @@ export async function updateContentAction(_prev: FormState, formData: FormData):
 
   const ctx = await requireAppContext();
   try {
-    const { movedToDraft } = await content.updateContent(ctx, id.data, parsed.data);
+    await content.updateContent(ctx, id.data, parsed.data);
     revalidatePath("/app/content");
-    return {
-      success: true,
-      message: movedToDraft
-        ? "Saved. Because the post was approved, it moved back to Draft. Approve it again when you are ready."
-        : "Saved.",
-      values,
-    };
+    return { success: true, message: "Saved.", values };
   } catch (error) {
     return { error: messageFor(error), values };
   }

@@ -10,7 +10,7 @@ import { postStatus } from "@/lib/status";
 
 const INPUT = "h-11 rounded-xl border border-ink-200 bg-white px-3.5 text-sm text-ink focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20";
 
-/** Schedule an approved post to a connected Facebook Page, and manage what is already scheduled. */
+/** Schedule a post to a connected Facebook Page, and manage what is already scheduled. "approved" means the post is not canceled. */
 export function ScheduleCard({
   itemId,
   approved,
@@ -60,7 +60,7 @@ export function ScheduleCard({
 
       {canEdit ? (
         !approved ? (
-          <p className="text-sm text-ink-600">Approve this post first. Only approved posts can be scheduled.</p>
+          <p className="text-sm text-ink-600">This post is canceled. Restore it first, then you can schedule it.</p>
         ) : data.pages.length === 0 ? (
           <p className="text-sm text-ink-600">
             No Facebook Page is connected yet.{" "}
@@ -112,7 +112,7 @@ export function ScheduleCard({
 
                 {!approved && (s.status === "scheduled" || s.status === "retrying") ? (
                   <p role="alert" className="rounded-xl bg-amber-50 px-3.5 py-2.5 text-sm text-amber-900">
-                    This post is not approved any more. Approve it again before its time, or it will not be published.
+                    This post was canceled. Restore it before its time, or it will not be published.
                   </p>
                 ) : null}
 

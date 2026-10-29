@@ -2,7 +2,7 @@ import "server-only";
 import { canWrite } from "@/lib/auth/permissions";
 import type { AppContext } from "@/lib/auth/session";
 import { hashContent } from "@/lib/content";
-import { getDb } from "@/lib/data/db";
+import { getDb, type Db } from "@/lib/data/db";
 import { countSourceAttempts, findRecentReadySource, getSourceDocument, recordSourceDocument, type SourceDocRow } from "@/lib/data/sources";
 import { getPublicEnv } from "@/lib/env";
 import { ExtractError } from "@/lib/extract/errors";
@@ -135,5 +135,11 @@ export async function readSource(ctx: AppContext, projectId: string | null, rawU
 /** A previously read article (used when regenerating a post). */
 export async function loadSourceMaterial(ctx: AppContext, documentId: string): Promise<SourceMaterial | null> {
   const row = await getSourceDocument(await getDb(), ctx.workspace.id, documentId);
+  return row ? toMaterial(row) : null;
+}
+
+/** Same as loadSourceMaterial, for the background writer (no signed-in person; the workspace comes from the campaign). */
+export async function loadSourceMaterialForWorkspace(db: Db, workspaceId: string, documentId: string): Promise<SourceMaterial | null> {
+  const row = await getSourceDocument(db, workspaceId, documentId);
   return row ? toMaterial(row) : null;
 }

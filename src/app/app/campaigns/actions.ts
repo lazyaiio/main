@@ -136,13 +136,6 @@ export async function retryFailedAction(formData: FormData): Promise<void> {
   });
 }
 
-export async function submitCampaignReviewAction(formData: FormData): Promise<void> {
-  return control(formData, async (ctx, id) => {
-    const count = await campaigns.submitCampaignForReview(ctx, id);
-    return count > 0 ? "submitted" : "nothing_to_submit";
-  });
-}
-
 export type RunResult = { ok: true; state: CampaignRunState } | { ok: false; error: string };
 
 /**

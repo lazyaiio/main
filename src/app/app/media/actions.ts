@@ -62,7 +62,7 @@ export async function uploadImageAction(_prev: FormState, formData: FormData): P
 }
 
 export async function importStockPhotoAction(formData: FormData): Promise<void> {
-  const id = z.string().regex(/^\d{1,12}$/).safeParse(formData.get("photoId"));
+  const id = z.string().regex(/^(pexels|pixabay|unsplash):\d{1,12}$/).safeParse(formData.get("photoId"));
   const attachTo = attachTarget(formData);
   const base = attachTo ? `/app/media?attachTo=${attachTo}` : "/app/media";
   const sep = base.includes("?") ? "&" : "?";
@@ -118,28 +118,26 @@ export async function attachImageAction(formData: FormData): Promise<void> {
   if (!item.success) redirect("/app/content");
   if (!mediaId.success) redirect(`/app/content/${item.data}?error=not_found`);
   const ctx = await requireAppContext();
-  let moved: boolean;
   try {
-    moved = (await media.attachImage(ctx, item.data, mediaId.data)).movedToDraft;
+    await media.attachImage(ctx, item.data, mediaId.data);
   } catch (error) {
     redirect(`/app/content/${item.data}?error=${errorCode(error)}`);
   }
   revalidatePath(`/app/content/${item.data}`);
-  redirect(`/app/content/${item.data}?notice=${moved ? "image_added_draft" : "image_added"}`);
+  redirect(`/app/content/${item.data}?notice=image_added`);
 }
 
 export async function detachImageAction(formData: FormData): Promise<void> {
   const item = uuid.safeParse(formData.get("itemId"));
   if (!item.success) redirect("/app/content");
   const ctx = await requireAppContext();
-  let moved: boolean;
   try {
-    moved = (await media.detachImage(ctx, item.data)).movedToDraft;
+    await media.detachImage(ctx, item.data);
   } catch (error) {
     redirect(`/app/content/${item.data}?error=${errorCode(error)}`);
   }
   revalidatePath(`/app/content/${item.data}`);
-  redirect(`/app/content/${item.data}?notice=${moved ? "image_removed_draft" : "image_removed"}`);
+  redirect(`/app/content/${item.data}?notice=image_removed`);
 }
 
 

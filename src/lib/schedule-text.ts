@@ -13,7 +13,7 @@ export function describeScheduleError(code: string | null): string | null {
     case "missed_window":
       return "This post was more than 6 hours late (for example during an outage), so it was not published automatically. Retry it or choose a new time.";
     case "not_approved":
-      return "The post was not approved when its time came. Approve it again, then retry.";
+      return "The post was canceled when its time came. Restore it, then retry.";
     case "post_missing":
       return "The post could not be found.";
     case "page_missing":

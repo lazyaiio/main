@@ -2,7 +2,7 @@ import "server-only";
 import { canWrite } from "@/lib/auth/permissions";
 import type { AppContext } from "@/lib/auth/session";
 import { recordAiUsage } from "@/lib/data/ai-settings";
-import { getContentItem, updateContentItem } from "@/lib/data/content";
+import { getContentItem } from "@/lib/data/content";
 import { DataError, getDb, type Db } from "@/lib/data/db";
 import {
   PG_LIBRARY_FULL,
@@ -26,7 +26,7 @@ import {
 } from "@/lib/data/media";
 import { StockSearchError, cleanQuery, downloadImage, type StockPhoto } from "@/lib/media/image-search";
 import { inspectImage, type InspectResult } from "@/lib/media/image-inspect";
-import { getImageProvider } from "@/lib/media/keys";
+import { loadStockProviders, searchStock } from "@/lib/media/stock-providers";
 import { MAX_UPLOAD_BYTES, STOCK_IMPORTS_PER_HOUR, STOCK_SEARCHES_PER_HOUR } from "@/lib/media/limits";
 import { buildMediaPath } from "@/lib/media/paths";
 import { makeThumbnail } from "@/lib/media/thumbnail";
@@ -44,9 +44,9 @@ const NOT_FOUND = () => new ServiceError("not_found", "That image could not be f
 export type MediaItem = MediaAssetRow & { url: string | null; thumbUrl: string | null };
 
 /** Is stock photo search turned on, and which provider credit must be shown? */
-export function getStockProviderInfo(): { name: string; creditUrl: string } | null {
-  const provider = getImageProvider();
-  return provider ? { name: provider.name, creditUrl: provider.creditUrl } : null;
+export async function getStockProviderInfo(): Promise<{ providers: { name: string; creditUrl: string }[] } | null> {
+  const providers = await loadStockProviders();
+  return providers.length > 0 ? { providers: providers.map((p) => ({ name: p.name, creditUrl: p.creditUrl })) } : null;
 }
 
 async function withUrls(db: Db, assets: MediaAssetRow[]): Promise<MediaItem[]> {
@@ -217,7 +217,8 @@ function stockError(error: unknown): never {
 
 export async function searchStockPhotos(ctx: AppContext, rawQuery: string): Promise<StockPhoto[]> {
   requireWrite(ctx);
-  const provider = getImageProvider();
+  const providers = await loadStockProviders();
+  const provider = providers[0];
   if (!provider) throw new ServiceError("stock_failed", "Stock photo search is not set up yet.");
   const query = cleanQuery(rawQuery);
   if (!query) throw new ServiceError("invalid", "Enter at least 2 characters to search.");
@@ -226,7 +227,7 @@ export async function searchStockPhotos(ctx: AppContext, rawQuery: string): Prom
   await enforceStockLimit(db, ctx, "image.search", STOCK_SEARCHES_PER_HOUR);
   await recordStockUsage(db, ctx, "image.search", provider.id); // counted even if the call fails: it protects the shared key
   try {
-    return await provider.search(query, { perPage: 12 });
+    return await searchStock(providers, query, 12);
   } catch (error) {
     return stockError(error);
   }
@@ -236,10 +237,12 @@ export async function searchStockPhotos(ctx: AppContext, rawQuery: string): Prom
  * Copies one stock photo into the library. The photo is looked up again by its id on the server, so
  * the browser can never choose what gets downloaded.
  */
-export async function importStockPhoto(ctx: AppContext, providerPhotoId: string): Promise<string> {
+export async function importStockPhoto(ctx: AppContext, photoRef: string): Promise<string> {
   requireWrite(ctx);
-  const provider = getImageProvider();
-  if (!provider) throw new ServiceError("stock_failed", "Stock photo search is not set up yet.");
+  // The reference looks like "pexels:123" or "pixabay:456".
+  const [providerKey, providerPhotoId] = photoRef.split(":");
+  const provider = (await loadStockProviders()).find((p) => p.id === providerKey);
+  if (!provider || !providerPhotoId) throw new ServiceError("stock_failed", "Stock photo search is not set up yet.");
 
   const db = await getDb();
   await enforceStockLimit(db, ctx, "image.import", STOCK_IMPORTS_PER_HOUR);
@@ -259,7 +262,7 @@ export async function importStockPhoto(ctx: AppContext, providerPhotoId: string)
   const info = inspectImage(bytes);
   if (!info.ok) throw new ServiceError("invalid", info.message);
 
-  return saveImage(ctx, db, bytes, info, {
+  const saved = await saveImage(ctx, db, bytes, info, {
     sourceUrl: photo.sourcePageUrl,
     attribution: {
       provider: photo.providerName,
@@ -273,6 +276,8 @@ export async function importStockPhoto(ctx: AppContext, providerPhotoId: string)
     altText: photo.alt || null,
     auditAction: "media.imported",
   });
+  await provider.trackDownload?.(photo);
+  return saved;
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -289,14 +294,7 @@ export async function getPostImage(ctx: AppContext, itemId: string): Promise<Med
   return item ?? null;
 }
 
-async function markEdited(db: Db, ctx: AppContext, itemId: string, approvalStatus: string) {
-  // An approved post that changes must be approved again.
-  if (approvalStatus === "approved") {
-    await updateContentItem(db, ctx.workspace.id, itemId, { approval_status: "draft" });
-  }
-}
-
-export async function attachImage(ctx: AppContext, itemId: string, mediaId: string): Promise<{ movedToDraft: boolean }> {
+export async function attachImage(ctx: AppContext, itemId: string, mediaId: string): Promise<void> {
   requireWrite(ctx);
   const db = await getDb();
   const item = await getContentItem(db, ctx.workspace.id, itemId);
@@ -310,12 +308,10 @@ export async function attachImage(ctx: AppContext, itemId: string, mediaId: stri
   } catch {
     throw new ServiceError("failed", "Something went wrong. Please try again.");
   }
-  await markEdited(db, ctx, itemId, item.approval_status);
   await logAudit(db, ctx, "content.image_attached", "content_item", itemId, { media_id: mediaId });
-  return { movedToDraft: item.approval_status === "approved" };
 }
 
-export async function detachImage(ctx: AppContext, itemId: string): Promise<{ movedToDraft: boolean }> {
+export async function detachImage(ctx: AppContext, itemId: string): Promise<void> {
   requireWrite(ctx);
   const db = await getDb();
   const item = await getContentItem(db, ctx.workspace.id, itemId);
@@ -325,9 +321,7 @@ export async function detachImage(ctx: AppContext, itemId: string): Promise<{ mo
   } catch {
     throw new ServiceError("failed", "Something went wrong. Please try again.");
   }
-  await markEdited(db, ctx, itemId, item.approval_status);
   await logAudit(db, ctx, "content.image_removed", "content_item", itemId, {});
-  return { movedToDraft: item.approval_status === "approved" };
 }
 
 // ---------------------------------------------------------------------------------------------

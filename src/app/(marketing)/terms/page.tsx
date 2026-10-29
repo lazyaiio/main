@@ -25,7 +25,7 @@ export default function TermsPage() {
 
       <h2>2. The Service</h2>
       <p>
-        LazyAI helps you plan content, generate drafts with artificial intelligence, review and approve them with your team, and schedule approved posts to
+        LazyAI helps you plan content, generate posts with artificial intelligence, edit them with your team, and schedule posts to
         Facebook Pages that you connect. We may add, change, or remove features. Some features are in beta and may change or be unavailable at times.
       </p>
 
@@ -44,7 +44,7 @@ export default function TermsPage() {
           for having the right to publish the content to that Page.
         </li>
         <li>
-          LazyAI publishes only posts that you or your team have approved, to the Page and at the time you scheduled. You can cancel a scheduled post before it is
+          LazyAI publishes only posts that you or your team have scheduled, to the Page and at the time you scheduled. You can cancel a scheduled post before it is
           published.
         </li>
         <li>
@@ -61,7 +61,7 @@ export default function TermsPage() {
       <ul>
         <li>Drafts are produced by AI and can be inaccurate, incomplete, outdated, or similar to other content. They are suggestions, not advice.</li>
         <li>
-          <strong>You are responsible for reviewing every post before you approve it</strong>, including checking facts, prices, claims, links, and images, and for
+          <strong>You are responsible for reviewing every post before it is published</strong>, including checking facts, prices, claims, links, and images, and for
           making sure it follows the law, Facebook’s rules, and the rights of others.
         </li>
         <li>We do not guarantee that content will perform in any particular way, or that Facebook will accept or show it.</li>

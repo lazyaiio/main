@@ -4,10 +4,11 @@ import type { ApprovalStatus, CampaignStatus, PostStatus, SlotStatus } from "@/l
 type Meta = { label: string; tone: BadgeTone };
 
 export const approvalStatus: Record<ApprovalStatus, Meta> = {
-  draft: { label: "Draft", tone: "neutral" },
-  awaiting_approval: { label: "Needs review", tone: "amber" },
-  approved: { label: "Approved", tone: "brand" },
-  rejected: { label: "Rejected", tone: "neutral" },
+  // Posts have no review step: everything that is not canceled is ready.
+  draft: { label: "Ready", tone: "brand" },
+  awaiting_approval: { label: "Ready", tone: "brand" },
+  approved: { label: "Ready", tone: "brand" },
+  rejected: { label: "Ready", tone: "brand" },
   cancelled: { label: "Canceled", tone: "neutral" },
 };
 
@@ -15,7 +16,7 @@ export const campaignStatus: Record<CampaignStatus, Meta> = {
   draft: { label: "Draft", tone: "neutral" },
   planning: { label: "Planning", tone: "brand" },
   generating: { label: "Generating", tone: "brand" },
-  ready: { label: "Ready to review", tone: "amber" },
+  ready: { label: "Written", tone: "green" },
   paused: { label: "Paused", tone: "neutral" },
   completed: { label: "Completed", tone: "green" },
   failed: { label: "Failed", tone: "amber" },

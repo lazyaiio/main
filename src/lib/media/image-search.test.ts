@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { StockSearchError, cleanQuery, createPexelsProvider, downloadImage } from "./image-search";
+import { PIXABAY_HOSTS, StockSearchError, cleanQuery, createPexelsProvider, createPixabayProvider, createUnsplashProvider, downloadImage } from "./image-search";
 
 const photo = (id: number, extra: Record<string, unknown> = {}) => ({
   id,
@@ -130,5 +130,91 @@ describe("downloadImage", () => {
   it("reports failed downloads", async () => {
     await expect(downloadImage("https://images.pexels.com/a.jpg", { ...options, fetchFn: fakeFetch(() => new Response("no", { status: 403 })) })).rejects.toMatchObject({ code: "download_failed" });
     await expect(downloadImage("https://images.pexels.com/a.jpg", { ...options, fetchFn: (() => Promise.reject(new Error("x"))) as typeof fetch })).rejects.toMatchObject({ code: "download_failed" });
+  });
+});
+
+describe("Pixabay", () => {
+  const hit = (id: number) => ({
+    id,
+    pageURL: `https://pixabay.com/photos/test-${id}/`,
+    tags: "coffee, cup, table",
+    webformatURL: `https://pixabay.com/get/w${id}.jpg`,
+    largeImageURL: `https://pixabay.com/get/l${id}.jpg`,
+    imageWidth: 4000,
+    imageHeight: 3000,
+    user: "Some Person",
+    user_id: 77,
+  });
+
+  it("maps results and credits the creator", async () => {
+    const provider = createPixabayProvider("key12345", fakeFetch(() => json({ hits: [hit(5)] })));
+    const [first] = await provider.search("coffee");
+    expect(first).toMatchObject({ providerKey: "pixabay", providerId: "5", providerName: "Pixabay", license: "Pixabay Content License" });
+    expect(first?.creatorUrl).toContain("/users/Some-Person-77/");
+  });
+
+  it("drops photos that are not on Pixabay's own hosts", async () => {
+    const bad = { ...hit(6), largeImageURL: "https://evil.example/x.jpg" };
+    const provider = createPixabayProvider("key12345", fakeFetch(() => json({ hits: [bad, hit(7)] })));
+    expect((await provider.search("coffee")).map((p) => p.providerId)).toEqual(["7"]);
+  });
+
+  it("reports a busy provider and bad answers", async () => {
+    await expect(createPixabayProvider("k", fakeFetch(() => new Response("", { status: 429 }))).search("x")).rejects.toMatchObject({ code: "rate_limited" });
+    await expect(createPixabayProvider("k", fakeFetch(() => json({ nope: 1 }))).search("x")).rejects.toMatchObject({ code: "bad_response" });
+  });
+
+  it("follows a redirect only inside the provider's hosts", async () => {
+    const opts = { allowedHosts: PIXABAY_HOSTS, maxBytes: 1000 };
+    const ok = fakeFetch((url) => (url.includes("/get/") ? new Response("", { status: 302, headers: { location: "https://cdn.pixabay.com/photo/a.jpg" } }) : new Response(new Uint8Array([1, 2]))));
+    expect((await downloadImage("https://pixabay.com/get/a.jpg", { ...opts, fetchFn: ok })).length).toBe(2);
+    const bad = fakeFetch(() => new Response("", { status: 302, headers: { location: "https://evil.example/a.jpg" } }));
+    await expect(downloadImage("https://pixabay.com/get/a.jpg", { ...opts, fetchFn: bad })).rejects.toMatchObject({ code: "not_allowed" });
+  });
+});
+
+describe("Unsplash", () => {
+  const result = (id: string, extra: Record<string, unknown> = {}) => ({
+    id,
+    width: 4000,
+    height: 2600,
+    alt_description: "a cup of coffee",
+    urls: { regular: `https://images.unsplash.com/${id}?w=1080`, small: `https://images.unsplash.com/${id}?w=400` },
+    links: { html: `https://unsplash.com/photos/${id}`, download_location: `https://api.unsplash.com/photos/${id}/download` },
+    user: { name: "Jane Doe", username: "jane", links: { html: "https://unsplash.com/@jane" } },
+    ...extra,
+  });
+
+  it("sends the key, maps results, and adds the tracking parameters to links", async () => {
+    let auth = "";
+    const provider = createUnsplashProvider("ACCESSKEY1", fakeFetch((_url, init) => {
+      auth = String((init?.headers as Record<string, string>).Authorization);
+      return json({ results: [result("abc12345")] });
+    }));
+    const [first] = await provider.search("coffee");
+    expect(auth).toBe("Client-ID ACCESSKEY1");
+    expect(first).toMatchObject({ providerKey: "unsplash", providerId: "abc12345", creator: "Jane Doe", license: "Unsplash License" });
+    expect(first?.sourcePageUrl).toContain("utm_source=lazyai");
+  });
+
+  it("drops photos hosted anywhere else", async () => {
+    const bad = result("evil1234", { urls: { regular: "https://evil.example/a.jpg", small: "https://evil.example/b.jpg" } });
+    const provider = createUnsplashProvider("k", fakeFetch(() => json({ results: [bad, result("good1234")] })));
+    expect((await provider.search("x")).map((p) => p.providerId)).toEqual(["good1234"]);
+  });
+
+  it("treats 403 and 429 as the hourly limit", async () => {
+    await expect(createUnsplashProvider("k", fakeFetch(() => new Response("", { status: 403 }))).search("x")).rejects.toMatchObject({ code: "rate_limited" });
+  });
+
+  it("reports a used photo to Unsplash", async () => {
+    const calls: string[] = [];
+    const provider = createUnsplashProvider("k", fakeFetch((url) => {
+      calls.push(url);
+      return json({ results: [result("abc12345")] });
+    }));
+    const [photo] = await provider.search("x");
+    await provider.trackDownload?.(photo as NonNullable<typeof photo>);
+    expect(calls[1]).toBe("https://api.unsplash.com/photos/abc12345/download");
   });
 });

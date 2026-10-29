@@ -31,7 +31,14 @@ export function ProviderSettingsForm({
         defaultChecked={enabled}
       />
       <div className="grid gap-4 sm:grid-cols-[1fr_130px]">
-        <Field label="Model" name="model" required maxLength={120} defaultValue={model} />
+        <Field
+          label="Model"
+          name="model"
+          required
+          maxLength={120}
+          defaultValue={model}
+          hint={provider === "openrouter" ? "Tip: openrouter/free lets OpenRouter pick a working free model for each request." : undefined}
+        />
         <Field label="Priority" name="priority" type="number" min={1} max={999} required defaultValue={priority} hint="Lowest runs first" />
       </div>
       <FormMessage state={state} />

@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { checkCronAuth } from "@/lib/publish-dispatch";
+import { runBackgroundCampaigns } from "@/lib/services/campaign-worker";
 import { dispatchDuePosts } from "@/lib/services/publisher";
 import { describeError, logError } from "@/lib/log";
 import { getCronSecret } from "@/lib/social/keys";
@@ -19,9 +20,18 @@ async function handle(request: NextRequest) {
     // "reason" tells the person setting up the scheduler which side is wrong (see docs/SCHEDULER_SETUP.md).
     return NextResponse.json({ error: "unauthorized", reason: auth }, { status: 401, headers: { "Cache-Control": "no-store" } });
   }
+  const startedAt = Date.now();
   try {
     const summary = await dispatchDuePosts();
-    return NextResponse.json({ ok: true, ...summary }, { headers: { "Cache-Control": "no-store" } });
+    // Then keep campaigns that are being written moving, with whatever time is left of the 60 seconds.
+    // A problem here must never hide the publishing result.
+    let writing = { campaigns: 0, saved: 0, failures: 0 };
+    try {
+      writing = await runBackgroundCampaigns(54_000 - (Date.now() - startedAt));
+    } catch (error) {
+      logError("cron.campaigns_failed", describeError(error));
+    }
+    return NextResponse.json({ ok: true, ...summary, writing }, { headers: { "Cache-Control": "no-store" } });
   } catch (error) {
     logError("cron.dispatch_failed", describeError(error));
     return NextResponse.json({ ok: false, error: "dispatch_failed" }, { status: 500, headers: { "Cache-Control": "no-store" } });

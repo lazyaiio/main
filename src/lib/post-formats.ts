@@ -17,6 +17,11 @@ export const POST_LENGTHS = [
   { value: "short", label: "Short (30 to 60 words)", guidance: "about 30 to 60 words" },
   { value: "medium", label: "Medium (60 to 120 words)", guidance: "about 60 to 120 words" },
   { value: "long", label: "Long (120 to 200 words)", guidance: "about 120 to 200 words" },
+  {
+    value: "extra_long",
+    label: "Extra long (500 to 750 words)",
+    guidance: "about 500 to 750 words, organized into short paragraphs with a clear opening, a developed middle, and a closing thought",
+  },
 ] as const;
 
 export type PostLength = (typeof POST_LENGTHS)[number]["value"];
@@ -24,4 +29,14 @@ export const POST_LENGTH_VALUES = POST_LENGTHS.map((l) => l.value) as [PostLengt
 
 export function formatLabel(value: string): string {
   return POST_FORMATS.find((f) => f.value === value)?.label ?? "Post";
+}
+
+/**
+ * The most text the AI may write for one post. Longer posts need more room, and Bengali needs roughly
+ * twice as many tokens as English for the same number of words.
+ */
+export function maxTokensFor(length: PostLength, language: "en" | "bn"): number {
+  const base: Record<PostLength, number> = { short: 1200, medium: 1400, long: 2000, extra_long: 3600 };
+  const tokens = base[length] * (language === "bn" ? 2 : 1);
+  return Math.min(tokens, 8000);
 }

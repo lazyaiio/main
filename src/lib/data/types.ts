@@ -61,6 +61,11 @@ export type CampaignBrief = {
   length?: string;
   source_document_id?: string;
   source_url?: string;
+  /** "1" when each finished post gets a stock photo automatically. */
+  auto_image?: string;
+  /** "1" when each finished post is scheduled automatically on page_id at its planned time. */
+  auto_schedule?: string;
+  page_id?: string;
 };
 
 export type CampaignDetail = CampaignRow & { brief: CampaignBrief; created_by: string | null };

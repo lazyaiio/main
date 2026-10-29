@@ -42,7 +42,7 @@ export default async function MediaPage({ searchParams }: Props) {
   const notice = typeof sp.notice === "string" ? NOTICES[sp.notice] : undefined;
   const error = messageForCode(sp.error);
 
-  const [library, stock] = await Promise.all([listLibrary(ctx), Promise.resolve(getStockProviderInfo())]);
+  const [library, stock] = await Promise.all([listLibrary(ctx), getStockProviderInfo()]);
 
   let photos: StockPhoto[] = [];
   let searchError: string | null = null;
@@ -118,9 +118,14 @@ export default async function MediaPage({ searchParams }: Props) {
               </form>
               <p className="text-xs text-ink-500">
                 Photos provided by{" "}
-                <a href={stock.creditUrl} target="_blank" rel="noopener noreferrer" className="font-semibold text-brand hover:underline">
-                  {stock.name}
-                </a>
+                {stock.providers.map((p, i) => (
+                  <span key={p.name}>
+                    {i > 0 ? " and " : null}
+                    <a href={p.creditUrl} target="_blank" rel="noopener noreferrer" className="font-semibold text-brand hover:underline">
+                      {p.name}
+                    </a>
+                  </span>
+                ))}
                 . Free to use, including for business. Adding a photo saves a copy in your library with its credit.
               </p>
 
@@ -138,7 +143,7 @@ export default async function MediaPage({ searchParams }: Props) {
               {photos.length > 0 ? (
                 <ul className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-6">
                   {photos.map((photo) => (
-                    <li key={photo.providerId} className="flex flex-col overflow-hidden rounded-xl border border-ink-100">
+                    <li key={`${photo.providerKey}:${photo.providerId}`} className="flex flex-col overflow-hidden rounded-xl border border-ink-100">
                       <div className="aspect-[4/3] bg-ink-50">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img src={photo.previewUrl} alt={photo.alt} loading="lazy" className="h-full w-full object-cover" />
@@ -159,7 +164,7 @@ export default async function MediaPage({ searchParams }: Props) {
                           </a>
                         </p>
                         <form action={importStockPhotoAction} className="mt-auto">
-                          <input type="hidden" name="photoId" value={photo.providerId} />
+                          <input type="hidden" name="photoId" value={`${photo.providerKey}:${photo.providerId}`} />
                           {attachTo ? <input type="hidden" name="attachTo" value={attachTo} /> : null}
                           <PendingButton variant="primary" pendingLabel="Adding…">
                             {attachTo ? "Use on this post" : "Add to library"}
@@ -173,7 +178,7 @@ export default async function MediaPage({ searchParams }: Props) {
             </>
           ) : (
             <p className="text-sm text-ink-600">
-              Stock photo search is not set up yet. An admin can turn it on by adding a free Pexels API key (see the setup guide).
+              Stock photo search is not set up yet. An admin can turn it on in Admin, Stock photos, by adding a free Pixabay or Unsplash API key.
               Uploading your own images works without it.
             </p>
           )}

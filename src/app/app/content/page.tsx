@@ -21,10 +21,8 @@ type Props = { searchParams: Promise<Record<string, string | string[] | undefine
 
 const FILTER_LABELS: Record<string, string> = {
   all: "All",
-  draft: "Drafts",
-  awaiting_approval: "Needs review",
-  approved: "Approved",
-  rejected: "Rejected",
+  approved: "Ready",
+  cancelled: "Canceled",
 };
 
 export default async function ContentPage({ searchParams }: Props) {
@@ -41,7 +39,7 @@ export default async function ContentPage({ searchParams }: Props) {
     <div className="space-y-6">
       <PageHeader
         title="Content"
-        description="Every post, with its review status."
+        description="Every post you have written or generated."
         action={
           canWrite(ctx.role) ? (
             <ButtonLink href="/app/content/new">
@@ -81,7 +79,7 @@ export default async function ContentPage({ searchParams }: Props) {
           title={filter === "all" ? "No posts yet" : "Nothing here"}
           body={
             filter === "all"
-              ? "Posts you generate will appear here for review. Start with a project."
+              ? "Posts you generate will appear here. Start with a project."
               : "No posts have this status right now."
           }
           action={

@@ -38,12 +38,17 @@ export const manualPostSchema = z.object({
   body: contentFormSchema.shape.body,
 });
 
+/**
+ * Posts have no review step. A post is either ready ("approved" in the database) or canceled, and a canceled
+ * post can be restored. The older values (draft, awaiting_approval, rejected) no longer occur after
+ * migration 0014, but they are still understood and simply count as ready.
+ */
 const TRANSITIONS: Record<ApprovalStatus, ApprovalStatus[]> = {
-  draft: ["awaiting_approval", "cancelled"],
-  awaiting_approval: ["approved", "rejected", "draft"],
-  approved: ["draft", "cancelled"],
-  rejected: ["draft"],
-  cancelled: ["draft"],
+  approved: ["cancelled"],
+  cancelled: ["approved"],
+  draft: ["approved", "cancelled"],
+  awaiting_approval: ["approved", "cancelled"],
+  rejected: ["approved"],
 };
 
 export function allowedTransitions(from: ApprovalStatus): ApprovalStatus[] {
@@ -54,15 +59,15 @@ export function canTransition(from: ApprovalStatus, to: ApprovalStatus): boolean
   return TRANSITIONS[from].includes(to);
 }
 
-/** Posts that were already approved or scheduled must not be deleted silently. */
-export function isDeletable(status: ApprovalStatus): boolean {
-  return status === "draft" || status === "rejected" || status === "cancelled";
+/** Any post may be deleted. The database refuses when the post is used by a schedule. */
+export function isDeletable(_status: ApprovalStatus): boolean {
+  return true;
 }
 
 export const TRANSITION_LABELS: Record<ApprovalStatus, string> = {
-  draft: "Move back to draft",
-  awaiting_approval: "Submit for review",
-  approved: "Approve",
-  rejected: "Reject",
+  draft: "Mark as ready",
+  awaiting_approval: "Mark as ready",
+  approved: "Restore post",
+  rejected: "Mark as ready",
   cancelled: "Cancel post",
 };

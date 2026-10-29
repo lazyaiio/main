@@ -38,14 +38,12 @@ type Props = {
 };
 
 const NOTICES: Record<string, string> = {
-  generated: "Draft created. Review and edit it below.",
-  created: "Draft created.",
-  regenerated: "Regenerated. The post is back in Draft.",
+  generated: "Post created. Read it, edit it if you like, then schedule it below.",
+  created: "Post created.",
+  regenerated: "Regenerated with a new version of the text.",
   status: "Status updated.",
   image_added: "Image added to the post.",
-  image_added_draft: "Image changed. The post is back in Draft so it can be approved again.",
   image_removed: "Image removed from the post.",
-  image_removed_draft: "Image removed. The post is back in Draft so it can be approved again.",
   scheduled: "Post scheduled.",
   schedule_changed: "Schedule changed.",
   schedule_canceled: "Schedule canceled.",
@@ -168,7 +166,7 @@ export default async function ContentItemPage({ params, searchParams }: Props) {
 
       <ScheduleCard
         itemId={item.id}
-        approved={item.approval_status === "approved"}
+        approved={item.approval_status !== "cancelled"}
         canEdit={writable}
         data={scheduling}
         timeZone={ctx.workspace.timezone}
@@ -185,13 +183,13 @@ export default async function ContentItemPage({ params, searchParams }: Props) {
 
       {writable ? (
         <section className="max-w-2xl space-y-4 rounded-2xl border border-ink-100 bg-white p-6 shadow-card">
-          <h2 className="font-display text-lg font-bold">Review</h2>
+          <h2 className="font-display text-lg font-bold">Manage this post</h2>
           <div className="flex flex-wrap gap-3">
             {transitions.map((to) => (
               <form key={to} action={setStatusAction}>
                 <input type="hidden" name="itemId" value={item.id} />
                 <input type="hidden" name="to" value={to} />
-                <Button type="submit" variant={to === "awaiting_approval" || to === "approved" ? "primary" : "secondary"}>
+                <Button type="submit" variant="secondary">
                   {TRANSITION_LABELS[to]}
                 </Button>
               </form>
@@ -202,7 +200,7 @@ export default async function ContentItemPage({ params, searchParams }: Props) {
             <form action={regenerateAction} className="space-y-2 border-t border-ink-100 pt-4">
               <input type="hidden" name="itemId" value={item.id} />
               <PendingButton pendingLabel="Regenerating… this can take up to a minute">Regenerate with AI</PendingButton>
-              <p className="text-xs text-ink-500">Replaces the current text with a new version and moves the post back to Draft.</p>
+              <p className="text-xs text-ink-500">Replaces the current text with a new version.</p>
             </form>
           ) : null}
 

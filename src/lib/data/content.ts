@@ -42,7 +42,7 @@ export async function insertContentItem(db: Db, ws: string, item: NewContentItem
       image_brief: item.imageBrief,
       source_url: item.sourceUrl ?? null,
       content_hash: item.contentHash,
-      approval_status: "draft",
+      approval_status: "approved",
       ai_provider: item.aiProvider,
       ai_model: item.aiModel,
       prompt_version: item.promptVersion,

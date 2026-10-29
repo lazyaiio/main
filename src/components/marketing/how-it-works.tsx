@@ -4,12 +4,12 @@ const steps = [
     body: "Type a keyword, paste an article link, or point to your site. Pick English, Bengali, or both.",
   },
   {
-    title: "Review the plan and posts",
-    body: "See a proposed calendar first. Edit, regenerate, approve, or reject any post — nothing goes out unreviewed.",
+    title: "Check the plan and posts",
+    body: "See a proposed calendar first. Edit or regenerate any post, and cancel it any time before it goes out.",
   },
   {
     title: "Schedule and relax",
-    body: "Approved posts are queued for your Facebook Page. If something fails, you see why and can retry.",
+    body: "Scheduled posts are queued for your Facebook Page. If something fails, you see why and can retry.",
   },
 ];
 

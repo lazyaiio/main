@@ -33,7 +33,7 @@ export default function PrivacyPage() {
           <strong>Workspace information:</strong> your workspace name, timezone, language settings, and the people you invite and their roles.
         </li>
         <li>
-          <strong>Content you create:</strong> projects, topics, notes, campaign plans, post drafts, edits, approval decisions, and images you upload.
+          <strong>Content you create:</strong> projects, topics, notes, campaign plans, post drafts, edits, scheduling choices, and images you upload.
         </li>
         <li>
           <strong>Web page links you submit:</strong> when you give us an article or website link, we fetch the public text of that page and keep the title and
@@ -62,7 +62,7 @@ export default function PrivacyPage() {
           <strong>Usage records:</strong> counts of actions such as AI generations and stock photo searches, used to apply fair-use limits.
         </li>
         <li>
-          <strong>Activity log:</strong> a record of important actions in your workspace (who did what, and when), such as approving a post or connecting a Page.
+          <strong>Activity log:</strong> a record of important actions in your workspace (who did what, and when), such as scheduling a post or connecting a Page.
         </li>
         <li>
           <strong>Publishing records:</strong> which post was scheduled for which Page, its status, the ID Facebook returns, and error codes if something failed.
@@ -78,7 +78,7 @@ export default function PrivacyPage() {
 
       <h2>3. How we use information</h2>
       <ul>
-        <li>to provide the Service: store your workspace, generate drafts, let your team review them, and publish the posts you approve to the Pages you connect;</li>
+        <li>to provide the Service: store your workspace, generate posts, let your team edit them, and publish the posts you schedule to the Pages you connect;</li>
         <li>to keep the Service secure, prevent abuse and spam, and enforce usage limits;</li>
         <li>to give you support and send important service messages, such as a failed post or a Page that needs to be reconnected;</li>
         <li>to find and fix problems and to improve reliability and quality;</li>
@@ -94,7 +94,7 @@ export default function PrivacyPage() {
         providers that we select for the Service. Depending on how the Service is configured, these may include Anthropic, OpenAI, Google, and OpenRouter. They
         process the text to return a draft. We do not use your content to train our own models, and each provider handles the data under its own terms. Please do
         not put sensitive personal information (such as health details, government ID numbers, or passwords) into topics or notes. AI drafts can contain mistakes;
-        you review every post before it is published.
+        you are responsible for reading posts before they are published, including posts scheduled automatically.
       </p>
 
       <h2>5. Facebook and Meta Platform data</h2>
@@ -105,7 +105,7 @@ export default function PrivacyPage() {
       <ul>
         <li>show you the Pages you manage so you can choose which to connect;</li>
         <li>check that a connection still works;</li>
-        <li>publish posts that you or your team approved, at the time you scheduled, to the Page you chose.</li>
+        <li>publish posts that you or your team scheduled, at the time you chose, to the Page you chose.</li>
       </ul>
       <p>
         We do not use Facebook data for advertising, we do not sell it, and we do not share it except with the service providers described below that help us run
@@ -129,7 +129,7 @@ export default function PrivacyPage() {
           private storage.
         </li>
         <li>
-          <strong>Meta Platforms:</strong> when you connect a Page or publish a post, the content you approved and the technical information needed to publish it
+          <strong>Meta Platforms:</strong> when you connect a Page or publish a post, the content you scheduled and the technical information needed to publish it
           go to Facebook.
         </li>
         <li>

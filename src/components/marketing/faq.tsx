@@ -2,8 +2,8 @@ import { ChevronDown } from "lucide-react";
 
 const faqs = [
   {
-    q: "Will LazyAI post without my approval?",
-    a: "No. Review-before-scheduling is the default. You approve posts before anything is queued.",
+    q: "Will LazyAI post without my permission?",
+    a: "No. LazyAI only posts what you schedule, on the Pages you connected, at the time you chose. You can edit or cancel any post before it goes out.",
   },
   {
     q: "Which platforms are supported?",

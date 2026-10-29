@@ -19,7 +19,7 @@ const features = [
   {
     icon: CheckCircle2,
     title: "You stay in control",
-    body: "Edit, regenerate, approve, or reject. Review-before-scheduling is the default.",
+    body: "Edit or regenerate any post, and cancel it any time before it goes out.",
   },
   {
     icon: CalendarDays,

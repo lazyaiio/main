@@ -229,7 +229,7 @@ export async function regeneratePost(ctx: AppContext, itemId: string): Promise<v
       hashtags: output.hashtags,
       image_brief: output.image_brief || null,
       content_hash: hashContent(output.body),
-      approval_status: "draft",
+      approval_status: "approved",
       ai_provider: generated.provider,
       ai_model: generated.model,
       prompt_version: generated.promptVersion,
