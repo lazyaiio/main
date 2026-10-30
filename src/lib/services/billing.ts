@@ -4,11 +4,11 @@ import { canAdmin } from "@/lib/auth/permissions";
 import { decryptToken, encryptToken } from "@/lib/crypto/token-crypto";
 import { getDb } from "@/lib/data/db";
 import { getBillingCurrency, listVisiblePlans } from "@/lib/data/plans";
-import { applyPaidPlan, getPayment, getWorkspacePlanState, insertPayment, readBkashSettings, updatePayment, type BkashSettings } from "@/lib/data/payments";
+import { applyPaidPlan, applyRefund, getPayment, setRefundFields, getWorkspacePlanState, insertPayment, readBkashSettings, updatePayment, type BkashSettings } from "@/lib/data/payments";
 import { getPublicEnv } from "@/lib/env";
 import { logError } from "@/lib/log";
 import { checkoutOpen, priceFor, type Period } from "@/lib/payments/billing";
-import { BkashError, confirmsExpected, createPayment, executePayment, queryPayment, type BkashCredentials } from "@/lib/payments/bkash";
+import { BkashError, confirmsExpected, createPayment, executePayment, queryPayment, refundPayment, type BkashCredentials } from "@/lib/payments/bkash";
 import { getTokenEncryptionKey } from "@/lib/social/keys";
 import { ServiceError } from "./errors";
 import { enforceRate } from "./plans";
@@ -133,4 +133,51 @@ export async function finishCheckout(paymentRowId: string, bkashPaymentId: strin
     logError("billing.finish_failed", { code: error instanceof BkashError ? error.code : "unknown" });
     return "unknown";
   }
+}
+
+/** A workspace owner or admin asks for a refund of a completed payment. A platform admin decides. */
+export async function requestRefund(ctx: AppContext, paymentId: string, reason: string): Promise<void> {
+  if (!canAdmin(ctx.role)) throw new ServiceError("forbidden", "Only the owner or an admin of the workspace can ask for a refund.");
+  const cleaned = reason.trim().replace(/\s+/g, " ").slice(0, 300);
+  if (cleaned.length < 3) throw new ServiceError("failed", "Please tell us briefly why you want a refund.");
+  await enforceRate(await getDb(), "refund_request", 5, 3600);
+  // The person's own session reads the payment, so only payments of their workspace can be found.
+  const { data } = await (await getDb()).from("payments").select("id, status, refund_status").eq("id", paymentId).eq("workspace_id", ctx.workspace.id).maybeSingle();
+  const payment = data as { id: string; status: string; refund_status: string | null } | null;
+  if (!payment) throw new ServiceError("not_found", "That payment could not be found.");
+  if (payment.status !== "completed") throw new ServiceError("failed", "Only completed payments can be refunded.");
+  if (payment.refund_status === "requested" || payment.refund_status === "refunded") throw new ServiceError("failed", "A refund was already requested for this payment.");
+  await setRefundFields(payment.id, { refund_status: "requested", refund_reason: cleaned, refund_requested_at: new Date().toISOString() });
+}
+
+export type RefundOutcome = "refunded" | "failed" | "not_refundable";
+
+/** Platform admin approved: ask bKash to send the money back, then record it. The full amount is returned. */
+export async function approveRefund(paymentId: string): Promise<RefundOutcome> {
+  const payment = await getPayment(paymentId);
+  if (!payment || payment.status !== "completed" || !payment.provider_payment_id || !payment.provider_trx_id) return "not_refundable";
+  const creds = await activeCredentials();
+  if (!creds) throw new ServiceError("not_configured", "bKash is not set up or is switched off.");
+  try {
+    const result = await refundPayment(creds, {
+      paymentId: payment.provider_payment_id,
+      trxId: payment.provider_trx_id,
+      amount: payment.amount,
+      reason: payment.refund_reason ?? "Refund approved",
+    });
+    if (result.status !== "completed" || !result.refundTrxId) {
+      await setRefundFields(payment.id, { refund_status: "failed" });
+      return "failed";
+    }
+    await applyRefund(payment.id, result.refundTrxId);
+    return "refunded";
+  } catch (error) {
+    logError("billing.refund_failed", { code: error instanceof BkashError ? error.code : "unknown" });
+    await setRefundFields(payment.id, { refund_status: "failed" }).catch(() => undefined);
+    return "failed";
+  }
+}
+
+export async function declineRefund(paymentId: string): Promise<void> {
+  await setRefundFields(paymentId, { refund_status: "declined" });
 }

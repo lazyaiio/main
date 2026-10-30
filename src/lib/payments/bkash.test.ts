@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { BkashError, confirmsExpected, createPayment, executePayment, grantToken, isBkashRedirect, queryPayment, type BkashCredentials } from "./bkash";
+import { BkashError, confirmsExpected, createPayment, executePayment, grantToken, isBkashRedirect, queryPayment, refundPayment, type BkashCredentials } from "./bkash";
 
 const creds: BkashCredentials = { mode: "sandbox", appKey: "key", appSecret: "secret", username: "user", password: "pass" };
 
@@ -89,5 +89,23 @@ describe("execute, query and confirmation", () => {
     const result = await queryPayment(creds, "TR0011abc", fakeBkash({ "/token/grant": grant, "/payment/status": { statusCode: "2023", statusMessage: "Insufficient Balance" } }));
     expect(result.status).toBe("failed");
     expect(confirmsExpected(result, expected)).toBe(false);
+  });
+});
+
+describe("refundPayment", () => {
+  const input = { paymentId: "TR0011abc", trxId: "ABC123", amount: 500, reason: "Customer asked" };
+  it("sends the original payment and transaction and the full amount", async () => {
+    const calls: Call[] = [];
+    const result = await refundPayment(creds, input, fakeBkash({ "/token/grant": grant, "/payment/refund": { statusCode: "0000", transactionStatus: "Completed", refundTrxID: "RF1" } }, calls));
+    expect(result).toEqual({ status: "completed", refundTrxId: "RF1" });
+    expect(calls[1]?.body).toMatchObject({ paymentID: "TR0011abc", trxID: "ABC123", amount: "500.00", reason: "Customer asked" });
+  });
+  it("does not report success without a refund transaction id", async () => {
+    const result = await refundPayment(creds, input, fakeBkash({ "/token/grant": grant, "/payment/refund": { statusCode: "0000", transactionStatus: "Completed" } }));
+    expect(result.status).toBe("failed");
+  });
+  it("reports a refusal", async () => {
+    const result = await refundPayment(creds, input, fakeBkash({ "/token/grant": grant, "/payment/refund": { statusCode: "2062", statusMessage: "refused" } }));
+    expect(result.status).toBe("failed");
   });
 });

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { startCheckoutAction } from "@/app/app/billing/actions";
+import { requestRefundAction, startCheckoutAction } from "@/app/app/billing/actions";
 import { PendingButton } from "@/components/ui/pending-button";
 import { PageHeader } from "@/components/ui/page-header";
 import { canAdmin } from "@/lib/auth/permissions";
@@ -16,7 +16,7 @@ export const dynamic = "force-dynamic";
 
 type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
 
-const NOTICES: Record<string, string> = { paid: "Payment received. Your plan is active. Thank you!" };
+const NOTICES: Record<string, string> = { paid: "Payment received. Your plan is active. Thank you!", refund_requested: "Your refund request was sent. We will review it and update this page." };
 const ERRORS: Record<string, string> = {
   canceled: "The payment was canceled. You were not charged.",
   failed: "The payment did not go through. You were not charged, or the amount will be returned by bKash. Please try again.",
@@ -25,7 +25,8 @@ const ERRORS: Record<string, string> = {
   forbidden: "Only the owner or an admin of the workspace can change the plan.",
   not_configured: "Online payment is not available yet.",
   not_found: "That plan cannot be bought this way.",
-  too_many_requests: "You started too many payments. Please wait a few minutes.",
+  too_many_requests: "You made too many requests. Please wait a few minutes.",
+  failed: "That could not be done. Please check the details and try again.",
 };
 
 export default async function BillingPage({ searchParams }: Props) {
@@ -131,7 +132,18 @@ export default async function BillingPage({ searchParams }: Props) {
                 <span className="text-xs text-ink-500">
                   {p.status}
                   {p.provider_trx_id ? ` · ${p.provider_trx_id}` : ""} · {p.invoice_number}
+                  {p.refund_status === "requested" ? " · refund requested" : p.refund_status === "declined" ? " · refund declined" : p.refund_status === "failed" ? " · refund being reviewed" : ""}
                 </span>
+                {p.status === "completed" && canAdmin(ctx.role) && (p.refund_status === null || p.refund_status === "declined" || p.refund_status === "failed") ? (
+                  <details className="w-full text-xs">
+                    <summary className="cursor-pointer font-semibold text-brand">Ask for a refund</summary>
+                    <form action={requestRefundAction} className="mt-2 space-y-2">
+                      <input type="hidden" name="paymentId" value={p.id} />
+                      <textarea name="reason" required minLength={3} maxLength={300} rows={2} placeholder="Why do you want a refund?" className="block w-full rounded-xl border border-ink-200 px-3 py-2 text-sm" />
+                      <PendingButton pendingLabel="Sending…">Send request</PendingButton>
+                    </form>
+                  </details>
+                ) : null}
               </li>
             ))}
           </ul>

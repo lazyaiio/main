@@ -1,15 +1,10 @@
 import { ArrowRight, CheckCircle2 } from "lucide-react";
 import { ButtonLink } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import type { HomeContent } from "@/lib/home-content";
 import { ProductPreview } from "./product-preview";
 
-const reassurances = [
-  "Nothing is posted unless you schedule it",
-  "You choose which Page LazyAI can use",
-  "“Published” only appears after Facebook confirms it",
-];
-
-export function Hero() {
+export function Hero({ content }: { content: HomeContent["hero"] }) {
   return (
     <section className="relative overflow-hidden">
       <div
@@ -18,24 +13,23 @@ export function Hero() {
       />
       <div className="mx-auto grid max-w-6xl items-center gap-12 px-4 pb-16 pt-14 sm:px-6 md:pb-24 md:pt-20 lg:grid-cols-2">
         <div>
-          <Badge tone="brand">Facebook Pages · English &amp; Bengali</Badge>
+          <Badge tone="brand">{content.badge}</Badge>
           <h1 className="mt-5 font-display text-4xl font-extrabold leading-[1.08] tracking-tight sm:text-5xl lg:text-6xl">
-            Work less. <span className="text-brand">Publish more.</span>
+            {content.titleLead} <span className="text-brand">{content.titleAccent}</span>
           </h1>
           <p className="mt-5 max-w-xl text-lg leading-relaxed text-ink-600">
-            Give LazyAI a topic or a website. Get a content plan, edit the posts, and publish
-            them on schedule — in English or Bengali.
+            {content.subtitle}
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <ButtonLink href="/auth/signup" size="lg">
-              Start free <ArrowRight className="h-4 w-4" aria-hidden="true" />
+              {content.primaryCta} <ArrowRight className="h-4 w-4" aria-hidden="true" />
             </ButtonLink>
             <ButtonLink href="/#how" variant="secondary" size="lg">
-              See how it works
+              {content.secondaryCta}
             </ButtonLink>
           </div>
           <ul className="mt-8 space-y-2.5">
-            {reassurances.map((text) => (
+            {content.reassurances.map((text) => (
               <li key={text} className="flex items-start gap-2.5 text-sm text-ink-600">
                 <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-brand" aria-hidden="true" />
                 {text}

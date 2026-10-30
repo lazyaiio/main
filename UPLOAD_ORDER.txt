@@ -1,4 +1,4 @@
-Batch 15B (bKash payments) upload order
-1. Supabase SQL Editor: run supabase/migrations/0016_payments.sql
-2. Upload every file in this zip to GitHub, same folders. Nothing is deleted.
-3. After Vercel deploys, follow docs/PAYMENTS_SETUP.md (sandbox first).
+Batches 15C (refunds + privacy text) and 16 (editable pages) upload order
+1. Supabase SQL Editor: run supabase/migrations/0017_refunds.sql, then supabase/migrations/0018_site_pages.sql
+2. Upload every file in this zip to GitHub, same folders (47 files, nothing is deleted).
+3. After Vercel deploys: compare each public page (/terms /privacy /cookies /acceptable-use /data-deletion /help /contact /about and the home page) with how it looked before, then try Admin -> Pages.

@@ -1,11 +1,13 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
+import { z } from "zod";
 import { requirePlatformAdmin } from "@/lib/auth/admin";
 import type { FormState } from "@/lib/auth/form-state";
 import { readBkashSettings, writeBkashSettings, type BkashSettings } from "@/lib/data/payments";
 import { BkashError, grantToken } from "@/lib/payments/bkash";
-import { openCredentials, sealCredential } from "@/lib/services/billing";
+import { approveRefund, declineRefund, openCredentials, sealCredential } from "@/lib/services/billing";
 import { ServiceError } from "@/lib/services/errors";
 
 const FIELDS = ["appKey", "appSecret", "username", "password"] as const;
@@ -60,4 +62,34 @@ export async function testBkashAction(): Promise<FormState> {
   } catch (error) {
     return { error: error instanceof BkashError ? error.message : "The connection test failed." };
   }
+}
+
+const idSchema = z.string().uuid();
+
+/** Approve a refund (asked for by the customer, or started by the admin): bKash is asked to return the full amount. */
+export async function approveRefundAction(formData: FormData): Promise<void> {
+  await requirePlatformAdmin();
+  const id = idSchema.safeParse(formData.get("paymentId"));
+  if (!id.success) redirect("/admin/payments?error=invalid");
+  let outcome: string;
+  try {
+    outcome = await approveRefund(id.data);
+  } catch {
+    outcome = "failed";
+  }
+  revalidatePath("/admin/payments");
+  redirect(`/admin/payments?${outcome === "refunded" ? "notice=refunded" : `error=refund_${outcome}`}`);
+}
+
+export async function declineRefundAction(formData: FormData): Promise<void> {
+  await requirePlatformAdmin();
+  const id = idSchema.safeParse(formData.get("paymentId"));
+  if (!id.success) redirect("/admin/payments?error=invalid");
+  try {
+    await declineRefund(id.data);
+  } catch {
+    redirect("/admin/payments?error=refund_failed");
+  }
+  revalidatePath("/admin/payments");
+  redirect("/admin/payments?notice=declined");
 }

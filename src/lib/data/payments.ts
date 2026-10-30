@@ -51,16 +51,21 @@ export type PaymentRow = {
   period: Period;
   amount: number;
   currency: string;
-  status: "created" | "completed" | "failed" | "canceled";
+  status: "created" | "completed" | "failed" | "canceled" | "refunded";
   invoice_number: string;
   provider_payment_id: string | null;
   provider_trx_id: string | null;
   failure_code: string | null;
   created_at: string;
   completed_at: string | null;
+  refund_status: "requested" | "declined" | "refunded" | "failed" | null;
+  refund_reason: string | null;
+  refund_requested_at: string | null;
+  refund_trx_id: string | null;
+  refunded_at: string | null;
 };
 
-const COLUMNS = "id, workspace_id, user_id, plan_key, period, amount, currency, status, invoice_number, provider_payment_id, provider_trx_id, failure_code, created_at, completed_at";
+const COLUMNS = "id, workspace_id, user_id, plan_key, period, amount, currency, status, invoice_number, provider_payment_id, provider_trx_id, failure_code, created_at, completed_at, refund_status, refund_reason, refund_requested_at, refund_trx_id, refunded_at";
 
 const normalize = (row: PaymentRow): PaymentRow => ({ ...row, amount: Number(row.amount) });
 
@@ -115,4 +120,21 @@ export async function getWorkspacePlanState(ws: string): Promise<WorkspacePlanSt
   const res = await adminDb().from("workspaces").select("plan, plan_period, plan_expires_at").eq("id", ws).maybeSingle();
   const row = unwrap(res, "load the plan") as WorkspacePlanState | null;
   return row ?? { plan: "free", plan_period: null, plan_expires_at: null };
+}
+
+export async function setRefundFields(id: string, patch: Partial<Pick<PaymentRow, "refund_status" | "refund_reason" | "refund_requested_at">>): Promise<void> {
+  const { error } = await adminDb().from("payments").update(patch).eq("id", id);
+  if (error) throw new DataError("Could not update the refund.", error.code);
+}
+
+/** Marks the payment refunded and, if the workspace is still on that plan, moves it back to Free. */
+export async function applyRefund(id: string, refundTrxId: string): Promise<boolean> {
+  const { data, error } = await adminDb().rpc("apply_refund", { p_payment_id: id, p_refund_trx: refundTrxId });
+  if (error) throw new DataError("Could not apply the refund.", error.code);
+  return data === true;
+}
+
+export async function listRefundRequests(): Promise<PaymentRow[]> {
+  const res = await adminDb().from("payments").select(COLUMNS).eq("refund_status", "requested").order("refund_requested_at", { ascending: true }).limit(50);
+  return ((unwrap(res, "load the refund requests") ?? []) as PaymentRow[]).map(normalize);
 }

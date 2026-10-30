@@ -23,3 +23,10 @@ Batch 15B. Uses bKash **Tokenized Checkout (API v1.2.0-beta)**. Always start in 
 
 ## Not included yet
 Automatic refunds (do them in the bKash portal, then change the plan by hand), emailed receipts and expiry reminders (Batch 19), recurring/agreement payments.
+
+## Refunds (Batch 15C, migration 0017)
+- A workspace owner or admin opens **Billing -> Payment history -> Ask for a refund** and writes a reason.
+- In **Admin -> Payments** the request appears under "Refund requests". **Approve and refund** asks bKash to return the full amount (API: payment/refund with the original payment ID, transaction ID and amount). When bKash confirms (status Completed and a refund transaction ID), the payment becomes "refunded" and, if the workspace is still on that plan, it moves to Free. **Decline** closes the request. You can also refund any completed payment directly from the table ("Refund in full").
+- If bKash does not complete the refund, nothing changes except the request is marked failed; check the bKash portal before trying again.
+- The refund request and endpoint were written from public bKash examples. Test one sandbox refund before relying on it.
+- Partial refunds and refund emails are not included.

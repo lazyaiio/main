@@ -672,3 +672,18 @@ Unsplash provider (with required download reporting), all enabled providers sear
 - **Also:** Unsplash form now says "Access Key" and explains that Application ID and Secret Key are not needed.
 - **Tests added:** `bkash.test.ts` (fake bKash), `billing.test.ts`.
 - **NOT verified:** everything that needs network/database. The bKash endpoint names (token/grant, create, execute, payment/status) and the callback parameters come from public bKash integration examples, not from a live sandbox run: confirm with the sandbox before trusting them.
+
+---
+
+## Batch 15C: refunds and privacy text (code written, NOT yet verified)
+- **Migration `0017_refunds.sql`:** refund fields on payments, `apply_refund()` (service role only).
+- Customers ask for a refund on Billing; Admin -> Payments approves (bKash refund API) or declines; admin can also refund directly. Approved refund moves the workspace to Free if it is still on that plan.
+- Privacy Policy and Data Deletion pages now mention payment records and bKash, and list Pixabay and Unsplash as the stock photo providers.
+- Not verified: the bKash refund endpoint against the real sandbox; `bkash.test.ts` refund cases.
+
+## Batch 16: editable site pages (code written, NOT yet verified)
+- **Migration `0018_site_pages.sql`:** `site_pages` and `site_page_versions` (server access only).
+- **Admin -> Pages:** edit Terms, Privacy, Cookies, Acceptable Use, Data Deletion, Help, Contact, About (Markdown) and the home page (fields). Version history, restore, reset to built-in. English only.
+- The existing pages were converted from page code to built-in Markdown (`src/content/default-pages.ts`); public pages now render through a safe Markdown reader (`lib/markdown.ts`, no raw HTML). New public **About** page (also in footer and sitemap). FAQ answer about cost updated to point to Pricing.
+- Tests: `markdown.test.ts`, `site-pages.test.ts`, `home-content.test.ts`.
+- Verified in the sandbox: syntax of every file; `markdown` (12) and `home-content` (9) tests; the built-in pages test (except one assertion form that the sandbox runner lacks). Not verified: build, lint, full typecheck, database, browser rendering. Please compare each public page with its old look after deploy.

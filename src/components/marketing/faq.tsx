@@ -1,37 +1,15 @@
 import { ChevronDown } from "lucide-react";
+import type { HomeContent } from "@/lib/home-content";
 
-const faqs = [
-  {
-    q: "Will LazyAI post without my permission?",
-    a: "No. LazyAI only posts what you schedule, on the Pages you connected, at the time you chose. You can edit or cancel any post before it goes out.",
-  },
-  {
-    q: "Which platforms are supported?",
-    a: "Facebook Pages come first. Personal Facebook profiles are not supported. More platforms may follow later.",
-  },
-  {
-    q: "Which languages can it write in?",
-    a: "English and Bengali at launch, either one or both in the same campaign.",
-  },
-  {
-    q: "How do I know a post was really published?",
-    a: "LazyAI marks a post as published only after Facebook confirms it. Until then it is shown as scheduled, retrying, or failed.",
-  },
-  {
-    q: "How much does it cost?",
-    a: "Pricing will be announced before launch. We will not charge you without telling you first.",
-  },
-];
-
-export function Faq() {
+export function Faq({ content }: { content: HomeContent["faq"] }) {
   return (
     <section id="faq" className="scroll-mt-20 py-16 md:py-24">
       <div className="mx-auto max-w-3xl px-4 sm:px-6">
         <h2 className="font-display text-3xl font-extrabold tracking-tight sm:text-4xl">
-          Questions, answered
+          {content.title}
         </h2>
         <div className="mt-8 divide-y divide-ink-100 rounded-2xl border border-ink-100 bg-white shadow-card">
-          {faqs.map((item) => (
+          {content.items.map((item) => (
             <details key={item.q} className="group px-5 py-4">
               <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-semibold [&::-webkit-details-marker]:hidden">
                 {item.q}

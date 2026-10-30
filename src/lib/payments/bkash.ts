@@ -148,6 +148,33 @@ export async function queryPayment(creds: BkashCredentials, paymentId: string, f
   return readResult(await post(fetchFn, `${BASES[creds.mode]}/payment/status`, { authorization: token, "x-app-key": creds.appKey }, { paymentID: paymentId }));
 }
 
+const refundResponse = z.object({
+  statusCode: z.string().optional(),
+  transactionStatus: z.string().optional(),
+  refundTrxID: z.string().optional(),
+});
+
+export type RefundResult = { status: "completed" | "failed"; refundTrxId: string | null };
+
+/** Asks bKash to send money back for a completed payment. The refund is only trusted when bKash says Completed. */
+export async function refundPayment(
+  creds: BkashCredentials,
+  input: { paymentId: string; trxId: string; amount: number; reason: string },
+  fetchFn: FetchFn = fetch,
+): Promise<RefundResult> {
+  const token = await grantToken(creds, fetchFn);
+  const json = await post(
+    fetchFn,
+    `${BASES[creds.mode]}/payment/refund`,
+    { authorization: token, "x-app-key": creds.appKey },
+    { paymentID: input.paymentId, trxID: input.trxId, amount: input.amount.toFixed(2), sku: "plan", reason: input.reason.slice(0, 100) },
+  );
+  const parsed = refundResponse.safeParse(json);
+  if (!parsed.success) throw new BkashError("bad_response", "bKash returned an unexpected answer.");
+  const done = parsed.data.statusCode === "0000" && parsed.data.transactionStatus === "Completed" && Boolean(parsed.data.refundTrxID);
+  return { status: done ? "completed" : "failed", refundTrxId: parsed.data.refundTrxID ?? null };
+}
+
 /**
  * Checks that bKash confirmed exactly what we expected. The amount and invoice come from OUR database,
  * never from the customer's browser.
