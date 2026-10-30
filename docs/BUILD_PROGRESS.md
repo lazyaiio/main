@@ -650,3 +650,13 @@ Owner uploads the zip, reports the CI and Vercel results (green, or paste the er
 
 ### Batch 14.1 (Unsplash, parallel stock search, optional Pexels)
 Unsplash provider (with required download reporting), all enabled providers searched in parallel with mixed results, Pexels optional, env fallbacks `UNSPLASH_ACCESS_KEY` / `PIXABAY_API_KEY` / `PEXELS_API_KEY`, new tests. No new migration.
+
+---
+
+## Batch 15A: plans and pricing page (code written, NOT yet verified)
+- **Migration `0015_plans_pricing.sql`:** plans get tagline, monthly/yearly price, feature list, most-popular, visible, order. The old Standard plan becomes **Pro** (workspaces are moved), **Advanced** is added. Prices start empty (shows "Price coming soon") except Free.
+- **Admin -> Plans:** edit every plan (name, description, prices, features, limits, flags) and the site currency (BDT or USD).
+- **/pricing:** reads the plans from the database (three cards; yearly saving shown). Falls back to a short notice if the database is not ready.
+- **Limits rule:** every limit needs a number (a missing limit would fall back to Free's number in the database).
+- **Not done yet (Batch 15B):** bKash payments. The plan buttons currently lead to sign-up.
+- Fix 1 for Batch 14: post-schema test updated to the new 9000 character limit; SQL test no longer inserts an explicit post id (the app's database role may not set it).

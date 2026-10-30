@@ -23,6 +23,7 @@ select set_config('request.jwt.claims', '{"sub":"00000000-0000-0000-0000-0000000
 do $$
 declare
   camp uuid;
+  item uuid;
 begin
   camp := public.create_campaign_with_slots(
     current_setting('test.ws_a')::uuid,
@@ -36,9 +37,11 @@ begin
   perform public.start_campaign(camp);
   perform set_config('test.camp', camp::text, true);
   -- Posts created now are ready to schedule (no review step).
-  insert into public.content_items (id, workspace_id, campaign_id, project_id, language, body, content_hash)
-  values ('00000000-0000-0000-0000-0000000c0a01', current_setting('test.ws_a')::uuid, camp, '00000000-0000-0000-0000-00000000a0a6', 'en', 'Ready post', 'hash-ready');
-  if (select approval_status from public.content_items where id = '00000000-0000-0000-0000-0000000c0a01') <> 'approved' then
+  insert into public.content_items (workspace_id, campaign_id, project_id, language, body, content_hash)
+  values (current_setting('test.ws_a')::uuid, camp, '00000000-0000-0000-0000-00000000a0a6', 'en', 'Ready post', 'hash-ready')
+  returning id into item;
+  perform set_config('test.item', item::text, true);
+  if (select approval_status from public.content_items where id = item) <> 'approved' then
     raise exception 'FAIL N1: a new post is not ready by default';
   end if;
 end $$;
@@ -87,7 +90,7 @@ begin
   select array_agg(id order by slot_index) into slot_ids from public.claim_campaign_slots(camp, 2, 90);
   if coalesce(cardinality(slot_ids), 0) <> 2 then raise exception 'FAIL S1: the service role could not claim slots'; end if;
 
-  ok := public.complete_campaign_slot(slot_ids[1], '00000000-0000-0000-0000-0000000c0a01');
+  ok := public.complete_campaign_slot(slot_ids[1], current_setting('test.item')::uuid);
   if not ok then raise exception 'FAIL S2: the service role could not complete a slot'; end if;
 
   perform public.release_campaign_slot(slot_ids[2], 'ai_failed', true, false);
@@ -105,12 +108,12 @@ begin
 
   -- Scheduling needs a connected Page; with an unknown Page it must refuse cleanly.
   begin
-    perform public.system_schedule_post(ws_a, '00000000-0000-0000-0000-0000000c0a01', '00000000-0000-0000-0000-00000000dead', now() + interval '1 day');
+    perform public.system_schedule_post(ws_a, current_setting('test.item')::uuid, '00000000-0000-0000-0000-00000000dead', now() + interval '1 day');
     raise exception 'FAIL S5: scheduling on an unknown Page worked';
   exception when no_data_found then null;
   end;
   begin
-    perform public.system_schedule_post(ws_a, '00000000-0000-0000-0000-0000000c0a01', '00000000-0000-0000-0000-00000000dead', now() - interval '1 day');
+    perform public.system_schedule_post(ws_a, current_setting('test.item')::uuid, '00000000-0000-0000-0000-00000000dead', now() - interval '1 day');
     raise exception 'FAIL S6: scheduling in the past worked';
   exception when invalid_parameter_value then null;
   end;
@@ -131,7 +134,7 @@ select set_config('request.jwt.claims', '{"sub":"00000000-0000-0000-0000-0000000
 do $$
 begin
   begin
-    perform public.system_schedule_post(current_setting('test.ws_a')::uuid, '00000000-0000-0000-0000-0000000c0a01', '00000000-0000-0000-0000-00000000dead', now() + interval '1 day');
+    perform public.system_schedule_post(current_setting('test.ws_a')::uuid, current_setting('test.item')::uuid, '00000000-0000-0000-0000-00000000dead', now() + interval '1 day');
     raise exception 'FAIL U1: a signed-in user called system_schedule_post';
   exception when insufficient_privilege then null;
   end;

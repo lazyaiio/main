@@ -47,7 +47,7 @@ describe("postOutputSchema", () => {
 
   it("rejects an empty or oversized body", () => {
     expect(postOutputSchema.safeParse({ body: "  " }).success).toBe(false);
-    expect(postOutputSchema.safeParse({ body: "x".repeat(5001) }).success).toBe(false);
+    expect(postOutputSchema.safeParse({ body: "x".repeat(9001) }).success).toBe(false);
   });
 });
 
