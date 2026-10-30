@@ -19,7 +19,6 @@ type Props = { searchParams: Promise<Record<string, string | string[] | undefine
 const NOTICES: Record<string, string> = { paid: "Payment received. Your plan is active. Thank you!", refund_requested: "Your refund request was sent. We will review it and update this page." };
 const ERRORS: Record<string, string> = {
   canceled: "The payment was canceled. You were not charged.",
-  failed: "The payment did not go through. You were not charged, or the amount will be returned by bKash. Please try again.",
   unknown: "We could not confirm the payment yet. If money left your bKash account, contact us with your invoice number.",
   invalid: "That request was not valid.",
   forbidden: "Only the owner or an admin of the workspace can change the plan.",
