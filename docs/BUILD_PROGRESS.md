@@ -660,3 +660,15 @@ Unsplash provider (with required download reporting), all enabled providers sear
 - **Limits rule:** every limit needs a number (a missing limit would fall back to Free's number in the database).
 - **Not done yet (Batch 15B):** bKash payments. The plan buttons currently lead to sign-up.
 - Fix 1 for Batch 14: post-schema test updated to the new 9000 character limit; SQL test no longer inserts an explicit post id (the app's database role may not set it).
+
+---
+
+## Batch 15B: bKash payments, plan expiry, lifetime option (code written, NOT yet verified)
+- **Migration `0016_payments.sql`:** `payments` table, plan expiry fields, lifetime price/switch, `apply_paid_plan()`, `expire_plans()` (both service role only).
+- **Admin -> Payments:** save bKash credentials (encrypted), sandbox/live (typing LIVE needed), on/off, test connection, recent payments list.
+- **Billing (people):** `/app/billing` current plan and end date, buy monthly / yearly / lifetime, payment history. The pricing page buttons lead here. Only the workspace owner or an admin can buy.
+- **Callback:** `/api/payments/bkash/callback` confirms with bKash before changing anything.
+- **Expiry:** the scheduler endpoint also runs `expire_plans()` (back to Free, no rollover).
+- **Also:** Unsplash form now says "Access Key" and explains that Application ID and Secret Key are not needed.
+- **Tests added:** `bkash.test.ts` (fake bKash), `billing.test.ts`.
+- **NOT verified:** everything that needs network/database. The bKash endpoint names (token/grant, create, execute, payment/status) and the callback parameters come from public bKash integration examples, not from a live sandbox run: confirm with the sandbox before trusting them.

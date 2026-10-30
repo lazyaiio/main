@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { initialFormState } from "@/lib/auth/form-state";
 
-export function StockProviderForm({ provider, enabled, source }: { provider: "pexels" | "pixabay" | "unsplash"; enabled: boolean; source: "admin" | "environment" | "none" }) {
+export function StockProviderForm({ provider, enabled, source, keyName }: { provider: "pexels" | "pixabay" | "unsplash"; enabled: boolean; source: "admin" | "environment" | "none"; keyName: string }) {
   const [state, formAction, pending] = useActionState(saveStockAction, initialFormState);
   const [testState, testAction, testing] = useActionState(testStockAction, initialFormState);
   return (
@@ -22,12 +22,12 @@ export function StockProviderForm({ provider, enabled, source }: { provider: "pe
           disabled={source === "environment"}
         />
         <Field
-          label={source === "admin" ? "Replace API key" : "API key"}
+          label={source === "admin" ? `Replace ${keyName}` : keyName}
           name={`apiKey-${provider}`}
           type="password"
           autoComplete="off"
           maxLength={200}
-          placeholder={source === "admin" ? "A key is saved. Paste a new one to replace it." : "Paste the key here"}
+          placeholder={source === "admin" ? "A key is saved. Paste a new one to replace it." : `Paste the ${keyName} here`}
           hint="Saved encrypted. It is never shown again."
         />
         <FormMessage state={state} />

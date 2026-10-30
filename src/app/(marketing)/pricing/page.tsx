@@ -60,6 +60,9 @@ export default async function PricingPage() {
                     <span className="text-base font-medium text-ink-500"> / month</span>
                   </p>
                 )}
+                {plan.lifetime_available && plan.price_lifetime && plan.price_lifetime > 0 ? (
+                  <p className="mt-1 text-sm font-semibold text-brand-700">Lifetime: {formatPrice(plan.price_lifetime, currency)} one time</p>
+                ) : null}
                 {plan.price_yearly && plan.price_yearly > 0 ? (
                   <p className="mt-1 text-sm text-ink-600">
                     or {formatPrice(plan.price_yearly, currency)} per year{savings ? ` (save ${savings}%)` : ""}
@@ -77,7 +80,7 @@ export default async function PricingPage() {
               </ul>
 
               <div className="mt-8">
-                <ButtonLink href="/signup" variant={plan.highlighted ? "primary" : "secondary"} className="w-full justify-center">
+                <ButtonLink href={monthly === 0 || monthly === null ? "/signup" : `/app/billing?plan=${plan.key}`} variant={plan.highlighted ? "primary" : "secondary"} className="w-full justify-center">
                   {monthly === 0 || monthly === null ? "Get started" : `Start with ${plan.name}`}
                 </ButtonLink>
               </div>

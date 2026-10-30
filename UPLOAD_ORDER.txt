@@ -1,5 +1,4 @@
-Batch 14 fix + Batch 15A (plans and pricing) upload order
-1. Supabase SQL Editor: run supabase/migrations/0015_plans_pricing.sql
-2. Upload every file in this zip to GitHub, same folders (11 files, nothing is deleted).
-3. Re-run supabase/tests/rls_background_generation.sql (the fixed version) and confirm ALL BACKGROUND GENERATION TESTS PASSED.
-4. After Vercel deploys: Admin -> Plans -> set the prices, features and currency, then open /pricing.
+Batch 15B (bKash payments) upload order
+1. Supabase SQL Editor: run supabase/migrations/0016_payments.sql
+2. Upload every file in this zip to GitHub, same folders. Nothing is deleted.
+3. After Vercel deploys, follow docs/PAYMENTS_SETUP.md (sandbox first).

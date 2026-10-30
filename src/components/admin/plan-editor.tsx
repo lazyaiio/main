@@ -33,6 +33,10 @@ export function PlanEditor({ plan, currency }: { plan: PlanRow; currency: string
           Yearly price ({currency})
           <input name="priceYearly" inputMode="decimal" defaultValue={plan.price_yearly ?? ""} placeholder="Optional" className={input} />
         </label>
+        <label className={label}>
+          Lifetime price ({currency}, one time)
+          <input name="priceLifetime" inputMode="decimal" defaultValue={plan.price_lifetime ?? ""} placeholder="Optional" className={input} />
+        </label>
       </div>
 
       <label className={label}>
@@ -61,6 +65,9 @@ export function PlanEditor({ plan, currency }: { plan: PlanRow; currency: string
       <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
         <label className="flex items-center gap-2">
           <input type="checkbox" name="visible" defaultChecked={plan.visible} className="h-4 w-4 accent-brand" /> Show on the pricing page
+        </label>
+        <label className="flex items-center gap-2">
+          <input type="checkbox" name="lifetimeAvailable" defaultChecked={plan.lifetime_available} className="h-4 w-4 accent-brand" /> Offer the lifetime option now
         </label>
         <label className="flex items-center gap-2">
           <input type="checkbox" name="highlighted" defaultChecked={plan.highlighted} className="h-4 w-4 accent-brand" /> Mark as most popular

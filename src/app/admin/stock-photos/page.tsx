@@ -8,9 +8,9 @@ export const metadata: Metadata = { title: "Stock photos" };
 export const dynamic = "force-dynamic";
 
 const INFO = {
-  unsplash: { name: "Unsplash", signup: "https://unsplash.com/developers", note: "Free key (Access Key). A new app is limited to 50 requests per hour until Unsplash approves it for production." },
-  pexels: { name: "Pexels", signup: "https://www.pexels.com/api/", note: "Free key, about 200 searches per hour. Photos are free for commercial use." },
-  pixabay: { name: "Pixabay", signup: "https://pixabay.com/api/docs/", note: "Free key, 100 requests per minute. Photos are free for commercial use under the Pixabay Content License." },
+  unsplash: { name: "Unsplash", signup: "https://unsplash.com/developers", note: "Free key. A new app is limited to 50 requests per hour until Unsplash approves it for production.", keyName: "Access Key", extra: "Unsplash shows three values (Application ID, Access Key, Secret Key). LazyAI only needs the Access Key, so paste only that. The Application ID and the Secret Key are not used, and it is safer not to store them." },
+  pexels: { name: "Pexels", signup: "https://www.pexels.com/api/", keyName: "API key", extra: "", note: "Free key, about 200 searches per hour. Photos are free for commercial use." },
+  pixabay: { name: "Pixabay", signup: "https://pixabay.com/api/docs/", keyName: "API key", extra: "", note: "Free key, 100 requests per minute. Photos are free for commercial use under the Pixabay Content License." },
 } as const;
 
 export default async function StockPhotosPage() {
@@ -35,7 +35,7 @@ export default async function StockPhotosPage() {
               <Badge tone={row.enabled ? "green" : "neutral"}>{row.enabled ? "On" : row.source === "none" ? "No key" : "Off"}</Badge>
             </header>
             <div className="grid gap-6 p-5 md:grid-cols-[1fr_260px]">
-              <StockProviderForm provider={row.key} enabled={row.enabled} source={row.source} />
+              <StockProviderForm provider={row.key} enabled={row.enabled} source={row.source} keyName={INFO[row.key].keyName} />
               <aside className="space-y-2 rounded-xl bg-ink-50 p-4 text-sm text-ink-600">
                 <p className="text-xs font-semibold uppercase tracking-wide text-ink-500">Get a key</p>
                 <p>
@@ -45,6 +45,7 @@ export default async function StockPhotosPage() {
                   </a>
                   .
                 </p>
+                {INFO[row.key].extra ? <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-900">{INFO[row.key].extra}</p> : null}
                 <p className="text-xs text-ink-500">
                   Key source: {row.source === "admin" ? "saved here" : row.source === "environment" ? "Vercel environment variable" : "none"}.
                 </p>

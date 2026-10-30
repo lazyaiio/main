@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { checkCronAuth } from "@/lib/publish-dispatch";
+import { expirePlans } from "@/lib/data/payments";
 import { runBackgroundCampaigns } from "@/lib/services/campaign-worker";
 import { dispatchDuePosts } from "@/lib/services/publisher";
 import { describeError, logError } from "@/lib/log";
@@ -31,7 +32,14 @@ async function handle(request: NextRequest) {
     } catch (error) {
       logError("cron.campaigns_failed", describeError(error));
     }
-    return NextResponse.json({ ok: true, ...summary, writing }, { headers: { "Cache-Control": "no-store" } });
+    // Paid plans whose time has ended go back to Free.
+    let expired = 0;
+    try {
+      expired = await expirePlans();
+    } catch (error) {
+      logError("cron.expire_failed", describeError(error));
+    }
+    return NextResponse.json({ ok: true, ...summary, writing, expired }, { headers: { "Cache-Control": "no-store" } });
   } catch (error) {
     logError("cron.dispatch_failed", describeError(error));
     return NextResponse.json({ ok: false, error: "dispatch_failed" }, { status: 500, headers: { "Cache-Control": "no-store" } });

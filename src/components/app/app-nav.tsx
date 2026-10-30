@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import {
   Activity,
   CalendarDays,
+  CreditCard,
   FileText,
   FolderKanban,
   ImageIcon,
@@ -26,6 +27,7 @@ const items: { href: string; label: string; icon: LucideIcon; exact?: boolean }[
   { href: "/app/pages", label: "Pages", icon: Plug },
   { href: "/app/media", label: "Media", icon: ImageIcon },
   { href: "/app/activity", label: "Activity", icon: Activity },
+  { href: "/app/billing", label: "Billing", icon: CreditCard },
   { href: "/app/settings", label: "Settings", icon: Settings },
 ];
 

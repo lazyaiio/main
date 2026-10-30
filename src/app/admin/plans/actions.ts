@@ -38,7 +38,8 @@ export async function updatePlanAction(formData: FormData): Promise<void> {
   const tagline = textField(formData, "tagline").trim();
   const priceMonthly = parsePriceField(textField(formData, "priceMonthly"));
   const priceYearly = parsePriceField(textField(formData, "priceYearly"));
-  if (!key.success || name.length < 1 || name.length > 60 || tagline.length > 160 || priceMonthly === undefined || priceYearly === undefined) {
+  const priceLifetime = parsePriceField(textField(formData, "priceLifetime"));
+  if (!key.success || name.length < 1 || name.length > 60 || tagline.length > 160 || priceMonthly === undefined || priceYearly === undefined || priceLifetime === undefined) {
     redirect("/admin/plans?error=invalid");
   }
   const limits: Record<string, number> = {};
@@ -56,6 +57,8 @@ export async function updatePlanAction(formData: FormData): Promise<void> {
       tagline,
       priceMonthly,
       priceYearly,
+      priceLifetime,
+      lifetimeAvailable: formData.get("lifetimeAvailable") === "on",
       features: parseFeatureLines(textField(formData, "features")),
       highlighted: formData.get("highlighted") === "on",
       visible: formData.get("visible") === "on",

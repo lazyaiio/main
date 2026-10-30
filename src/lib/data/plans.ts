@@ -35,6 +35,8 @@ export type PlanRow = {
   tagline: string;
   price_monthly: number | null;
   price_yearly: number | null;
+  price_lifetime: number | null;
+  lifetime_available: boolean;
   features: string[];
   highlighted: boolean;
   visible: boolean;
@@ -44,7 +46,7 @@ export type PlanRow = {
 export async function listPlans(db: Db): Promise<PlanRow[]> {
   const res = await db
     .from("plans")
-    .select("key, name, limits, tagline, price_monthly, price_yearly, features, highlighted, visible, sort_order")
+    .select("key, name, limits, tagline, price_monthly, price_yearly, price_lifetime, lifetime_available, features, highlighted, visible, sort_order")
     .order("sort_order", { ascending: true });
   return ((unwrap(res, "load the plans") ?? []) as PlanRow[]).map(normalizePlan);
 }
@@ -54,6 +56,7 @@ function normalizePlan(row: PlanRow): PlanRow {
     ...row,
     price_monthly: row.price_monthly === null ? null : Number(row.price_monthly),
     price_yearly: row.price_yearly === null ? null : Number(row.price_yearly),
+    price_lifetime: row.price_lifetime === null || row.price_lifetime === undefined ? null : Number(row.price_lifetime),
     features: Array.isArray(row.features) ? row.features.filter((f): f is string => typeof f === "string") : [],
   };
 }
@@ -62,7 +65,7 @@ function normalizePlan(row: PlanRow): PlanRow {
 export async function listVisiblePlans(): Promise<PlanRow[]> {
   const res = await admin()
     .from("plans")
-    .select("key, name, limits, tagline, price_monthly, price_yearly, features, highlighted, visible, sort_order")
+    .select("key, name, limits, tagline, price_monthly, price_yearly, price_lifetime, lifetime_available, features, highlighted, visible, sort_order")
     .eq("visible", true)
     .order("sort_order", { ascending: true });
   return ((unwrap(res, "load the plans") ?? []) as PlanRow[]).map(normalizePlan);
@@ -74,6 +77,8 @@ export type PlanEdit = {
   tagline: string;
   priceMonthly: number | null;
   priceYearly: number | null;
+  priceLifetime: number | null;
+  lifetimeAvailable: boolean;
   features: string[];
   highlighted: boolean;
   visible: boolean;
@@ -89,6 +94,8 @@ export async function updatePlanDetails(edit: PlanEdit): Promise<void> {
       tagline: edit.tagline,
       price_monthly: edit.priceMonthly,
       price_yearly: edit.priceYearly,
+      price_lifetime: edit.priceLifetime,
+      lifetime_available: edit.lifetimeAvailable,
       features: edit.features,
       highlighted: edit.highlighted,
       visible: edit.visible,
@@ -121,6 +128,8 @@ export async function setBillingCurrency(currency: Currency, userId: string): Pr
 export async function setWorkspacePlan(db: Db, ws: string, plan: string, overrides: Record<string, number>): Promise<void> {
   const { error } = await db.rpc("set_workspace_plan", { p_workspace_id: ws, p_plan: plan, p_overrides: overrides });
   if (error) throw new DataError("Could not change the plan.", error.code);
+  // A plan set by hand does not expire on its own (an older purchase date must not downgrade it).
+  await admin().from("workspaces").update({ plan_expires_at: null, plan_period: null }).eq("id", ws);
 }
 
 export type AdminWorkspaceRow = { id: string; name: string; plan: string; limit_overrides: Record<string, number>; created_at: string };
