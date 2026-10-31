@@ -709,3 +709,14 @@ Unsplash provider (with required download reporting), all enabled providers sear
 - **Privacy:** built-in Privacy Policy and Cookie Notice text now describe the statistics. If you saved your own text for those pages in Admin -> Pages, add the same paragraph there.
 - Tests: `analytics.test.ts` (17 cases, all passed in the sandbox runner).
 - Not verified: build, lint, typecheck, vitest, the SQL, the beacon in a browser, country data (comes from the Vercel header `x-vercel-ip-country`).
+
+---
+
+## Batch 17.1 and Batch 18: SEO (code written, NOT yet verified)
+- **Fix (17.1):** `top-list.tsx` used low-contrast gray text and failed the accessibility test in CI. Changed to `text-ink-500`.
+- **Migration `0021_seo.sql`:** `seo_pages` (server only). Site-wide settings live in `platform_settings` key `seo`.
+- **Admin -> SEO:** health check; site settings (indexing switch, home title, title pattern, description, share image, X name, organization, logo, social links, extra robots paths, ask AI training crawlers to stay away); page-by-page title/description/share image/hide-from-search with a live preview; verification for Google, Bing, Yandex, Baidu, Pinterest, Facebook (paste the code or the whole tag) plus other tags; optional GA4, GTM, Meta Pixel, Clarity IDs.
+- **Site:** every public page uses `generateMetadata` (title, description, canonical, Open Graph, X card, noindex); dynamic `robots.txt` and `sitemap.xml`; JSON-LD (Organization + WebSite, SoftwareApplication with offers on Pricing, breadcrumbs); `X-Robots-Tag: noindex` header on app, admin, api, auth, onboarding, checkout.
+- **Consent:** cookie banner + "Cookie choices" footer link only when a tag ID is set; tags load only on public pages after Accept. Cookie Notice text updated. Our own analytics stay cookie-free.
+- Tests: `seo.test.ts` (26 cases, all passed in the sandbox runner). Not verified: build, lint, typecheck, vitest, the SQL, and Search Console/Bing verification on the live site.
+- If you saved your own Cookies or Privacy text in Admin -> Pages, the new cookie paragraph is not added there automatically.

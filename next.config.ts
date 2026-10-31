@@ -8,7 +8,10 @@ const nextConfig: NextConfig = {
     serverActions: { bodySizeLimit: "4.5mb" },
   },
   async headers() {
+    // Private areas are never meant for search results, even if a link to them leaks.
+    const noindex = [{ key: "X-Robots-Tag", value: "noindex, nofollow" }];
     return [
+      ...["/app/:path*", "/admin/:path*", "/api/:path*", "/auth/:path*", "/onboarding/:path*", "/checkout/:path*"].map((source) => ({ source, headers: noindex })),
       {
         source: "/:path*",
         headers: [

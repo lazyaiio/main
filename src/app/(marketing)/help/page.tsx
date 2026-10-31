@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/services/seo";
 import { SitePage } from "@/components/marketing/site-page";
 
-export const metadata: Metadata = {
-  title: "Help",
-  description: "How to connect a Facebook Page, create posts, schedule them, and fix common problems.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return pageMetadata("/help");
+}
 
 // The text comes from Admin -> Pages (or the built-in text), so the page is built on request.
 export const dynamic = "force-dynamic";

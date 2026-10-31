@@ -1,4 +1,5 @@
-Batch 17 (analytics) upload order
-1. Supabase SQL Editor: run supabase/migrations/0020_analytics.sql, then supabase/tests/rls_analytics.sql (expect ALL ANALYTICS TESTS PASSED).
-2. Upload every file in this zip to GitHub, same folders (17 files, nothing is deleted).
-3. After Vercel deploys: open a few public pages in a normal browser window (not private mode with Do Not Track), wait a minute, then open Admin -> Analytics.
+Batch 18 (SEO) upload order
+0. Make sure lazyai-batch17-fix1.zip (top-list.tsx contrast fix) is already uploaded.
+1. Supabase SQL Editor: run supabase/migrations/0021_seo.sql
+2. Upload every file in this zip to GitHub, same folders (32 files, nothing is deleted).
+3. After Vercel deploys, follow docs/SEO_SETUP.md (Admin -> SEO, then Google Search Console and Bing Webmaster Tools).

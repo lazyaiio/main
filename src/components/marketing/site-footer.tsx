@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Logo } from "@/components/brand/logo";
 import { siteConfig } from "@/lib/site";
 
-export function SiteFooter() {
+export function SiteFooter({ cookieChoices }: { cookieChoices?: React.ReactNode }) {
   return (
     <footer className="border-t border-ink-100 bg-white">
       <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-10 sm:px-6 md:flex-row md:items-center md:justify-between">
@@ -20,6 +20,7 @@ export function SiteFooter() {
               {item.label}
             </Link>
           ))}
+          {cookieChoices}
         </nav>
       </div>
       <div className="border-t border-ink-100">

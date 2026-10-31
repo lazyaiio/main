@@ -1,12 +1,18 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/services/seo";
 import Link from "next/link";
 import { PlaceholderPage } from "@/components/marketing/placeholder-page";
 import { ButtonLink } from "@/components/ui/button";
 import { getBillingCurrency, listVisiblePlans, type PlanRow } from "@/lib/data/plans";
 import { PERIODS, PERIOD_LABELS, priceFor } from "@/lib/payments/billing";
+import { JsonLd } from "@/components/seo/json-ld";
 import { formatPrice, limitHighlights, yearlySavingsPercent } from "@/lib/pricing";
+import { breadcrumbLd, softwareLd } from "@/lib/seo";
+import { loadSeo, siteBase } from "@/lib/services/seo";
 
-export const metadata: Metadata = { title: "Pricing" };
+export async function generateMetadata(): Promise<Metadata> {
+  return pageMetadata("/pricing");
+}
 // Prices are edited in Admin, so this page is built on request instead of once at deploy time.
 export const dynamic = "force-dynamic";
 
@@ -25,9 +31,12 @@ export default async function PricingPage() {
     return <PlaceholderPage title="Pricing" body="Our plans are being updated. Please check back soon, or contact us with any questions." cta={{ label: "Contact us", href: "/contact" }} />;
   }
   const { plans, currency } = data;
+  const { settings } = await loadSeo();
+  const offers = plans.filter((p) => p.price_monthly !== null).map((p) => ({ name: p.name, description: p.tagline, price: Number(p.price_monthly), currency }));
 
   return (
     <section className="mx-auto w-full max-w-6xl px-4 py-16 sm:px-6">
+      <JsonLd data={[softwareLd(siteBase(), settings, offers), breadcrumbLd(siteBase(), [{ name: "Pricing", path: "/pricing" }])]} />
       <div className="mx-auto max-w-2xl text-center">
         <h1 className="font-display text-4xl font-extrabold tracking-tight text-ink">Simple pricing</h1>
         <p className="mt-3 text-lg text-ink-600">Start free. Move to a bigger plan when you need more posts, Pages, and images.</p>

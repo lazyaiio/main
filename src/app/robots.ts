@@ -1,10 +1,10 @@
 import type { MetadataRoute } from "next";
-import { getPublicEnv } from "@/lib/env";
+import { robotsRules } from "@/lib/seo";
+import { loadSeo, siteBase } from "@/lib/services/seo";
 
-export default function robots(): MetadataRoute.Robots {
-  const base = getPublicEnv().NEXT_PUBLIC_APP_URL;
-  return {
-    rules: [{ userAgent: "*", allow: "/", disallow: ["/app", "/api"] }],
-    sitemap: `${base}/sitemap.xml`,
-  };
+export const dynamic = "force-dynamic";
+
+export default async function robots(): Promise<MetadataRoute.Robots> {
+  const { settings } = await loadSeo();
+  return { rules: robotsRules(settings), sitemap: `${siteBase()}/sitemap.xml`, host: siteBase() };
 }

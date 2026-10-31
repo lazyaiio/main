@@ -1,8 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Noto_Sans_Bengali, Plus_Jakarta_Sans } from "next/font/google";
-import { getPublicEnv } from "@/lib/env";
 import { SkipLink } from "@/components/ui/skip-link";
-import { siteConfig } from "@/lib/site";
+import { rootMetadata } from "@/lib/services/seo";
 import "./globals.css";
 
 const sans = Inter({ subsets: ["latin"], variable: "--font-sans", display: "swap" });
@@ -13,21 +12,9 @@ const display = Plus_Jakarta_Sans({
 });
 const bengali = Noto_Sans_Bengali({ subsets: ["bengali"], variable: "--font-bn", display: "swap" });
 
-export const metadata: Metadata = {
-  metadataBase: new URL(getPublicEnv().NEXT_PUBLIC_APP_URL),
-  title: {
-    default: `${siteConfig.name} — ${siteConfig.tagline}`,
-    template: `%s · ${siteConfig.name}`,
-  },
-  description: siteConfig.description,
-  openGraph: {
-    title: `${siteConfig.name} — ${siteConfig.tagline}`,
-    description: siteConfig.description,
-    siteName: siteConfig.name,
-    type: "website",
-    locale: "en_US",
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return rootMetadata();
+}
 
 export const viewport: Viewport = {
   themeColor: "#ffffff",

@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/services/seo";
 import { SitePage } from "@/components/marketing/site-page";
 
-export const metadata: Metadata = {
-  title: "Data Deletion",
-  description: "How to delete your LazyAI data and your Facebook connection data.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return pageMetadata("/data-deletion");
+}
 
 // The text comes from Admin -> Pages (or the built-in text), so the page is built on request.
 export const dynamic = "force-dynamic";

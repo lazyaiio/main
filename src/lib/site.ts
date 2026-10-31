@@ -2,7 +2,7 @@ export const siteConfig = {
   name: "LazyAI",
   tagline: "Work less. Publish more.",
   description:
-    "Give LazyAI a topic or website. Get a content plan, review the posts in English or Bengali, and publish them to your Facebook Page on schedule.",
+    "Give LazyAI a topic or website. Get a content plan, edit the posts in English or Bengali, and publish them to your Facebook Page on schedule.",
   nav: [
     { label: "How it works", href: "/#how" },
     { label: "Features", href: "/#features" },

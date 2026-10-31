@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/services/seo";
 import { SitePage } from "@/components/marketing/site-page";
 
-export const metadata: Metadata = {
-  title: "About",
-  description: "What LazyAI does and who runs it.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return pageMetadata("/about");
+}
 
 export const dynamic = "force-dynamic";
 

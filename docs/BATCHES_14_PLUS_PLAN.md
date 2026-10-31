@@ -54,3 +54,15 @@ See `BUILD_PROGRESS.md`. Migration 0014; Admin -> Stock photos; background campa
 
 ## Order and checks
 Each batch ends with: migration (if any) plus SQL test, changed-files zip, `BUILD_PROGRESS.md` entry, and a list of what was and was not verified. The owner reports CI, SQL results, and browser checks before the next batch starts.
+
+
+## Update after Batches 14 to 18
+Done: 14 (writing engine), 15 (plans, pricing, bKash, refunds), 16 (editable pages), 16.1 (checkout + email verification), 17 (analytics), 18 (SEO).
+
+## Batch 19: blog / content hub (proposed, needs the owner's decisions)
+- Admin -> Blog: write, edit, schedule and publish articles (Markdown), with title, description, cover image (stock photo picker), author, categories (silos), tags, FAQ block, and "related articles".
+- Public: `/blog` hub, category pages (each silo), article pages with breadcrumbs, table of contents, author box, related articles, next/previous, and JSON-LD (Article, BreadcrumbList, FAQPage when used). Sitemap and RSS feed.
+- Internal linking by design: each category has a pillar page; every article links up to its pillar and across to 2 to 4 siblings; the engine shows link suggestions and flags orphan articles.
+- A topical map document (clusters, pillar and supporting articles, search intent, target query, entities) made together with the owner, using real search data (Search Console after launch, plus a keyword tool).
+- Open decision: the site text rule says English only. Many Bangladeshi small businesses search in Bangla, so English-only articles will reach a smaller audience. Decide whether the blog may have a Bangla section.
+- Later: free tools as link magnets (post idea generator, caption generator, best-time-to-post), comparison pages, templates.
