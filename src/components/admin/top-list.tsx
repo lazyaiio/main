@@ -20,7 +20,7 @@ export function TopList({ title, rows, empty = "No data yet.", label }: { title:
                   {label ? label(r) : r.name}
                 </span>
                 <span className="shrink-0 tabular-nums text-ink-600">
-                  {r.count.toLocaleString("en-US")} <span className="text-xs text-ink-400">({percent(r.count, total)}%)</span>
+                  {r.count.toLocaleString("en-US")} <span className="text-xs text-ink-500">({percent(r.count, total)}%)</span>
                 </span>
               </div>
             </li>
