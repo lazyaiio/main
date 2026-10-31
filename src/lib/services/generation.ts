@@ -24,6 +24,7 @@ const TOTAL_BUDGET_MS = 55_000;
 const NOT_CONFIGURED = new ServiceError("not_configured", describeAiError("not_configured"));
 
 function requireWrite(ctx: AppContext) {
+  if (!ctx.emailVerified) throw new ServiceError("forbidden", "Please verify your email first. We sent you a link.");
   if (!canWrite(ctx.role)) throw new ServiceError("forbidden", "You do not have permission to do that.");
 }
 

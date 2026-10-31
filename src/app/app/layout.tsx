@@ -3,6 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { signOutAction } from "@/app/auth/actions";
 import { AppNav } from "@/components/app/app-nav";
+import { VerifyEmailBanner } from "@/components/app/verify-email-banner";
 import { Logo } from "@/components/brand/logo";
 import { isCurrentUserPlatformAdmin } from "@/lib/auth/admin";
 import { getAppContext } from "@/lib/auth/session";
@@ -49,6 +50,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           </Link>
           <AppNav orientation="horizontal" isAdmin={isAdmin} />
         </div>
+        {ctx.emailVerified ? null : <VerifyEmailBanner email={ctx.user.email} />}
         <main id="main-content" tabIndex={-1} className="outline-none mx-auto max-w-5xl p-4 sm:p-6 md:p-10">{children}</main>
       </div>
     </div>

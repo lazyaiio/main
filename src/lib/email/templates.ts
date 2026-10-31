@@ -5,10 +5,11 @@ import { describeScheduleError } from "@/lib/schedule-text";
  * Every value that comes from a person or from data is escaped before it goes into HTML.
  */
 
-export type TemplateName = "welcome" | "campaign_complete" | "publish_failed" | "page_attention" | "test";
+export type TemplateName = "welcome" | "verify_email" | "campaign_complete" | "publish_failed" | "page_attention" | "test";
 
 export type TemplateData =
   | { template: "welcome"; name: string | null }
+  | { template: "verify_email"; name: string | null; verifyUrl: string }
   | { template: "campaign_complete"; campaignName: string; campaignId: string; completed: number; failed: number; total: number; ok: boolean }
   | { template: "publish_failed"; pageName: string; postSnippet: string; code: string; itemId: string }
   | { template: "page_attention"; pageName: string; problem: string }
@@ -54,13 +55,27 @@ export function renderEmail(data: TemplateData, appUrl: string): RenderedEmail {
           title: "Welcome to LazyAI",
           paragraphs: [
             escapeHtml(hello),
-            "Your workspace is ready. Plan a campaign, let the AI write the drafts, review and approve them, then schedule them to your Facebook Page.",
-            "Nothing is published without your approval.",
+            "Your workspace is ready. Plan a campaign, let the AI write the posts, then schedule them to your Facebook Page.",
+            "Nothing is published unless you schedule it.",
           ],
           button: { label: "Open LazyAI", url },
           footer: "You are receiving this because you created a LazyAI account.",
         }),
-        text: `${hello}\n\nYour workspace is ready. Plan a campaign, let the AI write the drafts, review and approve them, then schedule them to your Facebook Page.\n\nNothing is published without your approval.\n\nOpen LazyAI: ${url}\n\nYou are receiving this because you created a LazyAI account.`,
+        text: `${hello}\n\nYour workspace is ready. Plan a campaign, let the AI write the posts, then schedule them to your Facebook Page.\n\nNothing is published unless you schedule it.\n\nOpen LazyAI: ${url}\n\nYou are receiving this because you created a LazyAI account.`,
+      };
+    }
+
+    case "verify_email": {
+      const hello = data.name ? `Hi ${oneLine(data.name, 60)},` : "Hi,";
+      return {
+        subject: "Verify your email to start using LazyAI",
+        html: layout({
+          title: "Verify your email",
+          paragraphs: [escapeHtml(hello), "Please confirm that this is your email address. Until you do, your LazyAI account can be viewed but not used.", "The link works for 48 hours."],
+          button: { label: "Verify my email", url: data.verifyUrl },
+          footer: "If you did not create a LazyAI account, you can ignore this email.",
+        }),
+        text: `${hello}\n\nPlease confirm that this is your email address. Until you do, your LazyAI account can be viewed but not used.\n\nVerify my email: ${data.verifyUrl}\n\nThe link works for 48 hours. If you did not create a LazyAI account, you can ignore this email.`,
       };
     }
 
@@ -68,12 +83,12 @@ export function renderEmail(data: TemplateData, appUrl: string): RenderedEmail {
       const name = oneLine(data.campaignName, 80);
       const url = link(appUrl, `/app/campaigns/${encodeURIComponent(data.campaignId)}`);
       const summary = data.ok
-        ? `${data.completed} of ${data.total} posts were written${data.failed > 0 ? `, and ${data.failed} could not be written` : ""}. They are saved as drafts for you to review.`
+        ? `${data.completed} of ${data.total} posts were written${data.failed > 0 ? `, and ${data.failed} could not be written` : ""}. They are saved in Content, ready for you to schedule.`
         : "None of the posts could be written. Open the campaign to see why and to try again.";
       return {
-        subject: data.ok ? `Your campaign “${name}” is ready to review` : `Your campaign “${name}” needs attention`,
+        subject: data.ok ? `Your campaign “${name}” is ready` : `Your campaign “${name}” needs attention`,
         html: layout({
-          title: data.ok ? "Your campaign is ready to review" : "Your campaign needs attention",
+          title: data.ok ? "Your campaign is ready" : "Your campaign needs attention",
           paragraphs: [`Campaign: <strong>${escapeHtml(name)}</strong>`, escapeHtml(summary)],
           button: { label: "Open the campaign", url },
           footer: PREFS_NOTE(appUrl),

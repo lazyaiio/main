@@ -25,7 +25,7 @@ const ERRORS: Record<string, string> = {
   not_configured: "Online payment is not available yet.",
   not_found: "That plan cannot be bought this way.",
   too_many_requests: "You made too many requests. Please wait a few minutes.",
-  failed: "That could not be done. Please check the details and try again.",
+  failed: "That did not go through. If this was a payment, you were not charged, or bKash will return the amount. Please check the details and try again.",
 };
 
 export default async function BillingPage({ searchParams }: Props) {

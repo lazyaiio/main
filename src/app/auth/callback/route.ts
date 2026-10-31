@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { safeInternalPath } from "@/lib/auth/redirects";
 import { createClient } from "@/lib/supabase/server";
+import { markVerifiedByEmailLink } from "@/lib/services/email-verification";
 
 const ALLOWED_NEXT = ["/app", "/onboarding", "/auth/reset-password"];
 
@@ -13,8 +14,12 @@ export async function GET(request: Request) {
   if (code) {
     try {
       const supabase = await createClient();
-      const { error } = await supabase.auth.exchangeCodeForSession(code);
-      if (!error) return NextResponse.redirect(`${origin}${next}`);
+      const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+      if (!error) {
+        // A link that arrived in the person's mailbox (sign-up confirmation or password reset) proves the address.
+        if (data.user) await markVerifiedByEmailLink(data.user.id);
+        return NextResponse.redirect(`${origin}${next}`);
+      }
     } catch {
       // fall through to the error redirect
     }

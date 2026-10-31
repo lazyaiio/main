@@ -21,7 +21,7 @@ export function Hero({ content }: { content: HomeContent["hero"] }) {
             {content.subtitle}
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
-            <ButtonLink href="/auth/signup" size="lg">
+            <ButtonLink href="/pricing" size="lg">
               {content.primaryCta} <ArrowRight className="h-4 w-4" aria-hidden="true" />
             </ButtonLink>
             <ButtonLink href="/#how" variant="secondary" size="lg">

@@ -687,3 +687,15 @@ Unsplash provider (with required download reporting), all enabled providers sear
 - The existing pages were converted from page code to built-in Markdown (`src/content/default-pages.ts`); public pages now render through a safe Markdown reader (`lib/markdown.ts`, no raw HTML). New public **About** page (also in footer and sitemap). FAQ answer about cost updated to point to Pricing.
 - Tests: `markdown.test.ts`, `site-pages.test.ts`, `home-content.test.ts`.
 - Verified in the sandbox: syntax of every file; `markdown` (12) and `home-content` (9) tests; the built-in pages test (except one assertion form that the sandbox runner lacks). Not verified: build, lint, full typecheck, database, browser rendering. Please compare each public page with its old look after deploy.
+
+---
+
+## Batch 16.1: checkout flow, pay first and verify later (code written, NOT yet verified)
+- **Fix from the owner's ChatGPT repair of Batch 16:** a duplicate `failed` key in `billing/page.tsx` stopped the build. Applied here (one `failed` message that covers payments and general errors).
+- **Pricing buttons were wrong:** the free button went to `/signup` (no such page) and paid buttons to Billing. Now every plan button goes to `/checkout?plan=<plan>&period=<period>` (paid plans also show "Or choose: Yearly · Lifetime" links).
+- **New `/checkout` page:** plan summary with period choice, then either "Create your account" (visitors) or "Pay with bKash" (signed-in people). A new free account goes to the dashboard; a new paid account goes to bKash and, after paying, to the dashboard with a "payment received" notice. Money amounts always come from the database.
+- **All "Start free / Sign up" buttons and `/auth/signup` now lead to `/pricing`** (header, hero, bottom banner, login page link).
+- **Email verification inside the app (migration 0019):** after sign-up the person gets a LazyAI email with a link (48 hours, hashed token, resend limited to 1 per minute and 5 per hour). Until it is opened, a banner shows on every page and the account cannot create or change anything (enforced in the database through `can_write_workspace` and in the services). Existing accounts are marked verified. If the site cannot send email at all, accounts are verified automatically instead of being locked out.
+- **Required Supabase setting:** Authentication -> Sign In / Providers -> Email -> turn OFF "Confirm email". If it stays ON, a new account cannot reach the dashboard until Supabase's own link is clicked, so "pay first" cannot work (the checkout then tells the person to confirm by email and log in; confirming through that link also verifies the account).
+- Welcome and campaign emails no longer mention approval. Tests added: `email-verification.test.ts`, verify template cases in `email.test.ts`; SQL test `rls_email_verification.sql`.
+- Not verified: build, lint, typecheck, vitest, the SQL, and the whole flow in a browser.

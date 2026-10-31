@@ -26,7 +26,7 @@ export function LoginForm({ next }: { next: string }) {
         <Link href="/auth/forgot-password" className="font-medium text-brand hover:underline">
           Forgot password?
         </Link>
-        <Link href="/auth/signup" className="font-medium text-ink-600 hover:underline">
+        <Link href="/pricing" className="font-medium text-ink-600 hover:underline">
           Create account
         </Link>
       </div>

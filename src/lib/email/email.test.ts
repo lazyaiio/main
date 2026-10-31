@@ -100,6 +100,7 @@ describe("templates", () => {
   it("renders every template with a subject, HTML, and text, and no raw secrets", () => {
     const all = [
       renderEmail({ template: "welcome", name: "Jane" }, app),
+      renderEmail({ template: "verify_email", name: "Jane", verifyUrl: "https://app.example.com/auth/verify-email?token=abc" }, app),
       renderEmail({ template: "campaign_complete", campaignName: "November tips", campaignId: "c-1", completed: 10, failed: 2, total: 12, ok: true }, app),
       renderEmail({ template: "campaign_complete", campaignName: "November tips", campaignId: "c-1", completed: 0, failed: 12, total: 12, ok: false }, app),
       renderEmail({ template: "publish_failed", pageName: "Bakery", postSnippet: "Fresh bread", code: "token_expired", itemId: "i-1" }, app),
@@ -124,6 +125,14 @@ describe("templates", () => {
     const mail = renderEmail({ template: "publish_failed", pageName: hostile, postSnippet: hostile, code: "unexpected", itemId: "i-1" }, app);
     expect(mail.html).not.toContain("<script>");
     expect(mail.html).toContain("&lt;script&gt;");
+    expect(mail.subject).not.toMatch(/[\r\n]/);
+  });
+
+  it("puts the verification link in both the HTML and the text, escaped", () => {
+    const mail = renderEmail({ template: "verify_email", name: "<b>Jane</b>", verifyUrl: "https://app.example.com/auth/verify-email?token=abc&x=1" }, app);
+    expect(mail.text).toContain("https://app.example.com/auth/verify-email?token=abc&x=1");
+    expect(mail.html).toContain("token=abc&amp;x=1");
+    expect(mail.html).not.toContain("<b>Jane</b>");
     expect(mail.subject).not.toMatch(/[\r\n]/);
   });
 

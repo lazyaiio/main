@@ -12,6 +12,7 @@ export { ServiceError } from "./errors";
 const FORBIDDEN = new ServiceError("forbidden", "You do not have permission to do that.");
 
 function requireWrite(ctx: AppContext) {
+  if (!ctx.emailVerified) throw new ServiceError("forbidden", "Please verify your email first. We sent you a link.");
   if (!canWrite(ctx.role)) throw FORBIDDEN;
 }
 

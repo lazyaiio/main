@@ -13,7 +13,7 @@ export function FinalCta({ content }: { content: HomeContent["cta"] }) {
           {content.subtitle}
         </p>
         <div className="mt-8 flex justify-center">
-          <ButtonLink href="/auth/signup" variant="light" size="lg">
+          <ButtonLink href="/pricing" variant="light" size="lg">
             {content.button} <ArrowRight className="h-4 w-4" aria-hidden="true" />
           </ButtonLink>
         </div>

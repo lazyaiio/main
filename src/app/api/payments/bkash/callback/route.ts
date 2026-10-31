@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
   if (!parsed.success) return go("error=invalid");
   try {
     const outcome = await finishCheckout(parsed.data.pid, parsed.data.paymentID, parsed.data.status);
-    return go(outcome === "paid" ? "notice=paid" : `error=${outcome}`);
+    return outcome === "paid" ? NextResponse.redirect(`${base}/app?notice=paid`, { status: 303, headers: { "Cache-Control": "no-store" } }) : go(`error=${outcome}`);
   } catch {
     return go("error=unknown");
   }

@@ -7,7 +7,19 @@ import { requireAppContext } from "@/lib/auth/session";
 import { getDb } from "@/lib/data/db";
 import { getDashboardStats, listCampaigns } from "@/lib/data/overview";
 
-export default async function DashboardPage() {
+const NOTICES: Record<string, string> = {
+  paid: "Payment received. Your plan is active. Thank you!",
+  welcome: "Welcome to LazyAI! Your free account is ready.",
+  verified: "Your email is verified. Your account is fully active.",
+  verify_sent: "We sent a new verification link. Please check your email.",
+  verify_wait: "Please wait a minute before asking for another email (and no more than five per hour).",
+  verify_error: "We could not send the email right now. Please try again in a few minutes.",
+  verify_failed: "That verification link is not valid or has expired. Use the button above to get a new one.",
+};
+
+export default async function DashboardPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+  const sp = await searchParams;
+  const notice = typeof sp.notice === "string" ? NOTICES[sp.notice] : undefined;
   const ctx = await requireAppContext();
   const db = await getDb();
   const [stats, campaigns] = await Promise.all([
@@ -29,6 +41,11 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-8">
+      {notice ? (
+        <p role="status" className="rounded-xl bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+          {notice}
+        </p>
+      ) : null}
       <PageHeader
         title={`Welcome, ${name}`}
         description={`Your workspace “${ctx.workspace.name}” at a glance.`}

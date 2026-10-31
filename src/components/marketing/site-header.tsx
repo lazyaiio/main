@@ -28,7 +28,7 @@ export function SiteHeader() {
           <ButtonLink href="/auth/login" variant="ghost" size="sm">
             Log in
           </ButtonLink>
-          <ButtonLink href="/auth/signup" size="sm">
+          <ButtonLink href="/pricing" size="sm">
             Start free
           </ButtonLink>
         </div>
@@ -54,7 +54,7 @@ export function SiteHeader() {
               <ButtonLink href="/auth/login" variant="secondary" size="sm">
                 Log in
               </ButtonLink>
-              <ButtonLink href="/auth/signup" size="sm">
+              <ButtonLink href="/pricing" size="sm">
                 Start free
               </ButtonLink>
             </div>

@@ -138,3 +138,9 @@ export async function listRefundRequests(): Promise<PaymentRow[]> {
   const res = await adminDb().from("payments").select(COLUMNS).eq("refund_status", "requested").order("refund_requested_at", { ascending: true }).limit(50);
   return ((unwrap(res, "load the refund requests") ?? []) as PaymentRow[]).map(normalize);
 }
+
+/** The workspace created for a new account (the sign-up trigger makes it). */
+export async function getPersonalWorkspaceId(userId: string): Promise<string | null> {
+  const { data } = await adminDb().from("workspace_members").select("workspace_id").eq("user_id", userId).order("created_at", { ascending: true }).limit(1).maybeSingle();
+  return (data as { workspace_id: string } | null)?.workspace_id ?? null;
+}

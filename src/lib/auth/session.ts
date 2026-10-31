@@ -11,6 +11,8 @@ export type AppContext = {
   profile: ProfileRow;
   workspace: WorkspaceRow;
   role: WorkspaceRole;
+  /** False until the person opens the link in the verification email. Unverified accounts cannot create or change content. */
+  emailVerified: boolean;
 };
 
 /**
@@ -26,7 +28,7 @@ export const getAppContext = cache(async (): Promise<AppContext | null> => {
   } = await supabase.auth.getUser();
   if (!user) return null;
 
-  const [profileRes, membershipRes, workspaceRes] = await Promise.all([
+  const [profileRes, membershipRes, workspaceRes, verifiedRes] = await Promise.all([
     supabase.from("profiles").select("*").eq("id", user.id).maybeSingle(),
     supabase
       .from("workspace_members")
@@ -36,6 +38,7 @@ export const getAppContext = cache(async (): Promise<AppContext | null> => {
       .limit(1)
       .maybeSingle(),
     supabase.from("workspaces").select("*").order("created_at", { ascending: true }).limit(1).maybeSingle(),
+    supabase.from("user_email_verification").select("verified_at").eq("user_id", user.id).maybeSingle(),
   ]);
 
   const profile = profileRes.data;
@@ -49,7 +52,11 @@ export const getAppContext = cache(async (): Promise<AppContext | null> => {
     throw new Error("Your account setup is incomplete. Please try again or contact support.");
   }
 
-  return { user, profile, workspace, role: membership.role };
+  // Before migration 0019 the table does not exist: everyone counts as verified until it does.
+  const verifiedRow = verifiedRes.data as { verified_at: string | null } | null;
+  const emailVerified = verifiedRes.error ? true : Boolean(verifiedRow?.verified_at);
+
+  return { user, profile, workspace, role: membership.role, emailVerified };
 });
 
 /** For pages: the signed-in context, or a redirect to the login page. */

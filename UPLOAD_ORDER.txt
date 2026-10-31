@@ -1,4 +1,5 @@
-Batches 15C (refunds + privacy text) and 16 (editable pages) upload order
-1. Supabase SQL Editor: run supabase/migrations/0017_refunds.sql, then supabase/migrations/0018_site_pages.sql
-2. Upload every file in this zip to GitHub, same folders (47 files, nothing is deleted).
-3. After Vercel deploys: compare each public page (/terms /privacy /cookies /acceptable-use /data-deletion /help /contact /about and the home page) with how it looked before, then try Admin -> Pages.
+Batch 16.1 (checkout flow + email verification) upload order
+1. Supabase dashboard -> Authentication -> Sign In / Providers -> Email -> turn OFF "Confirm email" and save.
+2. Supabase SQL Editor: run supabase/migrations/0019_email_verification.sql, then supabase/tests/rls_email_verification.sql (expect ALL EMAIL VERIFICATION TESTS PASSED).
+3. Upload every file in this zip to GitHub, same folders (36 files, nothing is deleted).
+4. After Vercel deploys, test the three paths listed in docs/BUILD_PROGRESS.md (free sign-up, paid sign-up with bKash sandbox, existing account).

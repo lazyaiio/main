@@ -3,6 +3,7 @@ import Link from "next/link";
 import { PlaceholderPage } from "@/components/marketing/placeholder-page";
 import { ButtonLink } from "@/components/ui/button";
 import { getBillingCurrency, listVisiblePlans, type PlanRow } from "@/lib/data/plans";
+import { PERIODS, PERIOD_LABELS, priceFor } from "@/lib/payments/billing";
 import { formatPrice, limitHighlights, yearlySavingsPercent } from "@/lib/pricing";
 
 export const metadata: Metadata = { title: "Pricing" };
@@ -38,6 +39,10 @@ export default async function PricingPage() {
           const savings = yearlySavingsPercent(monthly, plan.price_yearly);
           const highlights = limitHighlights(plan.limits);
           const features = plan.features.length > 0 ? plan.features : highlights;
+          const periods = PERIODS.filter((p) => priceFor({ key: plan.key, priceMonthly: plan.price_monthly, priceYearly: plan.price_yearly, priceLifetime: plan.price_lifetime, lifetimeAvailable: plan.lifetime_available }, p) !== null);
+          const isFree = plan.key === "free" || monthly === 0;
+          const canBuy = isFree || periods.length > 0;
+          const firstPeriod = periods[0];
           return (
             <article
               key={plan.key}
@@ -80,9 +85,30 @@ export default async function PricingPage() {
               </ul>
 
               <div className="mt-8">
-                <ButtonLink href={monthly === 0 || monthly === null ? "/signup" : `/app/billing?plan=${plan.key}`} variant={plan.highlighted ? "primary" : "secondary"} className="w-full justify-center">
-                  {monthly === 0 || monthly === null ? "Get started" : `Start with ${plan.name}`}
-                </ButtonLink>
+                {canBuy ? (
+                  <ButtonLink
+                    href={isFree ? "/checkout?plan=free" : `/checkout?plan=${plan.key}&period=${firstPeriod}`}
+                    variant={plan.highlighted ? "primary" : "secondary"}
+                    className="w-full justify-center"
+                  >
+                    {isFree ? "Start free" : `Choose ${plan.name}`}
+                  </ButtonLink>
+                ) : (
+                  <p className="text-center text-sm text-ink-500">Available soon</p>
+                )}
+                {!isFree && periods.length > 1 ? (
+                  <p className="mt-3 text-center text-xs text-ink-500">
+                    Or choose:{" "}
+                    {periods.slice(1).map((p, i) => (
+                      <span key={p}>
+                        {i > 0 ? " · " : ""}
+                        <Link href={`/checkout?plan=${plan.key}&period=${p}`} className="font-semibold text-brand hover:underline">
+                          {PERIOD_LABELS[p]}
+                        </Link>
+                      </span>
+                    ))}
+                  </p>
+                ) : null}
               </div>
             </article>
           );

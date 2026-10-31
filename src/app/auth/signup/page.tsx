@@ -1,20 +1,6 @@
-import type { Metadata } from "next";
-import { SignupForm } from "@/components/auth/auth-forms";
-import { NotConfigured } from "@/components/auth/not-configured";
-import { isSupabaseConfigured } from "@/lib/env";
+import { redirect } from "next/navigation";
 
-export const metadata: Metadata = { title: "Sign up", robots: { index: false } };
-
+// Creating an account now starts on the pricing page: people choose a plan (free or paid) first.
 export default function SignupPage() {
-  if (!isSupabaseConfigured()) return <NotConfigured />;
-
-  return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="font-display text-2xl font-extrabold">Create your account</h1>
-        <p className="mt-1 text-sm text-ink-600">Start planning and scheduling your posts.</p>
-      </div>
-      <SignupForm />
-    </div>
-  );
+  redirect("/pricing");
 }

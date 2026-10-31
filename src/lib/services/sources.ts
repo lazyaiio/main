@@ -46,6 +46,7 @@ function toMaterial(row: SourceDocRow): SourceMaterial | null {
  * size/time limits, per-user and per-website request limits, and every attempt is recorded.
  */
 export async function readSource(ctx: AppContext, projectId: string | null, rawUrl: string): Promise<SourceMaterial> {
+  if (!ctx.emailVerified) throw new ServiceError("forbidden", "Please verify your email first. We sent you a link.");
   if (!canWrite(ctx.role)) throw new ServiceError("forbidden", "You do not have permission to do that.");
 
   let url: URL;

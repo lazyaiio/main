@@ -56,13 +56,20 @@ export async function paymentsAvailable(): Promise<boolean> {
   }
 }
 
-/** Starts a checkout and returns the bKash page to send the person to. */
+/** Starts a checkout for a signed-in person and returns the bKash page to send them to. */
 export async function startCheckout(ctx: AppContext, planKey: string, period: Period): Promise<string> {
   if (!canAdmin(ctx.role)) throw new ServiceError("forbidden", "Only the owner or an admin of the workspace can change the plan.");
+  await enforceRate(await getDb(), "checkout", 10, 3600);
+  return beginPayment({ userId: ctx.user.id, workspaceId: ctx.workspace.id }, planKey, period);
+}
+
+/** Who is paying. Used directly right after sign-up, before the browser has the new session cookie. */
+export type PaymentActor = { userId: string; workspaceId: string };
+
+/** Creates the payment record and the bKash payment. The caller has already checked the person's right to buy. */
+export async function beginPayment(actor: PaymentActor, planKey: string, period: Period): Promise<string> {
   const [creds, currency] = await Promise.all([activeCredentials(), getBillingCurrency()]);
   if (!creds || !checkoutOpen(currency)) throw new ServiceError("not_configured", "Online payment is not available yet.");
-
-  await enforceRate(await getDb(), "checkout", 10, 3600);
 
   const plan = (await listVisiblePlans()).find((p) => p.key === planKey);
   if (!plan) throw new ServiceError("not_found", "That plan is not available.");
@@ -72,13 +79,13 @@ export async function startCheckout(ctx: AppContext, planKey: string, period: Pe
   );
   if (amount === null) throw new ServiceError("not_found", "That plan cannot be bought this way.");
 
-  const state = await getWorkspacePlanState(ctx.workspace.id);
+  const state = await getWorkspacePlanState(actor.workspaceId);
   if (state.plan === plan.key && state.plan_period === "lifetime") throw new ServiceError("failed", "You already have this plan for life.");
 
-  const payment = await insertPayment({ workspaceId: ctx.workspace.id, userId: ctx.user.id, planKey: plan.key, period, amount });
+  const payment = await insertPayment({ workspaceId: actor.workspaceId, userId: actor.userId, planKey: plan.key, period, amount });
   try {
     const callbackUrl = `${getPublicEnv().NEXT_PUBLIC_APP_URL.replace(/\/$/, "")}/api/payments/bkash/callback?pid=${payment.id}`;
-    const created = await createPayment(creds, { amount, invoiceNumber: payment.invoice_number, callbackUrl, payerReference: ctx.user.id.slice(0, 20) });
+    const created = await createPayment(creds, { amount, invoiceNumber: payment.invoice_number, callbackUrl, payerReference: actor.userId.slice(0, 20) });
     await updatePayment(payment.id, { provider_payment_id: created.paymentId });
     return created.redirectUrl;
   } catch (error) {
