@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { checkCronAuth } from "@/lib/publish-dispatch";
+import { cleanupOldViews, readAnalyticsSettings } from "@/lib/data/analytics";
 import { expirePlans } from "@/lib/data/payments";
 import { runBackgroundCampaigns } from "@/lib/services/campaign-worker";
 import { dispatchDuePosts } from "@/lib/services/publisher";
@@ -38,6 +39,15 @@ async function handle(request: NextRequest) {
       expired = await expirePlans();
     } catch (error) {
       logError("cron.expire_failed", describeError(error));
+    }
+    // Once a day (03:00 UTC), delete website statistics older than the retention period.
+    const at = new Date();
+    if (at.getUTCHours() === 3 && at.getUTCMinutes() === 0) {
+      try {
+        await cleanupOldViews((await readAnalyticsSettings()).retentionDays);
+      } catch (error) {
+        logError("cron.analytics_cleanup_failed", describeError(error));
+      }
     }
     return NextResponse.json({ ok: true, ...summary, writing, expired }, { headers: { "Cache-Control": "no-store" } });
   } catch (error) {

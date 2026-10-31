@@ -1,3 +1,4 @@
+import { AnalyticsBeacon } from "@/components/marketing/analytics-beacon";
 import { SiteFooter } from "@/components/marketing/site-footer";
 import { SiteHeader } from "@/components/marketing/site-header";
 
@@ -7,6 +8,7 @@ export default function MarketingLayout({ children }: { children: React.ReactNod
       <SiteHeader />
       <main id="main-content" tabIndex={-1} className="outline-none">{children}</main>
       <SiteFooter />
+      <AnalyticsBeacon />
     </>
   );
 }

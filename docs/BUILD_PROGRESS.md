@@ -699,3 +699,13 @@ Unsplash provider (with required download reporting), all enabled providers sear
 - **Required Supabase setting:** Authentication -> Sign In / Providers -> Email -> turn OFF "Confirm email". If it stays ON, a new account cannot reach the dashboard until Supabase's own link is clicked, so "pay first" cannot work (the checkout then tells the person to confirm by email and log in; confirming through that link also verifies the account).
 - Welcome and campaign emails no longer mention approval. Tests added: `email-verification.test.ts`, verify template cases in `email.test.ts`; SQL test `rls_email_verification.sql`.
 - Not verified: build, lint, typecheck, vitest, the SQL, and the whole flow in a browser.
+
+---
+
+## Batch 17: analytics (code written, NOT yet verified)
+- **Migration `0020_analytics.sql`** (+ SQL test `rls_analytics.sql`, expect `ALL ANALYTICS TESTS PASSED`): `analytics_pageviews` (server only), `analytics_report()` and `analytics_cleanup()` (service role only).
+- **Collection:** a small beacon on the public pages (not the app or admin) posts to `/api/analytics/collect`. No cookies, no third-party scripts, no IP stored. Visitors are a one-way hash that changes every day (needs `TOKEN_ENCRYPTION_KEY`; without it page views are still counted but every view is its own session). Sessions end after 30 minutes without a page view. Bots, private areas and visitors with Do Not Track or Global Privacy Control are not counted.
+- **Admin -> Analytics:** visitors, page views, sessions, bounce rate, sign-ups, payments, revenue, "on the site now"; hourly, daily, weekly, monthly, yearly traffic for today, yesterday, 7/30/90 days, 12 months, all time; top pages, entry pages, exit pages, traffic sources and source types, referring sites, countries, devices, browsers, operating systems, utm campaigns. Switch tracking on or off and set retention (default 400 days). Old data is deleted daily by the scheduler.
+- **Privacy:** built-in Privacy Policy and Cookie Notice text now describe the statistics. If you saved your own text for those pages in Admin -> Pages, add the same paragraph there.
+- Tests: `analytics.test.ts` (17 cases, all passed in the sandbox runner).
+- Not verified: build, lint, typecheck, vitest, the SQL, the beacon in a browser, country data (comes from the Vercel header `x-vercel-ip-country`).

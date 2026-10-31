@@ -1,5 +1,4 @@
-Batch 16.1 (checkout flow + email verification) upload order
-1. Supabase dashboard -> Authentication -> Sign In / Providers -> Email -> turn OFF "Confirm email" and save.
-2. Supabase SQL Editor: run supabase/migrations/0019_email_verification.sql, then supabase/tests/rls_email_verification.sql (expect ALL EMAIL VERIFICATION TESTS PASSED).
-3. Upload every file in this zip to GitHub, same folders (36 files, nothing is deleted).
-4. After Vercel deploys, test the three paths listed in docs/BUILD_PROGRESS.md (free sign-up, paid sign-up with bKash sandbox, existing account).
+Batch 17 (analytics) upload order
+1. Supabase SQL Editor: run supabase/migrations/0020_analytics.sql, then supabase/tests/rls_analytics.sql (expect ALL ANALYTICS TESTS PASSED).
+2. Upload every file in this zip to GitHub, same folders (17 files, nothing is deleted).
+3. After Vercel deploys: open a few public pages in a normal browser window (not private mode with Do Not Track), wait a minute, then open Admin -> Analytics.
