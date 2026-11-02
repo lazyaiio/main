@@ -76,31 +76,29 @@ async function attachFeatured(rows: Omit<BlogPost, "body">[]): Promise<PostCard[
 }
 
 // ---------- Public reads: only published articles whose time has come ----------
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const published = <T extends { eq: (c: string, v: string) => any }>(q: T) => q.eq("status", "published").lte("published_at", nowIso());
-
 export async function listPublished(opts: { page?: number; category?: string | null; perPage?: number } = {}): Promise<{ posts: PostCard[]; total: number }> {
   const perPage = opts.perPage ?? POSTS_PER_PAGE;
   const page = Math.max(1, opts.page ?? 1);
-  let q = published(db().from("blog_posts").select(CARD_COLUMNS, { count: "exact" })).order("published_at", { ascending: false }).range((page - 1) * perPage, page * perPage - 1);
-  if (opts.category) q = q.eq("category_slug", opts.category);
-  const { data, count } = await q;
+  const base = db().from("blog_posts").select(CARD_COLUMNS, { count: "exact" }).eq("status", "published").lte("published_at", nowIso());
+  const { data, count } = await (opts.category ? base.eq("category_slug", opts.category) : base)
+    .order("published_at", { ascending: false })
+    .range((page - 1) * perPage, page * perPage - 1);
   return { posts: await attachFeatured((data ?? []) as Omit<BlogPost, "body">[]), total: count ?? 0 };
 }
 
 export async function getPublishedBySlug(slug: string): Promise<BlogPost | null> {
-  const { data } = await published(db().from("blog_posts").select(POST_COLUMNS)).eq("slug", slug).maybeSingle();
+  const { data } = await db().from("blog_posts").select(POST_COLUMNS).eq("status", "published").lte("published_at", nowIso()).eq("slug", slug).maybeSingle();
   return (data as BlogPost | null) ?? null;
 }
 
 /** Every published article's light details, for related-article picking and the sitemap. */
 export async function listPublishedMeta(): Promise<PostCard[]> {
-  const { data } = await published(db().from("blog_posts").select(CARD_COLUMNS)).order("published_at", { ascending: false }).limit(500);
+  const { data } = await db().from("blog_posts").select(CARD_COLUMNS).eq("status", "published").lte("published_at", nowIso()).order("published_at", { ascending: false }).limit(500);
   return attachFeatured((data ?? []) as Omit<BlogPost, "body">[]);
 }
 
 export async function getPillar(category: string): Promise<PostCard | null> {
-  const { data } = await published(db().from("blog_posts").select(CARD_COLUMNS)).eq("category_slug", category).eq("is_pillar", true).maybeSingle();
+  const { data } = await db().from("blog_posts").select(CARD_COLUMNS).eq("status", "published").lte("published_at", nowIso()).eq("category_slug", category).eq("is_pillar", true).maybeSingle();
   return data ? (await attachFeatured([data as Omit<BlogPost, "body">]))[0] ?? null : null;
 }
 
@@ -121,9 +119,8 @@ export async function getPostById(id: string): Promise<BlogPost | null> {
 }
 
 export async function slugExists(slug: string, exceptId?: string): Promise<boolean> {
-  let q = db().from("blog_posts").select("id").eq("slug", slug).limit(1);
-  if (exceptId) q = q.neq("id", exceptId);
-  const { data } = await q;
+  const base = db().from("blog_posts").select("id").eq("slug", slug);
+  const { data } = await (exceptId ? base.neq("id", exceptId) : base).limit(1);
   return (data ?? []).length > 0;
 }
 
