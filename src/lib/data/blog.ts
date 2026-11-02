@@ -2,7 +2,7 @@ import "server-only";
 import { adminDb } from "./platform";
 import { DataError } from "./db";
 import { POSTS_PER_PAGE, publicImageUrl } from "@/lib/blog";
-import { getPublicEnv } from "@/lib/env";
+import { getSupabasePublicEnv } from "@/lib/env";
 
 /** The blog tables are server-only. Every function here uses the service key, so callers must check who is asking (admin pages) or return only published content (public pages). */
 
@@ -25,7 +25,7 @@ const IMAGE_COLUMNS = "id, storage_path, thumb_path, width, height, alt_text, pr
 
 const db = () => adminDb();
 const nowIso = () => new Date().toISOString();
-const baseUrl = () => getPublicEnv().NEXT_PUBLIC_SUPABASE_URL;
+const baseUrl = () => getSupabasePublicEnv()?.url ?? "";
 
 export function toPublicImage(row: BlogImage): PublicImage {
   const credit = row.provider ? `Photo${row.creator ? ` by ${row.creator}` : ""} on ${row.provider}` : "";

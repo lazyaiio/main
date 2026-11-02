@@ -60,6 +60,7 @@ export function canTransition(from: ApprovalStatus, to: ApprovalStatus): boolean
 }
 
 /** Any post may be deleted. The database refuses when the post is used by a schedule. */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function isDeletable(_status: ApprovalStatus): boolean {
   return true;
 }
