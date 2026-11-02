@@ -16,7 +16,9 @@ export type Block =
   | { type: "h2" | "h3"; id: string; children: Inline[] }
   | { type: "p"; children: Inline[] }
   | { type: "ul" | "ol"; items: Inline[][] }
-  | { type: "form"; name: "deletion_check_form" };
+  | { type: "form"; name: "deletion_check_form" }
+  | { type: "image"; id: string; alt: string }
+  | { type: "quote"; children: Inline[] };
 
 export function slugify(text: string): string {
   return text
@@ -112,6 +114,8 @@ export function parseInline(text: string): Inline[] {
 }
 
 const HEADING = /^(#{2,3})\s+(.+?)\s*$/;
+const IMAGE = /^!\[([^\]]*)\]\(blog-image:([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\)$/;
+const PLACEHOLDER = /^\[\[image:.*\]\]$/;
 const BULLET = /^[-*]\s+(.*)$/;
 const NUMBERED = /^\d{1,3}[.)]\s+(.*)$/;
 
@@ -120,6 +124,7 @@ export function parseMarkdown(source: string): Block[] {
   const blocks: Block[] = [];
   let paragraph: string[] = [];
   let list: { type: "ul" | "ol"; items: string[] } | null = null;
+  let quote: string[] = [];
 
   const flushParagraph = () => {
     if (paragraph.length > 0) {
@@ -128,6 +133,10 @@ export function parseMarkdown(source: string): Block[] {
       else if (text) blocks.push({ type: "p", children: parseInline(text) });
     }
     paragraph = [];
+  };
+  const flushQuote = () => {
+    if (quote.length > 0) blocks.push({ type: "quote", children: parseInline(quote.join(" ")) });
+    quote = [];
   };
   const flushList = () => {
     if (list) blocks.push({ type: list.type, items: list.items.map((item) => parseInline(item)) });
@@ -139,8 +148,32 @@ export function parseMarkdown(source: string): Block[] {
     if (line.trim() === "") {
       flushParagraph();
       flushList();
+      flushQuote();
       continue;
     }
+    const trimmed = line.trim();
+    if (PLACEHOLDER.test(trimmed)) {
+      // A photo that has not been found yet is never shown to readers.
+      flushParagraph();
+      flushList();
+      flushQuote();
+      continue;
+    }
+    const picture = IMAGE.exec(trimmed);
+    if (picture) {
+      flushParagraph();
+      flushList();
+      flushQuote();
+      blocks.push({ type: "image", id: picture[2] as string, alt: picture[1] as string });
+      continue;
+    }
+    if (trimmed.startsWith("> ")) {
+      flushParagraph();
+      flushList();
+      quote.push(trimmed.slice(2));
+      continue;
+    }
+    flushQuote();
     const heading = HEADING.exec(line.trim());
     if (heading) {
       flushParagraph();
@@ -174,6 +207,7 @@ export function parseMarkdown(source: string): Block[] {
   }
   flushParagraph();
   flushList();
+  flushQuote();
   return blocks;
 }
 

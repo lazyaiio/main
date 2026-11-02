@@ -720,3 +720,15 @@ Unsplash provider (with required download reporting), all enabled providers sear
 - **Consent:** cookie banner + "Cookie choices" footer link only when a tag ID is set; tags load only on public pages after Accept. Cookie Notice text updated. Our own analytics stay cookie-free.
 - Tests: `seo.test.ts` (26 cases, all passed in the sandbox runner). Not verified: build, lint, typecheck, vitest, the SQL, and Search Console/Bing verification on the live site.
 - If you saved your own Cookies or Privacy text in Admin -> Pages, the new cookie paragraph is not added there automatically.
+
+---
+
+## Batch 19: blog, free tools, starter articles (code written, NOT yet verified)
+- **Migration `0022_blog.sql`:** `blog_categories` (3 silos seeded), `blog_images`, `blog_posts` (server only) and a public storage bucket `blog`.
+- **Admin -> Blog:** article list; editor (Markdown, search title/description, summary, focus keyword, tags, category, pillar, author); SEO checklist; Publish now, Schedule (UTC), Take offline, Delete; **Find the photos** (fills `[[image: …]]` spots and the featured image from Pixabay/Unsplash); stock photo search to set the featured image, add a picture, or replace one; admin preview of drafts.
+- **Public blog:** `/blog` hub with hero, latest article, topic chips and cards with thumbnails; `/blog/category/<silo>` with the pillar first; article pages (breadcrumbs, featured image, contents list, inline photos with credits, "Part of our guide", related articles, tool and signup call-to-action, BlogPosting + Breadcrumb data); `/blog/rss.xml`; articles and categories in `sitemap.xml`; "Blog" and "Free tools" in the header and footer.
+- **Free tools (`/tools`):** post idea generator, content calendar generator (CSV), post checker. All run in the browser. SEO titles/descriptions editable in Admin -> SEO.
+- **7 starter articles** (1,418 to 2,073 words each, three silos, four photo spots plus a featured image each), added as drafts from Admin -> Blog.
+- Markdown now also supports photos (`![alt](blog-image:id)`) and `> quotes`; placeholders are hidden from readers.
+- Tests: `blog.test.ts` (22), `tools.test.ts` (15), `blog-seed.test.ts` (6; word counts, links, silos). All passed in the sandbox runner. Not verified: build, lint, typecheck, vitest, the SQL, photo search and download with real keys, and how the pages look in a browser.
+- Docs: `docs/BLOG_SETUP.md`, `docs/TOPICAL_MAP.md`.

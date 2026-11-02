@@ -44,6 +44,11 @@ export const DEFAULT_SEO: SeoSettings = {
 export const SEO_PAGES = [
   { path: "/", label: "Home", title: "", description: "" },
   { path: "/pricing", label: "Pricing", title: "Pricing", description: "Simple plans for planning, writing, and scheduling Facebook Page posts with AI. Start free and upgrade when you need more." },
+  { path: "/blog", label: "Blog", title: "Blog: Facebook Page Content Guides", description: "Practical, plain-English guides on planning, writing, and scheduling Facebook Page content for small businesses." },
+  { path: "/tools", label: "Free tools", title: "Free Facebook Content Tools", description: "Free tools for Facebook Page owners: a post idea generator, a content calendar generator, and a post checker." },
+  { path: "/tools/post-idea-generator", label: "Post idea generator", title: "Facebook Post Idea Generator", description: "Get a dozen Facebook post ideas for your kind of business and goal. Free, instant, no sign-up." },
+  { path: "/tools/content-calendar-generator", label: "Content calendar generator", title: "Facebook Content Calendar Generator", description: "Build a Facebook content calendar for up to twelve weeks and download it as a CSV file. Free, no sign-up." },
+  { path: "/tools/post-checker", label: "Post checker", title: "Facebook Post Checker", description: "Paste a draft Facebook post and check its length, hook, call to action, readability, and hashtags. Free and private." },
   { path: "/about", label: "About", title: "About", description: "What LazyAI does and who runs it." },
   { path: "/help", label: "Help", title: "Help", description: "How to connect a Facebook Page, create posts, schedule them, and fix common problems." },
   { path: "/contact", label: "Contact", title: "Contact", description: "How to reach LazyAI for support, privacy requests, and security reports." },
@@ -230,6 +235,23 @@ export function softwareLd(base: string, s: SeoSettings, plans: { name: string; 
     applicationCategory: "BusinessApplication",
     operatingSystem: "Web",
     offers: plans.map((p) => ({ "@type": "Offer", name: p.name, description: p.description || undefined, price: p.price.toFixed(2), priceCurrency: p.currency, availability: "https://schema.org/InStock" })),
+  };
+}
+
+export function blogPostingLd(base: string, s: SeoSettings, a: { url: string; title: string; description: string; image: string | null; published: string | null; modified: string; author: string; words: number }) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    mainEntityOfPage: { "@type": "WebPage", "@id": a.url },
+    headline: a.title.slice(0, 110),
+    description: a.description,
+    ...(a.image ? { image: [a.image] } : {}),
+    ...(a.published ? { datePublished: a.published } : {}),
+    dateModified: a.modified,
+    wordCount: a.words,
+    inLanguage: "en-US",
+    author: { "@type": "Person", name: a.author },
+    publisher: { "@type": "Organization", "@id": `${base}/#organization`, name: s.orgName, ...(s.orgLogoUrl ? { logo: { "@type": "ImageObject", url: s.orgLogoUrl } } : {}) },
   };
 }
 

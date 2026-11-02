@@ -33,7 +33,9 @@ function renderInline(nodes: Inline[]): ReactNode {
 }
 
 /** Draws parsed Markdown as plain elements. There is no raw HTML anywhere, so page text cannot run scripts. */
-export function MarkdownContent({ blocks }: { blocks: Block[] }) {
+export type ArticleImage = { url: string; width: number; height: number; alt: string; credit: string; creditUrl: string; sourceUrl: string };
+
+export function MarkdownContent({ blocks, images }: { blocks: Block[]; images?: Record<string, ArticleImage> }) {
   return (
     <>
       {blocks.map((block, i) => {
@@ -70,6 +72,33 @@ export function MarkdownContent({ blocks }: { blocks: Block[] }) {
             );
           case "form":
             return <DeletionCheckForm key={i} />;
+          case "quote":
+            return (
+              <blockquote key={i} className="border-l-4 border-brand-200 bg-brand-50 px-4 py-3 text-ink-800">
+                {renderInline(block.children)}
+              </blockquote>
+            );
+          case "image": {
+            const image = images?.[block.id];
+            if (!image) return null;
+            return (
+              <figure key={i} className="my-8">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={image.url} alt={block.alt || image.alt} width={image.width} height={image.height} loading="lazy" decoding="async" className="h-auto w-full rounded-2xl" />
+                {image.credit ? (
+                  <figcaption className="mt-2 text-xs text-ink-500">
+                    {image.sourceUrl ? (
+                      <a href={image.sourceUrl} target="_blank" rel="noopener noreferrer">
+                        {image.credit}
+                      </a>
+                    ) : (
+                      image.credit
+                    )}
+                  </figcaption>
+                ) : null}
+              </figure>
+            );
+          }
         }
       })}
     </>

@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BarChart3, Search, CreditCard, FileText, Gauge, ImageIcon, LayoutDashboard, Mail, Rocket, Send, Sparkles, type LucideIcon } from "lucide-react";
+import { BarChart3, BookOpen, Search, CreditCard, FileText, Gauge, ImageIcon, LayoutDashboard, Mail, Rocket, Send, Sparkles, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const items: { href: string; label: string; icon: LucideIcon; exact?: boolean }[] = [
   { href: "/admin", label: "Overview", icon: LayoutDashboard, exact: true },
   { href: "/admin/ai-providers", label: "AI providers", icon: Sparkles },
+  { href: "/admin/blog", label: "Blog", icon: BookOpen },
   { href: "/admin/seo", label: "SEO", icon: Search },
   { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
   { href: "/admin/pages", label: "Pages", icon: FileText },
