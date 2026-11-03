@@ -69,12 +69,12 @@ export function generateIdeas(input: { business: BusinessType; goal: Goal; name?
     const t = TEMPLATES[kind];
     const variant = (round + i) % 3;
     const vars = {
-      product: product || vocab.products[(round + i) % 3],
+      product: product || vocab.products[(round + i) % 3] || vocab.products[0],
       audience: vocab.audience,
       customer: vocab.customer,
       place: vocab.place,
       business: (input.name ?? "").trim().slice(0, 60) || "our business",
     };
-    return { kind, title: t.title, idea: fill(t.ideas[variant], vars), opener: fill(t.openers[variant], vars) };
+    return { kind, title: t.title, idea: fill(t.ideas[variant] ?? t.ideas[0], vars), opener: fill(t.openers[variant] ?? t.openers[0], vars) };
   });
 }
