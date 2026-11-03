@@ -20,7 +20,7 @@ export type PostCard = Omit<BlogPost, "body"> & { featured: PublicImage | null }
 export type PublicImage = { id: string; url: string; thumbUrl: string; width: number; height: number; alt: string; credit: string; creditUrl: string; sourceUrl: string };
 
 const POST_COLUMNS = "id, slug, title, seo_title, meta_description, excerpt, body, category_slug, tags, is_pillar, focus_keyword, featured_image_id, author_name, status, published_at, created_at, updated_at";
-const CARD_COLUMNS = POST_COLUMNS.replace(" body,", "");
+const CARD_COLUMNS = "id, slug, title, seo_title, meta_description, excerpt, category_slug, tags, is_pillar, focus_keyword, featured_image_id, author_name, status, published_at, created_at, updated_at";
 const IMAGE_COLUMNS = "id, storage_path, thumb_path, width, height, alt_text, provider, creator, creator_url, source_page_url, license, license_url";
 
 const db = () => adminDb();
@@ -44,30 +44,30 @@ export function toPublicImage(row: BlogImage): PublicImage {
 
 export async function listCategories(): Promise<BlogCategory[]> {
   const { data } = await db().from("blog_categories").select("slug, name, description, sort_order").order("sort_order");
-  return (data ?? []) as BlogCategory[];
+  return (data ?? []) as unknown as BlogCategory[];
 }
 
 export async function getImages(ids: string[]): Promise<Record<string, PublicImage>> {
   if (ids.length === 0) return {};
   const { data } = await db().from("blog_images").select(IMAGE_COLUMNS).in("id", ids.slice(0, 60));
-  return Object.fromEntries(((data ?? []) as BlogImage[]).map((r) => [r.id, toPublicImage(r)]));
+  return Object.fromEntries(((data ?? []) as unknown as BlogImage[]).map((r) => [r.id, toPublicImage(r)]));
 }
 
 export async function getImageRows(ids: string[]): Promise<BlogImage[]> {
   if (ids.length === 0) return [];
   const { data } = await db().from("blog_images").select(IMAGE_COLUMNS).in("id", ids.slice(0, 60));
-  return (data ?? []) as BlogImage[];
+  return (data ?? []) as unknown as BlogImage[];
 }
 
 export async function insertImage(row: Omit<BlogImage, "id">): Promise<string> {
   const { data, error } = await db().from("blog_images").insert(row).select("id").single();
   if (error || !data) throw new DataError("Could not save the image.", error?.code);
-  return (data as { id: string }).id;
+  return (data as unknown as { id: string }).id;
 }
 
 export async function usedSourcePages(): Promise<Set<string>> {
   const { data } = await db().from("blog_images").select("source_page_url").limit(2000);
-  return new Set(((data ?? []) as { source_page_url: string }[]).map((r) => r.source_page_url).filter(Boolean));
+  return new Set(((data ?? []) as unknown as { source_page_url: string }[]).map((r) => r.source_page_url).filter(Boolean));
 }
 
 async function attachFeatured(rows: Omit<BlogPost, "body">[]): Promise<PostCard[]> {
@@ -83,23 +83,23 @@ export async function listPublished(opts: { page?: number; category?: string | n
   const { data, count } = await (opts.category ? base.eq("category_slug", opts.category) : base)
     .order("published_at", { ascending: false })
     .range((page - 1) * perPage, page * perPage - 1);
-  return { posts: await attachFeatured((data ?? []) as Omit<BlogPost, "body">[]), total: count ?? 0 };
+  return { posts: await attachFeatured((data ?? []) as unknown as Omit<BlogPost, "body">[]), total: count ?? 0 };
 }
 
 export async function getPublishedBySlug(slug: string): Promise<BlogPost | null> {
   const { data } = await db().from("blog_posts").select(POST_COLUMNS).eq("status", "published").lte("published_at", nowIso()).eq("slug", slug).maybeSingle();
-  return (data as BlogPost | null) ?? null;
+  return (data as unknown as BlogPost | null) ?? null;
 }
 
 /** Every published article's light details, for related-article picking and the sitemap. */
 export async function listPublishedMeta(): Promise<PostCard[]> {
   const { data } = await db().from("blog_posts").select(CARD_COLUMNS).eq("status", "published").lte("published_at", nowIso()).order("published_at", { ascending: false }).limit(500);
-  return attachFeatured((data ?? []) as Omit<BlogPost, "body">[]);
+  return attachFeatured((data ?? []) as unknown as Omit<BlogPost, "body">[]);
 }
 
 export async function getPillar(category: string): Promise<PostCard | null> {
   const { data } = await db().from("blog_posts").select(CARD_COLUMNS).eq("status", "published").lte("published_at", nowIso()).eq("category_slug", category).eq("is_pillar", true).maybeSingle();
-  return data ? (await attachFeatured([data as Omit<BlogPost, "body">]))[0] ?? null : null;
+  return data ? (await attachFeatured([data as unknown as Omit<BlogPost, "body">]))[0] ?? null : null;
 }
 
 export async function featuredFor(post: { featured_image_id: string | null }): Promise<PublicImage | null> {
@@ -110,12 +110,12 @@ export async function featuredFor(post: { featured_image_id: string | null }): P
 // ---------- Admin ----------
 export async function listAllPosts(): Promise<PostCard[]> {
   const { data } = await db().from("blog_posts").select(CARD_COLUMNS).order("updated_at", { ascending: false }).limit(500);
-  return attachFeatured((data ?? []) as Omit<BlogPost, "body">[]);
+  return attachFeatured((data ?? []) as unknown as Omit<BlogPost, "body">[]);
 }
 
 export async function getPostById(id: string): Promise<BlogPost | null> {
   const { data } = await db().from("blog_posts").select(POST_COLUMNS).eq("id", id).maybeSingle();
-  return (data as BlogPost | null) ?? null;
+  return (data as unknown as BlogPost | null) ?? null;
 }
 
 export async function slugExists(slug: string, exceptId?: string): Promise<boolean> {
@@ -133,7 +133,7 @@ export type PostWrite = {
 export async function createPost(row: PostWrite, userId: string | null): Promise<string> {
   const { data, error } = await db().from("blog_posts").insert({ ...row, updated_by: userId }).select("id").single();
   if (error || !data) throw new DataError(error?.code === "23505" ? "That address (slug) is already used, or the category already has a pillar article." : "Could not create the article.", error?.code);
-  return (data as { id: string }).id;
+  return (data as unknown as { id: string }).id;
 }
 
 export async function updatePost(id: string, row: Partial<PostWrite>, userId: string): Promise<void> {
@@ -148,7 +148,7 @@ export async function deletePost(id: string): Promise<void> {
 
 export async function existingSlugs(): Promise<Set<string>> {
   const { data } = await db().from("blog_posts").select("slug").limit(1000);
-  return new Set(((data ?? []) as { slug: string }[]).map((r) => r.slug));
+  return new Set(((data ?? []) as unknown as { slug: string }[]).map((r) => r.slug));
 }
 
 export async function removeUnusedImageFiles(paths: string[]): Promise<void> {
