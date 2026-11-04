@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BarChart3, BookOpen, Search, CreditCard, FileText, Gauge, ImageIcon, LayoutDashboard, Mail, Rocket, Send, Sparkles, type LucideIcon } from "lucide-react";
+import { BarChart3, BookOpen, Search, CreditCard, FileText, Gauge, ImageIcon, LayoutDashboard, LifeBuoy, Mail, Megaphone, Rocket, Send, Sparkles, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const items: { href: string; label: string; icon: LucideIcon; exact?: boolean }[] = [
@@ -12,6 +12,8 @@ const items: { href: string; label: string; icon: LucideIcon; exact?: boolean }[
   { href: "/admin/seo", label: "SEO", icon: Search },
   { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
   { href: "/admin/pages", label: "Pages", icon: FileText },
+  { href: "/admin/support", label: "Support", icon: LifeBuoy },
+  { href: "/admin/notices", label: "Notices", icon: Megaphone },
   { href: "/admin/payments", label: "Payments", icon: CreditCard },
   { href: "/admin/stock-photos", label: "Stock photos", icon: ImageIcon },
   { href: "/admin/publishing", label: "Publishing", icon: Send },
@@ -20,7 +22,7 @@ const items: { href: string; label: string; icon: LucideIcon; exact?: boolean }[
   { href: "/admin/deployment", label: "Deployment", icon: Rocket },
 ];
 
-export function AdminNav({ orientation }: { orientation: "vertical" | "horizontal" }) {
+export function AdminNav({ orientation, supportNew = 0 }: { orientation: "vertical" | "horizontal"; supportNew?: number }) {
   const pathname = usePathname();
   return (
     <nav
@@ -41,6 +43,12 @@ export function AdminNav({ orientation }: { orientation: "vertical" | "horizonta
           >
             <Icon className="h-4 w-4" aria-hidden="true" />
             {label}
+            {href === "/admin/support" && supportNew > 0 ? (
+              <span className="ml-auto rounded-full bg-brand px-2 py-0.5 text-xs font-semibold text-white">
+                {supportNew > 99 ? "99+" : supportNew}
+                <span className="sr-only"> new messages</span>
+              </span>
+            ) : null}
           </Link>
         );
       })}

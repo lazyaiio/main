@@ -1,5 +1,5 @@
-Batch 18 (SEO) upload order
-0. Make sure lazyai-batch17-fix1.zip (top-list.tsx contrast fix) is already uploaded.
-1. Supabase SQL Editor: run supabase/migrations/0021_seo.sql
-2. Upload every file in this zip to GitHub, same folders (32 files, nothing is deleted).
-3. After Vercel deploys, follow docs/SEO_SETUP.md (Admin -> SEO, then Google Search Console and Bing Webmaster Tools).
+Batch 20 (support inbox, announcement banner, maintenance mode) upload order
+1. Supabase SQL Editor: run supabase/migrations/0023_support_inbox.sql, then supabase/tests/rls_support.sql (expect: ALL SUPPORT TESTS PASSED).
+2. Upload every file in this zip to GitHub, same folders (nothing is deleted).
+3. Wait for GitHub Actions and Vercel to go green.
+4. Follow docs/SUPPORT_SETUP.md, section 5 (10-minute test).

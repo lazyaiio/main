@@ -66,3 +66,10 @@ Done: 14 (writing engine), 15 (plans, pricing, bKash, refunds), 16 (editable pag
 - A topical map document (clusters, pillar and supporting articles, search intent, target query, entities) made together with the owner, using real search data (Search Console after launch, plus a keyword tool).
 - Open decision: the site text rule says English only. Many Bangladeshi small businesses search in Bangla, so English-only articles will reach a smaller audience. Decide whether the blog may have a Bangla section.
 - Later: free tools as link magnets (post idea generator, caption generator, best-time-to-post), comparison pages, templates.
+
+
+## Update after Batch 19 (what is left from the "extras" list)
+- Cookie consent banner: already built in Batch 18 (shown only when an analytics or tag ID is set).
+- **Batch 20 (written):** support inbox from the contact form, announcement banner, maintenance mode.
+- **Batch 21 (next):** admin user management (search users, change plan, suspend and restore), payment and plan emails (receipt, ending soon, ended), export/backup of site settings.
+- Later: the free-to-paid launch checklist, Meta App Review, a lawyer's review of the legal pages, more free tools and comparison pages for the blog.

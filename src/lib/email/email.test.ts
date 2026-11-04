@@ -105,6 +105,7 @@ describe("templates", () => {
       renderEmail({ template: "campaign_complete", campaignName: "November tips", campaignId: "c-1", completed: 0, failed: 12, total: 12, ok: false }, app),
       renderEmail({ template: "publish_failed", pageName: "Bakery", postSnippet: "Fresh bread", code: "token_expired", itemId: "i-1" }, app),
       renderEmail({ template: "page_attention", pageName: "Bakery", problem: "token_expired" }, app),
+      renderEmail({ template: "support_reply", name: "Jane", reply: "We fixed it.\n\nPlease try again.", original: "My Page will not connect." }, app),
       renderEmail({ template: "test" }, app),
     ];
     for (const mail of all) {
@@ -134,6 +135,19 @@ describe("templates", () => {
     expect(mail.html).toContain("token=abc&amp;x=1");
     expect(mail.html).not.toContain("<b>Jane</b>");
     expect(mail.subject).not.toMatch(/[\r\n]/);
+  });
+
+  it("keeps the paragraphs of a support reply, escapes it, and never lets the sender add headers", () => {
+    const mail = renderEmail({ template: "support_reply", name: "Ann\r\nBcc: evil@example.com", reply: "First line.\nSecond line.\n\n<script>alert(1)</script>", original: "<b>help</b>" }, app);
+    expect(mail.html).not.toContain("<script>");
+    expect(mail.html).not.toContain("<b>help</b>");
+    expect(mail.html).toContain("&lt;script&gt;");
+    expect(mail.html).toContain("First line.<br>Second line.");
+    expect(mail.text).toContain("First line.\nSecond line.");
+    expect(mail.text).toContain("https://app.example.com/contact");
+    expect(mail.subject).not.toMatch(/[\r\n]/);
+    // A name with a line break is flattened to one line of plain words in the body. It never reaches a header.
+    expect(mail.text.split("\n")[0]).toContain("Hi Ann Bcc: evil@example.com");
   });
 
   it("explains the reason in plain English", () => {

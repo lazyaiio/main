@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { checkCronAuth } from "@/lib/publish-dispatch";
 import { cleanupOldViews, readAnalyticsSettings } from "@/lib/data/analytics";
+import { cleanupClosedMessages } from "@/lib/data/support";
 import { expirePlans } from "@/lib/data/payments";
 import { runBackgroundCampaigns } from "@/lib/services/campaign-worker";
 import { dispatchDuePosts } from "@/lib/services/publisher";
@@ -47,6 +48,14 @@ async function handle(request: NextRequest) {
         await cleanupOldViews((await readAnalyticsSettings()).retentionDays);
       } catch (error) {
         logError("cron.analytics_cleanup_failed", describeError(error));
+      }
+    }
+    // Once a day (03:05 UTC), delete closed support messages older than a year.
+    if (at.getUTCHours() === 3 && at.getUTCMinutes() === 5) {
+      try {
+        await cleanupClosedMessages(365);
+      } catch (error) {
+        logError("cron.support_cleanup_failed", describeError(error));
       }
     }
     return NextResponse.json({ ok: true, ...summary, writing, expired }, { headers: { "Cache-Control": "no-store" } });

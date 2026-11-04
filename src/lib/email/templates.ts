@@ -5,7 +5,7 @@ import { describeScheduleError } from "@/lib/schedule-text";
  * Every value that comes from a person or from data is escaped before it goes into HTML.
  */
 
-export type TemplateName = "welcome" | "verify_email" | "campaign_complete" | "publish_failed" | "page_attention" | "test";
+export type TemplateName = "welcome" | "verify_email" | "campaign_complete" | "publish_failed" | "page_attention" | "support_reply" | "test";
 
 export type TemplateData =
   | { template: "welcome"; name: string | null }
@@ -13,6 +13,7 @@ export type TemplateData =
   | { template: "campaign_complete"; campaignName: string; campaignId: string; completed: number; failed: number; total: number; ok: boolean }
   | { template: "publish_failed"; pageName: string; postSnippet: string; code: string; itemId: string }
   | { template: "page_attention"; pageName: string; problem: string }
+  | { template: "support_reply"; name: string; reply: string; original: string }
   | { template: "test" };
 
 export type RenderedEmail = { subject: string; html: string; text: string };
@@ -127,6 +128,28 @@ export function renderEmail(data: TemplateData, appUrl: string): RenderedEmail {
           footer: PREFS_NOTE(appUrl),
         }),
         text: `A Facebook Page needs to be reconnected.\n\nPage: ${page}\n\n${reason}\n\nUntil it is reconnected, scheduled posts for this Page will not be published.\n\nOpen Facebook Pages: ${url}\n\n${PREFS_TEXT(appUrl)}`,
+      };
+    }
+
+    case "support_reply": {
+      const hello = `Hi ${oneLine(data.name, 60) || "there"},`;
+      // The reply keeps its paragraphs. Every line is escaped before it goes into HTML.
+      const paragraphs = data.reply
+        .replace(/\r\n?/g, "\n")
+        .split(/\n{2,}/)
+        .map((p) => p.trim())
+        .filter(Boolean)
+        .slice(0, 30)
+        .map((p) => escapeHtml(p).replace(/\n/g, "<br>"));
+      const quoted = data.original.replace(/\r\n?/g, "\n").trim().slice(0, 1500);
+      return {
+        subject: "Your message to LazyAI",
+        html: layout({
+          title: "A reply from LazyAI support",
+          paragraphs: [escapeHtml(hello), ...paragraphs, `<span style="color:#5b6676;font-size:14px;">Your message:<br>${escapeHtml(quoted).replace(/\n/g, "<br>")}</span>`],
+          footer: `You are receiving this because you wrote to LazyAI support. If you need more help, write to us again from ${escapeHtml(link(appUrl, "/contact"))}.`,
+        }),
+        text: `${hello}\n\n${data.reply.trim()}\n\n---\nYour message:\n${quoted}\n\nYou are receiving this because you wrote to LazyAI support. If you need more help, write to us again from ${link(appUrl, "/contact")}.`,
       };
     }
 

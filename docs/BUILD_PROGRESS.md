@@ -20,7 +20,58 @@ Plan: [`LAZYAI_MASTER_PLAN.md`](./LAZYAI_MASTER_PLAN.md) (see section 23 for own
 | 10 | Resend and email | DONE per owner report |
 | 11 | Usage limits and hardening (+ account deletion/export) | DONE per owner report (deployed to Production). Migration 0013 and its SQL tests: owner to confirm (Admin -> Deployment shows the migration row) |
 | 12 | Deployment and DNS runbook | DONE per owner report (uploaded, Vercel green). Dependabot major upgrades disabled |
-| 13 | Release readiness | **Code and docs written, owner verification pending** (accessibility fixes, /help, release tests, checklist) |
+| 13 | Release readiness | DONE per owner report (batches after it were deployed on top) |
+| 14 | Writing engine fixes and simpler posts | DONE per owner report (deployed through Batch 19) |
+| 15 | Plans, pricing page, bKash payments, refunds | DONE per owner report (deployed through Batch 19) |
+| 16 | Editable site pages (+ 16.1 checkout and email verification) | DONE per owner report (deployed through Batch 19) |
+| 17 | Analytics | DONE per owner report (deployed through Batch 19) |
+| 18 | SEO tools (+ 17.1 fix) | DONE per owner report (deployed through Batch 19) |
+| 19 | Blog, free tools, starter articles | DONE per owner report (deployed) |
+| 20 | Support inbox, announcement banner, maintenance mode | **Code written and checked here, owner verification pending** (migration 0023 not yet run) |
+
+## Batch 20 — Support inbox, announcement banner, maintenance mode
+
+**Status:** CODE WRITTEN AND CHECKED, owner verification pending. Migration `0023` has NOT been run on any database. No live setting, DNS, payment or customer email was changed or sent.
+
+### Why this batch
+`docs/BATCHES_14_PLUS_PLAN.md` listed "extras" for a SaaS (cookie banner, payment emails, admin user management, announcement banner and maintenance mode, backup/export, support inbox). Checking the repository after Batch 19: the cookie banner already exists (Batch 18, for analytics tags). The rest were still missing. They are split into Batch 20 (this one) and Batch 21 (next). Also found: the Contact page was text only, with no way to write to the operator from the site.
+
+### What was built
+- **Contact form** on `/contact` (name, email, topic, optional subject, message up to 4,000 characters; Bengali allowed in the message).
+- **Admin -> Support:** list with filters and counts, message view, reply by email, private note, status (New / In progress / Closed). New-message count in the admin menu.
+- **Spam guards:** hidden box, minimum fill time, link limit, database limits per visitor label and per email address. No raw IP stored. Closed messages deleted after 365 days by the daily scheduler run.
+- **Admin -> Notices:** announcement banner (English text, color, optional link; visitors can close it) and maintenance mode (customers see a maintenance page; admins, the public site and the scheduler are not affected).
+- New email template `support_reply` (paragraphs kept, everything escaped).
+
+### Files
+New: `supabase/migrations/0023_support_inbox.sql`, `supabase/tests/rls_support.sql`, `src/lib/{support,notices}.ts` (+ tests), `src/lib/support-wiring.test.ts`, `src/lib/data/{support,notices}.ts`, `src/lib/services/{support,notices}.ts`, `src/app/(marketing)/contact/actions.ts`, `src/components/marketing/contact-form.tsx`, `src/components/site/announcement-banner.tsx`, `src/components/app/maintenance-screen.tsx`, `src/app/admin/support/{page.tsx,actions.ts}`, `src/app/admin/notices/{page.tsx,actions.ts}`, `docs/SUPPORT_SETUP.md`, `docs/decisions/0010-support-inbox-and-notices.md`, `UPLOAD_ORDER.txt`.
+Changed: `src/app/(marketing)/contact/page.tsx`, `src/app/(marketing)/layout.tsx`, `src/app/app/layout.tsx`, `src/app/admin/layout.tsx`, `src/components/admin/admin-nav.tsx`, `src/app/api/cron/dispatch/route.ts`, `src/lib/email/templates.ts`, `src/lib/email/email.test.ts`, and the docs `BUILD_PROGRESS.md`, `KNOWN_LIMITATIONS.md`, `NEW_SESSION_START.md`, `BATCHES_14_PLUS_PLAN.md`.
+Deleted: none.
+
+### Checks and results (this time the sandbox could reach the npm registry, so these are real runs)
+| Check | Result |
+|---|---|
+| `npm install` | OK (417 packages) |
+| `tsc --noEmit` (full typecheck) | PASS, 0 errors (it caught one wrong prop name, fixed) |
+| `next lint` | PASS, no warnings or errors |
+| `vitest run` (real vitest) | PASS: 66 files, 554 tests (22 new). One of my own new assertions was wrong at first and was corrected; no existing test was changed to make it pass |
+| `next build` with the real fonts | FAILED here only because the sandbox cannot reach Google Fonts (known, see handoff notes). Vercel can |
+| `next build` in a scratch copy with the three font imports stubbed | PASS: compiled, and the new routes `/admin/support`, `/admin/notices` and `/contact` were built |
+| SQL `0023` and `rls_support.sql` | **NOT RUN** (no database here). Owner runs them |
+| Real email reply, form in a browser, banner and maintenance page in a browser, phone layout | **NOT DONE** (manual steps in `docs/SUPPORT_SETUP.md`, section 5) |
+
+### Owner steps
+1. Run `0023_support_inbox.sql`, then `rls_support.sql` (expect `ALL SUPPORT TESTS PASSED`).
+2. Upload the Batch 20 files, confirm GitHub Actions and Vercel are green.
+3. Follow `docs/SUPPORT_SETUP.md` section 5.
+
+### Known limits
+- Maintenance mode hides the app screens; it is not a security lock (ADR 0010).
+- No automatic "we got your message" email, no attachments, no conversation threads.
+- Without `TOKEN_ENCRYPTION_KEY` the per-visitor spam limit is off (the per-email limit stays).
+
+### Exact next action
+Owner verifies the steps above. Then **Batch 21**: admin user management (search, change plan, suspend and restore), payment and plan emails (receipt, ending soon, ended), and an export/backup of site settings.
 
 ---
 

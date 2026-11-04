@@ -5,6 +5,7 @@ import { AdminNav } from "@/components/admin/admin-nav";
 import { Logo } from "@/components/brand/logo";
 import { Badge } from "@/components/ui/badge";
 import { requirePlatformAdmin } from "@/lib/auth/admin";
+import { countNewMessages } from "@/lib/data/support";
 
 // Admin pages depend on who is signed in, so they must never be built ahead of time.
 export const dynamic = "force-dynamic";
@@ -16,6 +17,7 @@ export const metadata: Metadata = {
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const ctx = await requirePlatformAdmin();
+  const supportNew = await countNewMessages();
 
   return (
     <div className="min-h-screen bg-ink-50 md:grid md:grid-cols-[248px_1fr]">
@@ -26,7 +28,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           </Link>
           <Badge tone="brand">Admin</Badge>
         </div>
-        <AdminNav orientation="vertical" />
+        <AdminNav orientation="vertical" supportNew={supportNew} />
         <div className="mt-auto space-y-3 rounded-xl bg-ink-50 p-3">
           <p className="truncate text-xs text-ink-500">{ctx.user.email}</p>
           <Link
@@ -49,7 +51,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
               Back to app
             </Link>
           </div>
-          <AdminNav orientation="horizontal" />
+          <AdminNav orientation="horizontal" supportNew={supportNew} />
         </div>
         <main id="main-content" tabIndex={-1} className="outline-none mx-auto max-w-4xl p-4 sm:p-6 md:p-10">{children}</main>
       </div>

@@ -3,10 +3,13 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { signOutAction } from "@/app/auth/actions";
 import { AppNav } from "@/components/app/app-nav";
+import { MaintenanceScreen } from "@/components/app/maintenance-screen";
 import { VerifyEmailBanner } from "@/components/app/verify-email-banner";
 import { Logo } from "@/components/brand/logo";
+import { AnnouncementBanner } from "@/components/site/announcement-banner";
 import { isCurrentUserPlatformAdmin } from "@/lib/auth/admin";
 import { getAppContext } from "@/lib/auth/session";
+import { loadNotice } from "@/lib/services/notices";
 
 export const metadata: Metadata = {
   title: { default: "Dashboard", template: "%s · LazyAI" },
@@ -18,6 +21,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   if (!ctx) redirect("/auth/login");
   if (!ctx.profile.onboarded_at) redirect("/onboarding");
   const isAdmin = await isCurrentUserPlatformAdmin();
+  const notice = await loadNotice();
+  // Maintenance mode hides the app from everyone except platform admins (who still need it to switch the mode off).
+  if (notice.maintenance.enabled && !isAdmin) return <MaintenanceScreen message={notice.maintenance.message} />;
 
   return (
     <div className="min-h-screen bg-ink-50 md:grid md:grid-cols-[248px_1fr]">
@@ -50,6 +56,12 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           </Link>
           <AppNav orientation="horizontal" isAdmin={isAdmin} />
         </div>
+        {notice.maintenance.enabled ? (
+          <p role="status" className="border-b border-amber-100 bg-amber-50 px-4 py-2 text-center text-sm text-amber-800">
+            Maintenance mode is on. Only platform admins can see the app right now.
+          </p>
+        ) : null}
+        {notice.announcement.enabled ? <AnnouncementBanner {...notice.announcement} /> : null}
         {ctx.emailVerified ? null : <VerifyEmailBanner email={ctx.user.email} />}
         <main id="main-content" tabIndex={-1} className="outline-none mx-auto max-w-5xl p-4 sm:p-6 md:p-10">{children}</main>
       </div>
