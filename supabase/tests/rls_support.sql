@@ -1,5 +1,5 @@
 -- Test for migration 0023 (support inbox). Run in the Supabase SQL Editor after 0001-0023.
--- Uses fake messages inside a transaction and ROLLS BACK. Success: "ALL SUPPORT TESTS PASSED".
+-- Uses fake messages inside a transaction and ROLLS BACK. Success: a result row "ALL SUPPORT TESTS PASSED".
 
 begin;
 
@@ -117,5 +117,5 @@ begin
 end $$;
 reset role;
 
-do $$ begin raise notice 'ALL SUPPORT TESTS PASSED'; end $$;
+select 'ALL SUPPORT TESTS PASSED' as result;
 rollback;
