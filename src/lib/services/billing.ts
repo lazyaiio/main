@@ -11,7 +11,9 @@ import { checkoutOpen, priceFor, type Period } from "@/lib/payments/billing";
 import { BkashError, confirmsExpected, createPayment, executePayment, queryPayment, refundPayment, type BkashCredentials } from "@/lib/payments/bkash";
 import { getTokenEncryptionKey } from "@/lib/social/keys";
 import { ServiceError } from "./errors";
+import { runLater } from "./email";
 import { enforceRate } from "./plans";
+import { notifyPaymentReceipt } from "./plan-emails";
 
 export const bkashContext = (field: string) => `bkash:${field}`;
 
@@ -128,7 +130,9 @@ export async function finishCheckout(paymentRowId: string, bkashPaymentId: strin
     }
     if (confirmsExpected(result, { amount: payment.amount, invoiceNumber: payment.invoice_number })) {
       await updatePayment(payment.id, { provider_trx_id: result.trxId });
-      await applyPaidPlan(payment.id);
+      const applied = await applyPaidPlan(payment.id);
+      // The receipt goes out after the response; a second call for the same payment is ignored by the delivery log.
+      if (applied) runLater(() => notifyPaymentReceipt(payment.id));
       return "paid";
     }
     const mismatch = result.status === "completed";

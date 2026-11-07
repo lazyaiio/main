@@ -28,6 +28,53 @@ Plan: [`LAZYAI_MASTER_PLAN.md`](./LAZYAI_MASTER_PLAN.md) (see section 23 for own
 | 18 | SEO tools (+ 17.1 fix) | DONE per owner report (deployed through Batch 19) |
 | 19 | Blog, free tools, starter articles | DONE per owner report (deployed) |
 | 20 | Support inbox, announcement banner, maintenance mode | **Code written and checked here, owner verification pending** (migration 0023 not yet run) |
+| 20.1 | Blog Publish / Schedule fix | Deployed per owner report |
+| 21 | Admin people management, payment and plan emails, settings export | **Code written and checked here, owner verification pending** (migration 0024 not yet run) |
+
+## Batch 21: people, payment and plan emails, settings export
+
+**Status:** CODE WRITTEN AND CHECKED, owner verification pending. Migration `0024` has NOT been run on any database. No live setting, DNS, payment or customer email was changed or sent.
+
+### What was built
+- **Admin -> People:** search by email or name, plan / verified / suspended / last sign-in per person, change a workspace's plan (no end date, monthly or yearly with an end date, lifetime, or Free), suspend and restore. Suspending blocks creating or changing anything (database rule `can_write_workspace` now also needs "not suspended") and blocks sign-in at Supabase (`ban_duration`). Cannot suspend yourself or a platform admin. Restore lifts Supabase's block first, so a failure changes nothing.
+- **Suspended screen** in the app layout (short message, contact link, sign out).
+- **Emails (new templates):** payment receipt (sent after a bKash payment is newly applied), plan ending soon (7 days before a monthly or yearly plan ends, 04:00 to 04:09 UTC, one per end date), plan ended (when the scheduler moves a workspace to Free). All three go to the person who paid or the workspace owner, are logged in `email_events` with a dedupe key, and never throw.
+- **Admin -> Backup:** `/api/admin/settings-export` downloads a JSON copy of plans, currency, SEO / notice / analytics settings, editable pages, page SEO, blog categories and articles. A whitelist of setting keys plus a secret-name filter keep every credential out.
+- **Fix found on the way:** the `email_events` template list did not contain `support_reply` (the support reply is sent without the log, so nothing broke). Migration 0024 adds it.
+
+### Files
+New: `supabase/migrations/0024_user_management.sql`, `supabase/tests/rls_user_management.sql`, `src/lib/{users,plan-emails,settings-export}.ts` (+ tests), `src/lib/user-management-wiring.test.ts`, `src/lib/data/users.ts`, `src/lib/services/{users,plan-emails,settings-export}.ts`, `src/app/admin/users/{page.tsx,actions.ts}`, `src/app/admin/backup/page.tsx`, `src/app/api/admin/settings-export/route.ts`, `src/components/app/suspended-screen.tsx`, `docs/USER_MANAGEMENT.md`.
+Changed: `src/app/app/layout.tsx`, `src/app/api/cron/dispatch/route.ts`, `src/components/admin/admin-nav.tsx`, `src/lib/data/payments.ts`, `src/lib/services/billing.ts`, `src/lib/email/templates.ts`, `UPLOAD_ORDER.txt`, and the docs `BUILD_PROGRESS.md`, `KNOWN_LIMITATIONS.md`, `NEW_SESSION_START.md`, `BATCHES_14_PLUS_PLAN.md`.
+Deleted: none.
+
+### Checks and results (real runs in this sandbox)
+| Check | Result |
+|---|---|
+| `npm install` | OK |
+| `tsc --noEmit` | PASS, 0 errors |
+| `next lint` | PASS, no warnings or errors |
+| `vitest run` | PASS: 70 files, 591 tests (37 new: users 11, settings export 5, plan emails 9, wiring 12) |
+| `next build` in a scratch copy with the Google Fonts stubbed | PASS; `/admin/users`, `/admin/backup` and `/api/admin/settings-export` were built |
+| SQL `0024` and `rls_user_management.sql` | **NOT RUN** (no database here). Owner runs them |
+| People page, suspend / restore, change plan, emails and the export in a browser | **NOT DONE** (manual steps in `docs/USER_MANAGEMENT.md`, section 5) |
+
+### Owner steps
+1. Run `0024_user_management.sql`, then `rls_user_management.sql` (expect `ALL USER MANAGEMENT TESTS PASSED`).
+2. Upload the Batch 21 files, confirm GitHub Actions and Vercel are green.
+3. Follow `docs/USER_MANAGEMENT.md`, section 5.
+
+### Known limits
+- Suspending does not cancel posts that are already scheduled: the scheduler publishes with the server key and does not look at suspensions.
+- A suspended person's open browser session may still be able to read pages for a while (until their sign-in token expires); the database already blocks every change.
+- Admin actions (plan change, suspend, restore) are written to the server log only, not to a screen in the admin area.
+- No email is sent when a plan is changed by hand or an account is suspended or restored.
+- The settings export has no restore button.
+- The "ended" email is based on end dates read just before the scheduler runs; if the scheduler is down for a day, the emails go out when it is back (the delivery log prevents duplicates).
+
+### Exact next action
+Owner verifies the steps above. Then plan Batch 22 together: the free-to-paid launch checklist, Meta App Review, a lawyer's review of the legal pages, and more free tools and comparison pages for the blog (see `docs/BATCHES_14_PLUS_PLAN.md`).
+
+---
 
 ## Batch 20 — Support inbox, announcement banner, maintenance mode
 

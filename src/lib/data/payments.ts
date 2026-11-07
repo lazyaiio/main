@@ -144,3 +144,33 @@ export async function getPersonalWorkspaceId(userId: string): Promise<string | n
   const { data } = await adminDb().from("workspace_members").select("workspace_id").eq("user_id", userId).order("created_at", { ascending: true }).limit(1).maybeSingle();
   return (data as { workspace_id: string } | null)?.workspace_id ?? null;
 }
+
+export type PlanTimingRow = { id: string; owner_id: string; plan: string; plan_period: Period | null; plan_expires_at: string };
+
+/** Paid workspaces whose time has already run out (read just before expire_plans() moves them to Free). */
+export async function listWorkspacesDueToExpire(limit = 200): Promise<PlanTimingRow[]> {
+  const res = await adminDb()
+    .from("workspaces")
+    .select("id, owner_id, plan, plan_period, plan_expires_at")
+    .neq("plan", "free")
+    .not("plan_expires_at", "is", null)
+    .lt("plan_expires_at", new Date().toISOString())
+    .order("plan_expires_at", { ascending: true })
+    .limit(limit);
+  return (unwrap(res, "load the ending plans") ?? []) as PlanTimingRow[];
+}
+
+/** Paid workspaces that end within the next `days` days (monthly and yearly plans only; lifetime and manual plans have no end date). */
+export async function listWorkspacesEndingSoon(days: number, limit = 200): Promise<PlanTimingRow[]> {
+  const now = Date.now();
+  const res = await adminDb()
+    .from("workspaces")
+    .select("id, owner_id, plan, plan_period, plan_expires_at")
+    .neq("plan", "free")
+    .in("plan_period", ["monthly", "yearly"])
+    .gt("plan_expires_at", new Date(now).toISOString())
+    .lte("plan_expires_at", new Date(now + days * 86_400_000).toISOString())
+    .order("plan_expires_at", { ascending: true })
+    .limit(limit);
+  return (unwrap(res, "load the plans ending soon") ?? []) as PlanTimingRow[];
+}

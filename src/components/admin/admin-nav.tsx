@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BarChart3, BookOpen, Search, CreditCard, FileText, Gauge, ImageIcon, LayoutDashboard, LifeBuoy, Mail, Megaphone, Rocket, Send, Sparkles, type LucideIcon } from "lucide-react";
+import { BarChart3, BookOpen, DatabaseBackup, Search, CreditCard, FileText, Gauge, ImageIcon, LayoutDashboard, LifeBuoy, Mail, Megaphone, Rocket, Send, Sparkles, Users, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const items: { href: string; label: string; icon: LucideIcon; exact?: boolean }[] = [
   { href: "/admin", label: "Overview", icon: LayoutDashboard, exact: true },
+  { href: "/admin/users", label: "People", icon: Users },
   { href: "/admin/ai-providers", label: "AI providers", icon: Sparkles },
   { href: "/admin/blog", label: "Blog", icon: BookOpen },
   { href: "/admin/seo", label: "SEO", icon: Search },
@@ -19,6 +20,7 @@ const items: { href: string; label: string; icon: LucideIcon; exact?: boolean }[
   { href: "/admin/publishing", label: "Publishing", icon: Send },
   { href: "/admin/email", label: "Email", icon: Mail },
   { href: "/admin/plans", label: "Plans", icon: Gauge },
+  { href: "/admin/backup", label: "Backup", icon: DatabaseBackup },
   { href: "/admin/deployment", label: "Deployment", icon: Rocket },
 ];
 

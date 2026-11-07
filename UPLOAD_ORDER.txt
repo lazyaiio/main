@@ -1,5 +1,5 @@
-Batch 20 (support inbox, announcement banner, maintenance mode) upload order
-1. Supabase SQL Editor: run supabase/migrations/0023_support_inbox.sql, then supabase/tests/rls_support.sql (expect: ALL SUPPORT TESTS PASSED).
+Batch 21 (people, payment and plan emails, settings export) upload order
+1. Supabase SQL Editor: run supabase/migrations/0024_user_management.sql, then supabase/tests/rls_user_management.sql (expect: ALL USER MANAGEMENT TESTS PASSED).
 2. Upload every file in this zip to GitHub, same folders (nothing is deleted).
 3. Wait for GitHub Actions and Vercel to go green.
-4. Follow docs/SUPPORT_SETUP.md, section 5 (10-minute test).
+4. Follow docs/USER_MANAGEMENT.md, section 5 (15-minute test).

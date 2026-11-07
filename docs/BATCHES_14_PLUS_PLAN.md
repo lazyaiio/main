@@ -71,5 +71,5 @@ Done: 14 (writing engine), 15 (plans, pricing, bKash, refunds), 16 (editable pag
 ## Update after Batch 19 (what is left from the "extras" list)
 - Cookie consent banner: already built in Batch 18 (shown only when an analytics or tag ID is set).
 - **Batch 20 (written):** support inbox from the contact form, announcement banner, maintenance mode.
-- **Batch 21 (next):** admin user management (search users, change plan, suspend and restore), payment and plan emails (receipt, ending soon, ended), export/backup of site settings.
+- **Batch 21 (written):** admin user management (search users, change plan, suspend and restore), payment and plan emails (receipt, ending soon, ended), export of site settings.
 - Later: the free-to-paid launch checklist, Meta App Review, a lawyer's review of the legal pages, more free tools and comparison pages for the blog.

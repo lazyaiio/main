@@ -5,7 +5,7 @@ import { describeScheduleError } from "@/lib/schedule-text";
  * Every value that comes from a person or from data is escaped before it goes into HTML.
  */
 
-export type TemplateName = "welcome" | "verify_email" | "campaign_complete" | "publish_failed" | "page_attention" | "support_reply" | "test";
+export type TemplateName = "welcome" | "verify_email" | "campaign_complete" | "publish_failed" | "page_attention" | "support_reply" | "payment_receipt" | "plan_ending_soon" | "plan_ended" | "test";
 
 export type TemplateData =
   | { template: "welcome"; name: string | null }
@@ -14,6 +14,9 @@ export type TemplateData =
   | { template: "publish_failed"; pageName: string; postSnippet: string; code: string; itemId: string }
   | { template: "page_attention"; pageName: string; problem: string }
   | { template: "support_reply"; name: string; reply: string; original: string }
+  | { template: "payment_receipt"; name: string | null; invoice: string; planName: string; periodLabel: string; amountText: string; endsOn: string | null }
+  | { template: "plan_ending_soon"; name: string | null; planName: string; endsOn: string; days: number }
+  | { template: "plan_ended"; name: string | null; planName: string }
   | { template: "test" };
 
 export type RenderedEmail = { subject: string; html: string; text: string };
@@ -128,6 +131,73 @@ export function renderEmail(data: TemplateData, appUrl: string): RenderedEmail {
           footer: PREFS_NOTE(appUrl),
         }),
         text: `A Facebook Page needs to be reconnected.\n\nPage: ${page}\n\n${reason}\n\nUntil it is reconnected, scheduled posts for this Page will not be published.\n\nOpen Facebook Pages: ${url}\n\n${PREFS_TEXT(appUrl)}`,
+      };
+    }
+
+    case "payment_receipt": {
+      const hello = data.name ? `Hi ${oneLine(data.name, 60)},` : "Hi,";
+      const plan = oneLine(data.planName, 60);
+      const invoice = oneLine(data.invoice, 40);
+      const amount = oneLine(data.amountText, 40);
+      const period = oneLine(data.periodLabel, 20);
+      const ends = data.endsOn ? `Your plan runs until ${oneLine(data.endsOn, 40)}.` : "This plan does not expire.";
+      const url = link(appUrl, "/app/billing");
+      return {
+        subject: `Your LazyAI receipt (${invoice})`,
+        html: layout({
+          title: "Thank you for your payment",
+          paragraphs: [
+            escapeHtml(hello),
+            `We received your payment for the <strong>${escapeHtml(plan)}</strong> plan.`,
+            `Invoice: <strong>${escapeHtml(invoice)}</strong><br>Plan: ${escapeHtml(plan)} (${escapeHtml(period)})<br>Amount: ${escapeHtml(amount)}`,
+            escapeHtml(ends),
+          ],
+          button: { label: "Open billing", url },
+          footer: "You are receiving this receipt because of a payment made with your LazyAI account.",
+        }),
+        text: `${hello}\n\nWe received your payment for the ${plan} plan.\n\nInvoice: ${invoice}\nPlan: ${plan} (${period})\nAmount: ${amount}\n\n${ends}\n\nOpen billing: ${url}\n\nYou are receiving this receipt because of a payment made with your LazyAI account.`,
+      };
+    }
+
+    case "plan_ending_soon": {
+      const hello = data.name ? `Hi ${oneLine(data.name, 60)},` : "Hi,";
+      const plan = oneLine(data.planName, 60);
+      const ends = oneLine(data.endsOn, 40);
+      const left = data.days <= 1 ? "less than a day" : `${data.days} days`;
+      const url = link(appUrl, "/app/billing");
+      return {
+        subject: `Your LazyAI ${plan} plan ends in ${left}`,
+        html: layout({
+          title: "Your plan is about to end",
+          paragraphs: [
+            escapeHtml(hello),
+            `Your <strong>${escapeHtml(plan)}</strong> plan ends on ${escapeHtml(ends)} (${escapeHtml(left)} from now).`,
+            "To keep your plan limits, renew before then. Renewing early adds time to the end of your current plan. After it ends, your workspace moves to the Free plan; your content is not deleted.",
+          ],
+          button: { label: "Renew my plan", url },
+          footer: "You are receiving this because your LazyAI plan is ending. Nothing is charged automatically.",
+        }),
+        text: `${hello}\n\nYour ${plan} plan ends on ${ends} (${left} from now).\n\nTo keep your plan limits, renew before then. Renewing early adds time to the end of your current plan. After it ends, your workspace moves to the Free plan; your content is not deleted.\n\nRenew my plan: ${url}\n\nYou are receiving this because your LazyAI plan is ending. Nothing is charged automatically.`,
+      };
+    }
+
+    case "plan_ended": {
+      const hello = data.name ? `Hi ${oneLine(data.name, 60)},` : "Hi,";
+      const plan = oneLine(data.planName, 60);
+      const url = link(appUrl, "/app/billing");
+      return {
+        subject: `Your LazyAI ${plan} plan has ended`,
+        html: layout({
+          title: "Your plan has ended",
+          paragraphs: [
+            escapeHtml(hello),
+            `Your <strong>${escapeHtml(plan)}</strong> plan has ended, and your workspace is now on the Free plan.`,
+            "Your content is not deleted. The Free plan limits apply from now on. You can choose a plan again at any time.",
+          ],
+          button: { label: "See plans", url },
+          footer: "You are receiving this because your LazyAI plan ended.",
+        }),
+        text: `${hello}\n\nYour ${plan} plan has ended, and your workspace is now on the Free plan.\n\nYour content is not deleted. The Free plan limits apply from now on. You can choose a plan again at any time.\n\nSee plans: ${url}\n\nYou are receiving this because your LazyAI plan ended.`,
       };
     }
 

@@ -1,4 +1,4 @@
-# Known limitations (as of Batch 20)
+# Known limitations (as of Batch 21)
 
 Plain list of what LazyAI does not do, or does only partly. Share the customer-relevant parts honestly.
 
@@ -24,6 +24,8 @@ Plain list of what LazyAI does not do, or does only partly. Share the customer-r
 
 ## Platform
 - **Support is a simple inbox:** one message per form submission (no threads, no attachments, no automatic acknowledgement). Replies are sent by an admin pressing a button.
+- **Account suspension** stops sign-in and every change, but does not cancel posts that were already scheduled. Plan changes made by an admin, and suspensions, are logged on the server only and send no email.
+- **Settings export** is a copy of plans, pages, SEO and blog text for safekeeping. It has no restore button and is not a database backup.
 - **Maintenance mode is a courtesy screen,** not a security lock. It hides the app pages from customers but does not stop direct calls to internal endpoints.
 - **Free tiers while building.** Supabase Free pauses idle projects and has no reliable backups. Vercel Hobby is not for commercial use. See `docs/GO_LIVE_UPGRADE_CHECKLIST.md`.
 - **Major package upgrades are postponed** (Tailwind 4, TypeScript 7, Zod 4). Dependabot does not propose them. Plan them as their own batch after launch.

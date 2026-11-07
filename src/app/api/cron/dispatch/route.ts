@@ -2,8 +2,9 @@ import { NextResponse, type NextRequest } from "next/server";
 import { checkCronAuth } from "@/lib/publish-dispatch";
 import { cleanupOldViews, readAnalyticsSettings } from "@/lib/data/analytics";
 import { cleanupClosedMessages } from "@/lib/data/support";
-import { expirePlans } from "@/lib/data/payments";
+import { expirePlans, listWorkspacesDueToExpire, type PlanTimingRow } from "@/lib/data/payments";
 import { runBackgroundCampaigns } from "@/lib/services/campaign-worker";
+import { sendEndedNotices, sendEndingSoonNotices } from "@/lib/services/plan-emails";
 import { dispatchDuePosts } from "@/lib/services/publisher";
 import { describeError, logError } from "@/lib/log";
 import { getCronSecret } from "@/lib/social/keys";
@@ -36,13 +37,32 @@ async function handle(request: NextRequest) {
     }
     // Paid plans whose time has ended go back to Free.
     let expired = 0;
+    let due: PlanTimingRow[] = [];
     try {
+      // Read who is about to be moved first, so each of them can be told afterwards.
+      due = await listWorkspacesDueToExpire().catch(() => []);
       expired = await expirePlans();
     } catch (error) {
+      due = [];
       logError("cron.expire_failed", describeError(error));
     }
-    // Once a day (03:00 UTC), delete website statistics older than the retention period.
+    const planEmails = { ended: 0, endingSoon: 0 };
+    try {
+      planEmails.ended = await sendEndedNotices(due);
+    } catch (error) {
+      logError("cron.plan_ended_emails_failed", describeError(error));
+    }
     const at = new Date();
+    // Between 04:00 and 04:09 UTC, warn the owners of plans that end within a week. The delivery log makes sure each
+    // plan end date gets one email, however many of these ten runs find it.
+    if (at.getUTCHours() === 4 && at.getUTCMinutes() < 10) {
+      try {
+        planEmails.endingSoon = await sendEndingSoonNotices();
+      } catch (error) {
+        logError("cron.plan_ending_emails_failed", describeError(error));
+      }
+    }
+    // Once a day (03:00 UTC), delete website statistics older than the retention period.
     if (at.getUTCHours() === 3 && at.getUTCMinutes() === 0) {
       try {
         await cleanupOldViews((await readAnalyticsSettings()).retentionDays);
@@ -58,7 +78,7 @@ async function handle(request: NextRequest) {
         logError("cron.support_cleanup_failed", describeError(error));
       }
     }
-    return NextResponse.json({ ok: true, ...summary, writing, expired }, { headers: { "Cache-Control": "no-store" } });
+    return NextResponse.json({ ok: true, ...summary, writing, expired, planEmails }, { headers: { "Cache-Control": "no-store" } });
   } catch (error) {
     logError("cron.dispatch_failed", describeError(error));
     return NextResponse.json({ ok: false, error: "dispatch_failed" }, { status: 500, headers: { "Cache-Control": "no-store" } });

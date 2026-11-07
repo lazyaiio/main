@@ -4,11 +4,14 @@ import { redirect } from "next/navigation";
 import { signOutAction } from "@/app/auth/actions";
 import { AppNav } from "@/components/app/app-nav";
 import { MaintenanceScreen } from "@/components/app/maintenance-screen";
+import { SuspendedScreen } from "@/components/app/suspended-screen";
 import { VerifyEmailBanner } from "@/components/app/verify-email-banner";
 import { Logo } from "@/components/brand/logo";
 import { AnnouncementBanner } from "@/components/site/announcement-banner";
 import { isCurrentUserPlatformAdmin } from "@/lib/auth/admin";
 import { getAppContext } from "@/lib/auth/session";
+import { getDb } from "@/lib/data/db";
+import { isSuspendedSelf } from "@/lib/data/users";
 import { loadNotice } from "@/lib/services/notices";
 
 export const metadata: Metadata = {
@@ -21,6 +24,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   if (!ctx) redirect("/auth/login");
   if (!ctx.profile.onboarded_at) redirect("/onboarding");
   const isAdmin = await isCurrentUserPlatformAdmin();
+  // A suspended account sees only a short explanation (platform admins are never suspended).
+  if (!isAdmin && (await isSuspendedSelf(await getDb(), ctx.user.id))) return <SuspendedScreen />;
   const notice = await loadNotice();
   // Maintenance mode hides the app from everyone except platform admins (who still need it to switch the mode off).
   if (notice.maintenance.enabled && !isAdmin) return <MaintenanceScreen message={notice.maintenance.message} />;
