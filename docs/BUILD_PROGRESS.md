@@ -783,3 +783,10 @@ Unsplash provider (with required download reporting), all enabled providers sear
 - Markdown now also supports photos (`![alt](blog-image:id)`) and `> quotes`; placeholders are hidden from readers.
 - Tests: `blog.test.ts` (22), `tools.test.ts` (15), `blog-seed.test.ts` (6; word counts, links, silos). All passed in the sandbox runner. Not verified: build, lint, typecheck, vitest, the SQL, photo search and download with real keys, and how the pages look in a browser.
 - Docs: `docs/BLOG_SETUP.md`, `docs/TOPICAL_MAP.md`.
+
+---
+
+## Batch 20.1: blog Publish / Schedule fix (code written, typecheck and lint pass)
+- **Problem:** pressing Publish now or Schedule on a draft article only showed "Saved." and the article stayed a draft. The server did not receive which button was pressed.
+- **Fix:** new `components/admin/blog-action-buttons.tsx`. Each button writes its action into a hidden field when clicked, so the server always knows it. The server action (`savePostAction`) now rejects an unknown action with a clear message instead of silently saving.
+- **How to check:** open a draft, press **Publish now**: you should see "Published." and the article on `/blog`. Try **Schedule** with a future UTC time: "Scheduled for ...". Publishing still needs a summary, a search description (70+ characters), a category, 300+ words, and a featured image; if one is missing you get a message saying which.

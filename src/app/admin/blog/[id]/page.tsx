@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { deletePostAction, findPhotosAction, savePostAction, choosePhotoAction } from "@/app/admin/blog/actions";
 import { PageHeader } from "@/components/ui/page-header";
+import { BlogActionButtons } from "@/components/admin/blog-action-buttons";
 import { PendingButton } from "@/components/ui/pending-button";
 import { BLOG_CATEGORIES, countWords, extractImageIds, findPlaceholders, postChecklist, readingMinutes } from "@/lib/blog";
 import { getImages, getPostById } from "@/lib/data/blog";
@@ -90,15 +91,7 @@ export default async function EditArticlePage({ params, searchParams }: Props) {
             <summary className="cursor-pointer font-semibold">Formatting help</summary>
             <p className="mt-2"><code>## Main heading</code>, <code>### Smaller heading</code>, blank line between paragraphs, <code>- bullet</code>, <code>1. number</code>, <code>**bold**</code>, <code>*italic*</code>, <code>&gt; a tip or quote</code>, and <code>[link text](/blog/another-article)</code>. A picture is one line: <code>![what it shows](blog-image:ID)</code>. A line like <code>[[image: search words | what it shows]]</code> is a placeholder that the &ldquo;Find the photos&rdquo; button replaces with a stock photo. No HTML.</p>
           </details>
-          <div className="flex flex-wrap items-end gap-3 border-t border-ink-100 pt-4">
-            <PendingButton pendingLabel="Saving…">Save draft</PendingButton>
-            <button name="intent" value="publish" type="submit" className="h-10 rounded-xl bg-brand px-5 text-sm font-semibold text-white hover:bg-brand-600">{live ? "Save and keep published" : "Publish now"}</button>
-            {live || scheduled ? <button name="intent" value="unpublish" type="submit" className="h-10 rounded-xl border border-ink-300 px-5 text-sm font-semibold text-ink hover:bg-ink-50">Take offline</button> : null}
-            <label className="text-xs font-semibold uppercase tracking-wide text-ink-500">Or schedule (UTC)
-              <input type="datetime-local" name="publishAt" className="mt-1 block rounded-xl border border-ink-200 px-3 py-2 text-sm font-normal normal-case text-ink" />
-            </label>
-            <button name="intent" value="schedule" type="submit" className="h-10 rounded-xl border border-ink-300 px-5 text-sm font-semibold text-ink hover:bg-ink-50">Schedule</button>
-          </div>
+          <BlogActionButtons live={Boolean(live)} scheduled={scheduled} />
         </form>
 
         <aside className="space-y-6">

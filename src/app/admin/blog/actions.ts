@@ -79,7 +79,8 @@ export async function savePostAction(formData: FormData): Promise<void> {
   if (input.categorySlug && !BLOG_CATEGORIES.some((c) => c.slug === input.categorySlug)) go(here, "error", "Unknown category.");
   if (await slugExists(input.slug, id)) go(here, "error", "Another article already uses that address (slug).");
 
-  const intent = field(formData, "intent");
+  const intent = field(formData, "intent") || "save";
+  if (!["save", "publish", "schedule", "unpublish"].includes(intent)) go(here, "error", "Could not tell which button was pressed. Nothing was changed. Please try again.");
   const row = {
     slug: input.slug, title: input.title, seo_title: input.seoTitle, meta_description: input.metaDescription, excerpt: input.excerpt, body: input.body,
     category_slug: input.categorySlug || null, tags: cleanTags(field(formData, "tags")), is_pillar: formData.get("isPillar") === "on", focus_keyword: input.focusKeyword, author_name: input.authorName,
