@@ -30,6 +30,41 @@ Plan: [`LAZYAI_MASTER_PLAN.md`](./LAZYAI_MASTER_PLAN.md) (see section 23 for own
 | 20 | Support inbox, announcement banner, maintenance mode | **Code written and checked here, owner verification pending** (migration 0023 not yet run) |
 | 20.1 | Blog Publish / Schedule fix | Deployed per owner report |
 | 21 | Admin people management, payment and plan emails, settings export | **Code written and checked here, owner verification pending** (migration 0024 not yet run) |
+| 22 | Admin launch checklist, Meta review readiness page, three new free tools | **Code written and checked here, owner verification pending** (no database change) |
+
+## Batch 22: launch checklist, Meta review readiness, new free tools
+
+**Status:** CODE WRITTEN AND CHECKED, owner verification pending. No migration. Nothing was sent to Meta, nothing live was changed.
+
+### What was built
+- **Admin -> Launch** (`/admin/launch`): 28 items (automatic and manual), a percent bar and a ready / not-ready verdict. Manual ticks are stored in `platform_settings` under `launch_checklist`. See `docs/LAUNCH_AND_META.md`.
+- **Admin -> Meta review** (`/admin/meta-review`): settings checks, a live check of the four public pages Meta opens, and a copy-and-paste pack (addresses, permission answers, reviewer instructions, screencast outline, rejection risks). The three permissions are tested against the scopes the code really requests.
+- **Free tools:** engagement rate calculator, UTM link builder, hashtag cleaner (pure, tested functions; pages, search titles and the tools index updated).
+- **Not done (moved to Batch 23):** comparison articles for the blog. They name other products, so their facts must be checked against the products' own official pages first; a first web search returned only third-party blogs, which is not good enough.
+
+### Files
+New: `src/lib/{launch-checklist,meta-review}.ts` (+ tests), `src/lib/tools/{engagement,utm,hashtags}.ts`, `src/lib/data/launch.ts`, `src/lib/services/{launch,meta-review}.ts`, `src/app/admin/launch/{page.tsx,actions.ts}`, `src/app/admin/meta-review/page.tsx`, `src/components/admin/copy-box.tsx`, `src/components/tools/{engagement,utm,hashtag}-tool.tsx`, three tool pages under `src/app/(marketing)/tools/`, `docs/LAUNCH_AND_META.md`.
+Changed: `src/components/admin/admin-nav.tsx`, `src/lib/seo.ts`, `src/app/(marketing)/tools/page.tsx`, `src/lib/tools/tools.test.ts`, `src/lib/user-management-wiring.test.ts`, docs.
+Deleted: none.
+
+### Checks and results (real runs in this sandbox)
+| Check | Result |
+|---|---|
+| `tsc --noEmit` | PASS |
+| `next lint` | PASS |
+| `vitest run` | PASS: 73 files, 640 tests |
+| `next build` (scratch copy, Google Fonts stubbed) | PASS; the two admin pages and three tool pages were built |
+| Pages in a browser, the live page checks, copy buttons, tool results on screen | **NOT DONE** |
+
+### Known limits
+- The automatic checklist items depend on what the site can read: it cannot see Supabase or Vercel billing, DNS records, or whether an email lands in spam. Those are manual items.
+- The "pages Meta will open" check requests the site's own public address from the server; a hosting setting that blocks such requests shows "could not check".
+- The reviewer instructions need the reviewer email and password typed in by hand before pasting.
+
+### Exact next action
+Owner: upload, then follow `docs/LAUNCH_AND_META.md`. Then Batch 23: comparison articles (facts checked against official pages), more tools if wanted.
+
+---
 
 ## Batch 21: people, payment and plan emails, settings export
 

@@ -49,6 +49,9 @@ Give this file to Claude at the start of a new chat, together with `lazyai-full-
 **Batch 4:** upload the Batch 4 zip and delete `src/components/marketing/bilingual.tsx` on GitHub; confirm CI is green; run `0003_admin_and_ai.sql` then `rls_admin_ai.sql` (expect `ALL ADMIN/AI TESTS PASSED`); re-run the corrected `rls_core_tables.sql` (expect `ALL CORE RLS TESTS PASSED`); make themselves a platform admin (SQL in `docs/SUPABASE_SETUP.md`); add an AI key in Vercel (`ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `GEMINI_API_KEY`, or `OPENROUTER_API_KEY`), redeploy, turn a provider on in Admin and press Test; write an English and a Bengali post and judge quality.
 **Batch 5:** upload the Batch 5 zip; confirm CI; run `0004_source_documents.sql` then `rls_sources.sql` (expect `ALL SOURCE TESTS PASSED`); try an English article link, a 404 link, a PDF link, a paywalled/login page, and `http://localhost` (must be refused); report results.
 
+### Update (Batch 22)
+Batch 21 (migration 0024 included) is deployed and its SQL test passed per the owner. Batch 22 (Admin -> Launch checklist, Admin -> Meta review, three free tools: engagement rate, UTM builder, hashtag cleaner) is written and checked (tsc, lint, 640 tests, scratch build), not yet verified by the owner. No migration. Comparison blog articles are NOT done: they need facts checked on official pages first (Batch 23).
+
 ### Update (Batch 21)
 Batch 20 and the blog Publish/Schedule fix (20.1) are deployed per the owner. Batch 21 (admin People page with change plan / suspend / restore, payment receipt + plan ending soon + plan ended emails, settings export, lifetime deal highlight, migration 0024) is written and checked (tsc, lint, 591 tests, scratch build) but not yet verified by the owner; read `docs/USER_MANAGEMENT.md` and the Batch 21 section of `docs/BUILD_PROGRESS.md`. Ask for the migration and browser-test results first.
 

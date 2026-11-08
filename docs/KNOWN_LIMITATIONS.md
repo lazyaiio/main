@@ -1,4 +1,4 @@
-# Known limitations (as of Batch 21)
+# Known limitations (as of Batch 22)
 
 Plain list of what LazyAI does not do, or does only partly. Share the customer-relevant parts honestly.
 
@@ -24,6 +24,8 @@ Plain list of what LazyAI does not do, or does only partly. Share the customer-r
 
 ## Platform
 - **Support is a simple inbox:** one message per form submission (no threads, no attachments, no automatic acknowledgement). Replies are sent by an admin pressing a button.
+- **Launch checklist:** automatic items only see what the site can read. Hosting and database billing, DNS and spam-folder results are manual items. "Ready" never means "nothing can go wrong".
+- **Meta review page:** it checks the site and drafts the answers; it does not submit anything to Meta, create the reviewer account, or record the video.
 - **Account suspension** stops sign-in and every change, but does not cancel posts that were already scheduled. Plan changes made by an admin, and suspensions, are logged on the server only and send no email.
 - **Lifetime deal:** an end date closes lifetime sales on every plan at the end of that day (checked every ten minutes) and does not reopen them by itself. The public pages cache the deal for up to one minute.
 - **Settings export** is a copy of plans, pages, SEO and blog text for safekeeping. It has no restore button and is not a database backup.

@@ -2,6 +2,9 @@ import { describe, expect, it } from "vitest";
 import { BUSINESS_TYPES, GOALS, generateIdeas, type BusinessType, type Goal } from "./post-ideas";
 import { THEMES, buildCalendar, csvCell, parseDate, toCsv } from "./calendar";
 import { analyze, suggestions } from "./post-checker";
+import { engagementRates, parseCount } from "./engagement";
+import { buildUtmUrl, cleanUtmValue } from "./utm";
+import { cleanHashtags } from "./hashtags";
 
 describe("post idea generator", () => {
   it("gives twelve complete ideas for every business and goal, with no leftover placeholders", () => {
@@ -100,5 +103,76 @@ describe("post checker", () => {
   it("is happy with a clear post", () => {
     const tips = suggestions(analyze("Fresh bread today.\n\nWe baked it at dawn. Come by before noon and tell us your favorite."));
     expect(tips.filter((t) => t.level === "check")).toEqual([]);
+  });
+});
+
+describe("engagement rate calculator", () => {
+  const base = { followers: 1000, posts: 4, reactions: 100, comments: 20, shares: 10, clicks: 10, totalReach: 5600 };
+  it("works out engagements, the average per post, and both rates", () => {
+    expect(engagementRates(base)).toEqual({ ok: true, engagements: 140, perPost: 35, rateByFollowers: 3.5, rateByReach: 2.5 });
+  });
+  it("leaves the reach rate out when no reach is given", () => {
+    const r = engagementRates({ ...base, totalReach: 0 });
+    expect(r.ok && r.rateByReach).toBeNull();
+  });
+  it("asks for followers and posts, and rejects bad numbers", () => {
+    expect(engagementRates({ ...base, followers: 0 }).ok).toBe(false);
+    expect(engagementRates({ ...base, posts: 0 }).ok).toBe(false);
+    expect(engagementRates({ ...base, reactions: -1 }).ok).toBe(false);
+    expect(engagementRates({ ...base, comments: Number.NaN }).ok).toBe(false);
+  });
+  it("reads typed numbers", () => {
+    expect(parseCount("1,200")).toBe(1200);
+    expect(parseCount(" 45 ")).toBe(45);
+    expect(parseCount("")).toBe(0);
+    expect(Number.isNaN(parseCount("12k"))).toBe(true);
+    expect(Number.isNaN(parseCount("-3"))).toBe(true);
+  });
+});
+
+describe("campaign link (UTM) builder", () => {
+  const input = { url: "https://example.com/shop", source: "Facebook", medium: "social", campaign: "Spring Sale", term: "", content: "" };
+  it("adds the three required parameters, cleaned", () => {
+    const r = buildUtmUrl(input);
+    expect(r).toEqual({ ok: true, url: "https://example.com/shop?utm_source=facebook&utm_medium=social&utm_campaign=spring-sale", added: ["utm_source", "utm_medium", "utm_campaign"] });
+  });
+  it("keeps other parameters and the section, and replaces old UTM values", () => {
+    const r = buildUtmUrl({ ...input, url: "example.com/p?ref=1&utm_source=old#reviews", term: "bread", content: "post 1" });
+    expect(r.ok && r.url).toBe("https://example.com/p?ref=1&utm_source=facebook&utm_medium=social&utm_campaign=spring-sale&utm_term=bread&utm_content=post-1#reviews");
+  });
+  it("rejects bad addresses and missing fields", () => {
+    expect(buildUtmUrl({ ...input, url: "" }).ok).toBe(false);
+    expect(buildUtmUrl({ ...input, url: "javascript:alert(1)" }).ok).toBe(false);
+    expect(buildUtmUrl({ ...input, url: "ftp://example.com" }).ok).toBe(false);
+    expect(buildUtmUrl({ ...input, url: "localhost" }).ok).toBe(false);
+    expect(buildUtmUrl({ ...input, source: " " }).ok).toBe(false);
+    expect(buildUtmUrl({ ...input, campaign: "!!!" }).ok).toBe(false);
+  });
+  it("cleans values", () => {
+    expect(cleanUtmValue("  Black Friday! 2026 ")).toBe("black-friday-2026");
+  });
+});
+
+describe("hashtag cleaner", () => {
+  it("cleans a messy list of tags", () => {
+    const r = cleanHashtags("#Bakery, #fresh bread #bakery #### #123 #Sourdough!");
+    expect(r.tags).toEqual(["#Bakery", "#freshbread", "#Sourdough"]);
+    expect(r.duplicates).toBe(1);
+    expect(r.dropped).toBe(1);
+    expect(r.text).toBe("#Bakery #freshbread #Sourdough");
+  });
+  it("turns a plain list into tags, in the chosen style", () => {
+    expect(cleanHashtags("small business, fresh bread", "camel").tags).toEqual(["#SmallBusiness", "#FreshBread"]);
+    expect(cleanHashtags("small business, fresh bread", "lower").tags).toEqual(["#smallbusiness", "#freshbread"]);
+    expect(cleanHashtags("bakery bread cake").tags).toEqual(["#bakery", "#bread", "#cake"]);
+  });
+  it("limits the number of tags and says how many were left out", () => {
+    const r = cleanHashtags("a1, b1, c1, d1", "keep", 2);
+    expect(r.tags).toEqual(["#a1", "#b1"]);
+    expect(r.overLimit).toBe(2);
+  });
+  it("handles empty input and other scripts safely", () => {
+    expect(cleanHashtags("   ").tags).toEqual([]);
+    expect(cleanHashtags("#café #naïve").tags).toEqual(["#café", "#naïve"]);
   });
 });

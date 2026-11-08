@@ -115,3 +115,33 @@ describe("lifetime deal wiring", () => {
     expect(lib).toContain("checkoutOpen(currency)");
   });
 });
+
+describe("launch checklist, Meta review and tools wiring", () => {
+  it("keeps the server-side files server-only", () => {
+    for (const path of ["lib/data/launch.ts", "lib/services/launch.ts", "lib/services/meta-review.ts"]) expect(read(path), path).toContain('import "server-only"');
+  });
+  it("protects the new admin pages and the checklist action", () => {
+    expect(read("app/admin/launch/page.tsx")).toContain("requirePlatformAdmin()");
+    expect(read("app/admin/meta-review/page.tsx")).toContain("requirePlatformAdmin()");
+    expect(read("app/admin/launch/actions.ts")).toContain("await requirePlatformAdmin()");
+  });
+  it("lets the checklist action change only known manual items", () => {
+    expect(read("app/admin/launch/actions.ts")).toContain("isManualId(id)");
+    expect(read("lib/data/launch.ts")).toContain("isManualId(id)");
+  });
+  it("adds the new pages to the admin menu", () => {
+    const nav = read("components/admin/admin-nav.tsx");
+    expect(nav).toContain('"/admin/launch"');
+    expect(nav).toContain('"/admin/meta-review"');
+  });
+  it("registers every new tool for search, and lists it on the tools page", () => {
+    const seo = read("lib/seo.ts");
+    const index = read("app/(marketing)/tools/page.tsx");
+    for (const path of ["/tools/engagement-rate-calculator", "/tools/utm-link-builder", "/tools/hashtag-cleaner"]) {
+      expect(seo, path).toContain(`path: "${path}"`);
+      expect(index, path).toContain(path);
+      expect(read(`app${"/(marketing)"}${path}/page.tsx`), path).toContain("ToolShell");
+    }
+  });
+});
+
