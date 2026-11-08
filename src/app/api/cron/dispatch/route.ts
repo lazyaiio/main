@@ -4,6 +4,7 @@ import { cleanupOldViews, readAnalyticsSettings } from "@/lib/data/analytics";
 import { cleanupClosedMessages } from "@/lib/data/support";
 import { expirePlans, listWorkspacesDueToExpire, type PlanTimingRow } from "@/lib/data/payments";
 import { runBackgroundCampaigns } from "@/lib/services/campaign-worker";
+import { closeEndedLifetimeDeal } from "@/lib/services/lifetime-deal";
 import { sendEndedNotices, sendEndingSoonNotices } from "@/lib/services/plan-emails";
 import { dispatchDuePosts } from "@/lib/services/publisher";
 import { describeError, logError } from "@/lib/log";
@@ -53,6 +54,14 @@ async function handle(request: NextRequest) {
       logError("cron.plan_ended_emails_failed", describeError(error));
     }
     const at = new Date();
+    // Every ten minutes: if the lifetime deal's end date has passed, close lifetime sales for real.
+    if (at.getUTCMinutes() % 10 === 0) {
+      try {
+        await closeEndedLifetimeDeal();
+      } catch (error) {
+        logError("cron.lifetime_close_failed", describeError(error));
+      }
+    }
     // Between 04:00 and 04:09 UTC, warn the owners of plans that end within a week. The delivery log makes sure each
     // plan end date gets one email, however many of these ten runs find it.
     if (at.getUTCHours() === 4 && at.getUTCMinutes() < 10) {

@@ -42,7 +42,10 @@ Plan: [`LAZYAI_MASTER_PLAN.md`](./LAZYAI_MASTER_PLAN.md) (see section 23 for own
 - **Admin -> Backup:** `/api/admin/settings-export` downloads a JSON copy of plans, currency, SEO / notice / analytics settings, editable pages, page SEO, blog categories and articles. A whitelist of setting keys plus a secret-name filter keep every credential out.
 - **Fix found on the way:** the `email_events` template list did not contain `support_reply` (the support reply is sent without the log, so nothing broke). Migration 0024 adds it.
 
+- **Lifetime deal highlight:** header badge, home page strip, big card and plan ribbons on /pricing, checkout badge, and an Admin -> Plans panel (on/off, badge, headline, text, optional end date). Shown only when a plan really sells lifetime and bKash checkout is open. An end date really closes lifetime sales (the scheduler switches "Lifetime available" off). See `docs/LIFETIME_DEAL.md`. No new migration.
+
 ### Files
+New (lifetime deal): `src/lib/lifetime-deal.ts` (+ test), `src/lib/data/lifetime-deal.ts`, `src/lib/services/lifetime-deal.ts`, `src/components/marketing/lifetime-deal.tsx`, `docs/LIFETIME_DEAL.md`. Changed (lifetime deal): marketing layout, site header, home page, pricing page, checkout page, `admin/plans` page and actions, the scheduler route, `lib/settings-export.ts`.
 New: `supabase/migrations/0024_user_management.sql`, `supabase/tests/rls_user_management.sql`, `src/lib/{users,plan-emails,settings-export}.ts` (+ tests), `src/lib/user-management-wiring.test.ts`, `src/lib/data/users.ts`, `src/lib/services/{users,plan-emails,settings-export}.ts`, `src/app/admin/users/{page.tsx,actions.ts}`, `src/app/admin/backup/page.tsx`, `src/app/api/admin/settings-export/route.ts`, `src/components/app/suspended-screen.tsx`, `docs/USER_MANAGEMENT.md`.
 Changed: `src/app/app/layout.tsx`, `src/app/api/cron/dispatch/route.ts`, `src/components/admin/admin-nav.tsx`, `src/lib/data/payments.ts`, `src/lib/services/billing.ts`, `src/lib/email/templates.ts`, `UPLOAD_ORDER.txt`, and the docs `BUILD_PROGRESS.md`, `KNOWN_LIMITATIONS.md`, `NEW_SESSION_START.md`, `BATCHES_14_PLUS_PLAN.md`.
 Deleted: none.
@@ -53,10 +56,10 @@ Deleted: none.
 | `npm install` | OK |
 | `tsc --noEmit` | PASS, 0 errors |
 | `next lint` | PASS, no warnings or errors |
-| `vitest run` | PASS: 70 files, 591 tests (37 new: users 11, settings export 5, plan emails 9, wiring 12) |
+| `vitest run` | PASS: 71 files, 606 tests (new in this batch: users 11, settings export 5, plan emails 9, wiring 17, lifetime deal 10) |
 | `next build` in a scratch copy with the Google Fonts stubbed | PASS; `/admin/users`, `/admin/backup` and `/api/admin/settings-export` were built |
 | SQL `0024` and `rls_user_management.sql` | **NOT RUN** (no database here). Owner runs them |
-| People page, suspend / restore, change plan, emails and the export in a browser | **NOT DONE** (manual steps in `docs/USER_MANAGEMENT.md`, section 5) |
+| People page, suspend / restore, change plan, emails, the export and the lifetime deal pages in a browser | **NOT DONE; the lifetime deal design has not been looked at on a screen** (manual steps in `docs/USER_MANAGEMENT.md`, section 5) |
 
 ### Owner steps
 1. Run `0024_user_management.sql`, then `rls_user_management.sql` (expect `ALL USER MANAGEMENT TESTS PASSED`).

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/services/seo";
 import Link from "next/link";
+import { LifetimeDealBanner } from "@/components/marketing/lifetime-deal";
 import { PlaceholderPage } from "@/components/marketing/placeholder-page";
 import { ButtonLink } from "@/components/ui/button";
 import { getBillingCurrency, listVisiblePlans, type PlanRow } from "@/lib/data/plans";
@@ -8,6 +9,7 @@ import { PERIODS, PERIOD_LABELS, priceFor } from "@/lib/payments/billing";
 import { JsonLd } from "@/components/seo/json-ld";
 import { formatPrice, limitHighlights, yearlySavingsPercent } from "@/lib/pricing";
 import { breadcrumbLd, softwareLd } from "@/lib/seo";
+import { loadLifetimeOffer } from "@/lib/services/lifetime-deal";
 import { loadSeo, siteBase } from "@/lib/services/seo";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -31,7 +33,7 @@ export default async function PricingPage() {
     return <PlaceholderPage title="Pricing" body="Our plans are being updated. Please check back soon, or contact us with any questions." cta={{ label: "Contact us", href: "/contact" }} />;
   }
   const { plans, currency } = data;
-  const { settings } = await loadSeo();
+  const [{ settings }, deal] = await Promise.all([loadSeo(), loadLifetimeOffer()]);
   const offers = plans.filter((p) => p.price_monthly !== null).map((p) => ({ name: p.name, description: p.tagline, price: Number(p.price_monthly), currency }));
 
   return (
@@ -42,6 +44,8 @@ export default async function PricingPage() {
         <p className="mt-3 text-lg text-ink-600">Start free. Move to a bigger plan when you need more posts, Pages, and images.</p>
       </div>
 
+      {deal ? <LifetimeDealBanner offer={deal} /> : null}
+
       <div className={`mt-12 grid gap-6 ${plans.length >= 3 ? "lg:grid-cols-3" : plans.length === 2 ? "md:grid-cols-2" : ""}`}>
         {plans.map((plan) => {
           const monthly = plan.price_monthly;
@@ -51,14 +55,18 @@ export default async function PricingPage() {
           const periods = PERIODS.filter((p) => priceFor({ key: plan.key, priceMonthly: plan.price_monthly, priceYearly: plan.price_yearly, priceLifetime: plan.price_lifetime, lifetimeAvailable: plan.lifetime_available }, p) !== null);
           const isFree = plan.key === "free" || monthly === 0;
           const canBuy = isFree || periods.length > 0;
+          const dealOffer = deal?.offers.find((o) => o.key === plan.key) ?? null;
           const firstPeriod = periods[0];
           return (
             <article
               key={plan.key}
-              className={`relative flex flex-col rounded-3xl border bg-white p-7 shadow-card ${plan.highlighted ? "border-brand ring-2 ring-brand/30" : "border-ink-100"}`}
+              className={`relative flex flex-col rounded-3xl border bg-white p-7 shadow-card ${plan.highlighted ? "border-brand ring-2 ring-brand/30" : dealOffer ? "border-amber-300 ring-2 ring-amber-200" : "border-ink-100"}`}
             >
               {plan.highlighted ? (
                 <span className="absolute -top-3 left-7 rounded-full bg-brand px-3 py-1 text-xs font-bold uppercase tracking-wide text-white">Most popular</span>
+              ) : null}
+              {dealOffer && deal ? (
+                <span className="absolute -top-3 right-7 rounded-full bg-amber-300 px-3 py-1 text-xs font-bold uppercase tracking-wide text-ink">{deal.badge}</span>
               ) : null}
               <h2 className="font-display text-2xl font-bold text-ink">{plan.name}</h2>
               {plan.tagline ? <p className="mt-1 text-sm text-ink-600">{plan.tagline}</p> : null}
@@ -74,7 +82,12 @@ export default async function PricingPage() {
                     <span className="text-base font-medium text-ink-500"> / month</span>
                   </p>
                 )}
-                {plan.lifetime_available && plan.price_lifetime && plan.price_lifetime > 0 ? (
+                {dealOffer && deal ? (
+                  <Link href={`/checkout?plan=${plan.key}&period=lifetime`} className="mt-3 flex items-center justify-between gap-3 rounded-xl border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-ink hover:bg-amber-100">
+                    <span className="font-semibold">{deal.badge}</span>
+                    <span className="font-display text-base font-extrabold">{formatPrice(dealOffer.price, currency)} <span className="text-xs font-medium text-ink-600">one time</span></span>
+                  </Link>
+                ) : plan.lifetime_available && plan.price_lifetime && plan.price_lifetime > 0 ? (
                   <p className="mt-1 text-sm font-semibold text-brand-700">Lifetime: {formatPrice(plan.price_lifetime, currency)} one time</p>
                 ) : null}
                 {plan.price_yearly && plan.price_yearly > 0 ? (

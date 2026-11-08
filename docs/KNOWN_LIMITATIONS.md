@@ -25,6 +25,7 @@ Plain list of what LazyAI does not do, or does only partly. Share the customer-r
 ## Platform
 - **Support is a simple inbox:** one message per form submission (no threads, no attachments, no automatic acknowledgement). Replies are sent by an admin pressing a button.
 - **Account suspension** stops sign-in and every change, but does not cancel posts that were already scheduled. Plan changes made by an admin, and suspensions, are logged on the server only and send no email.
+- **Lifetime deal:** an end date closes lifetime sales on every plan at the end of that day (checked every ten minutes) and does not reopen them by itself. The public pages cache the deal for up to one minute.
 - **Settings export** is a copy of plans, pages, SEO and blog text for safekeeping. It has no restore button and is not a database backup.
 - **Maintenance mode is a courtesy screen,** not a security lock. It hides the app pages from customers but does not stop direct calls to internal endpoints.
 - **Free tiers while building.** Supabase Free pauses idle projects and has no reliable backups. Vercel Hobby is not for commercial use. See `docs/GO_LIVE_UPGRADE_CHECKLIST.md`.

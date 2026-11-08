@@ -11,6 +11,7 @@ import { getBillingCurrency, listVisiblePlans } from "@/lib/data/plans";
 import { PERIODS, PERIOD_LABELS, isPeriod, priceFor, type Period } from "@/lib/payments/billing";
 import { formatPrice, yearlySavingsPercent } from "@/lib/pricing";
 import { paymentsAvailable } from "@/lib/services/billing";
+import { loadLifetimeOffer } from "@/lib/services/lifetime-deal";
 
 export const metadata: Metadata = { title: "Checkout", robots: { index: false, follow: false } };
 export const dynamic = "force-dynamic";
@@ -20,7 +21,7 @@ type Props = { searchParams: Promise<Record<string, string | string[] | undefine
 export default async function CheckoutPage({ searchParams }: Props) {
   const sp = await searchParams;
   const planKey = typeof sp.plan === "string" ? sp.plan : "";
-  const [plans, currency, ctx, available] = await Promise.all([listVisiblePlans().catch(() => []), getBillingCurrency(), getAppContext(), paymentsAvailable()]);
+  const [plans, currency, ctx, available, deal] = await Promise.all([listVisiblePlans().catch(() => []), getBillingCurrency(), getAppContext(), paymentsAvailable(), loadLifetimeOffer()]);
   const plan = plans.find((p) => p.key === planKey);
   if (!plan) redirect("/pricing");
 
@@ -39,6 +40,9 @@ export default async function CheckoutPage({ searchParams }: Props) {
       <h1 className="font-display text-3xl font-extrabold tracking-tight text-ink">Checkout</h1>
       <div className="mt-8 grid gap-8 md:grid-cols-[1fr_1.1fr]">
         <aside className="h-fit space-y-4 rounded-2xl border border-ink-100 bg-white p-6 shadow-card">
+          {paid && period === "lifetime" && deal?.offers.some((o) => o.key === plan.key) ? (
+            <span className="inline-block rounded-full bg-amber-300 px-3 py-1 text-xs font-bold uppercase tracking-wide text-ink">{deal.badge}</span>
+          ) : null}
           <p className="text-xs font-semibold uppercase tracking-wide text-ink-500">Your plan</p>
           <h2 className="font-display text-2xl font-bold">{plan.name}</h2>
           {plan.tagline ? <p className="text-sm text-ink-600">{plan.tagline}</p> : null}

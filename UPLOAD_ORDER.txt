@@ -2,4 +2,4 @@ Batch 21 (people, payment and plan emails, settings export) upload order
 1. Supabase SQL Editor: run supabase/migrations/0024_user_management.sql, then supabase/tests/rls_user_management.sql (expect: ALL USER MANAGEMENT TESTS PASSED).
 2. Upload every file in this zip to GitHub, same folders (nothing is deleted).
 3. Wait for GitHub Actions and Vercel to go green.
-4. Follow docs/USER_MANAGEMENT.md, section 5 (15-minute test).
+4. Follow docs/USER_MANAGEMENT.md, section 5 (15-minute test), then docs/LIFETIME_DEAL.md.

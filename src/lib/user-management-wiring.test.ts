@@ -87,3 +87,31 @@ describe("migration 0024", () => {
     }
   });
 });
+
+describe("lifetime deal wiring", () => {
+  it("keeps the server-side files server-only", () => {
+    for (const path of ["lib/data/lifetime-deal.ts", "lib/services/lifetime-deal.ts"]) expect(read(path), path).toContain('import "server-only"');
+  });
+  it("shows the deal in the header, home page, pricing page and checkout", () => {
+    expect(read("app/(marketing)/layout.tsx")).toContain("loadLifetimeOffer()");
+    expect(read("components/marketing/site-header.tsx")).toContain("LifetimeDealPill");
+    expect(read("app/(marketing)/page.tsx")).toContain("LifetimeDealStrip");
+    expect(read("app/(marketing)/pricing/page.tsx")).toContain("LifetimeDealBanner");
+    expect(read("app/(marketing)/checkout/page.tsx")).toContain("loadLifetimeOffer()");
+  });
+  it("lets only platform admins save the deal", () => {
+    const text = read("app/admin/plans/actions.ts");
+    const fn = text.slice(text.indexOf("export async function saveLifetimeDealAction"));
+    expect(fn.indexOf("requirePlatformAdmin()")).toBeGreaterThan(-1);
+    expect(fn.indexOf("requirePlatformAdmin()")).toBeLessThan(fn.indexOf("saveLifetimeDeal("));
+  });
+  it("closes lifetime sales from the scheduler when the end date passes", () => {
+    expect(read("app/api/cron/dispatch/route.ts")).toContain("closeEndedLifetimeDeal()");
+    expect(read("lib/services/lifetime-deal.ts")).toContain("closeLifetimeSales()");
+  });
+  it("never advertises a deal that cannot be bought", () => {
+    const lib = read("lib/lifetime-deal.ts");
+    expect(lib).toContain("lifetime_available");
+    expect(lib).toContain("checkoutOpen(currency)");
+  });
+});

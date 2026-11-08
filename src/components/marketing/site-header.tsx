@@ -1,10 +1,12 @@
 import Link from "next/link";
 import { Menu } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
+import { LifetimeDealPill } from "@/components/marketing/lifetime-deal";
 import { ButtonLink } from "@/components/ui/button";
 import { siteConfig } from "@/lib/site";
 
-export function SiteHeader() {
+/** `lifetimeBadge` is set only while a lifetime deal is really on sale. */
+export function SiteHeader({ lifetimeBadge = null }: { lifetimeBadge?: string | null }) {
   return (
     <header className="sticky top-0 z-40 border-b border-ink-100 bg-white/85 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
@@ -25,6 +27,7 @@ export function SiteHeader() {
         </nav>
 
         <div className="hidden items-center gap-2 md:flex">
+          {lifetimeBadge ? <LifetimeDealPill badge={lifetimeBadge} /> : null}
           <ButtonLink href="/auth/login" variant="ghost" size="sm">
             Log in
           </ButtonLink>
@@ -50,6 +53,7 @@ export function SiteHeader() {
                 {item.label}
               </Link>
             ))}
+            {lifetimeBadge ? <LifetimeDealPill badge={lifetimeBadge} className="mt-1 w-full justify-center py-2" /> : null}
             <div className="mt-2 grid gap-2 border-t border-ink-100 pt-3">
               <ButtonLink href="/auth/login" variant="secondary" size="sm">
                 Log in

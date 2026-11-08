@@ -7,6 +7,8 @@ import { requirePlatformAdmin } from "@/lib/auth/admin";
 import { getDb } from "@/lib/data/db";
 import { setBillingCurrency, setWorkspacePlan, updatePlanDetails } from "@/lib/data/plans";
 import { LIMIT_KEYS } from "@/lib/plans";
+import { parseDealForm } from "@/lib/lifetime-deal";
+import { refreshLifetimeOffer, saveLifetimeDeal } from "@/lib/services/lifetime-deal";
 import { isCurrency, parseFeatureLines, parseLimitField, parsePriceField } from "@/lib/pricing";
 
 const schema = z.object({ workspaceId: z.string().uuid(), plan: z.string().regex(/^[a-z0-9_]{2,30}$/) });
@@ -69,6 +71,7 @@ export async function updatePlanAction(formData: FormData): Promise<void> {
   }
   revalidatePath("/admin/plans");
   revalidatePath("/pricing");
+  refreshLifetimeOffer();
   redirect("/admin/plans?notice=saved");
 }
 
@@ -83,5 +86,28 @@ export async function updateCurrencyAction(formData: FormData): Promise<void> {
   }
   revalidatePath("/admin/plans");
   revalidatePath("/pricing");
+  refreshLifetimeOffer();
   redirect("/admin/plans?notice=saved");
+}
+
+/** Saves the lifetime deal highlight (badge, headline, text, optional end date). */
+export async function saveLifetimeDealAction(formData: FormData): Promise<void> {
+  const ctx = await requirePlatformAdmin();
+  const parsed = parseDealForm({
+    enabled: formData.get("enabled") === "on",
+    badge: textField(formData, "badge"),
+    headline: textField(formData, "headline"),
+    subtext: textField(formData, "subtext"),
+    endsOn: textField(formData, "endsOn"),
+  });
+  if (!parsed.ok) redirect(`/admin/plans?dealError=${encodeURIComponent(parsed.message)}`);
+  try {
+    await saveLifetimeDeal(parsed.deal, ctx.user.id);
+  } catch {
+    redirect("/admin/plans?dealError=" + encodeURIComponent("Could not save the lifetime deal. Please try again."));
+  }
+  revalidatePath("/admin/plans");
+  revalidatePath("/pricing");
+  revalidatePath("/");
+  redirect("/admin/plans?notice=deal");
 }

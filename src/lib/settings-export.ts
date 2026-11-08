@@ -1,7 +1,7 @@
 /** Pure rules for the site settings export (no database, no network). */
 
 /** Only these platform settings are copied. Payment credentials, stock photo keys and anything else stay out. */
-export const EXPORTABLE_SETTING_KEYS = ["seo", "site_notice", "analytics", "billing"] as const;
+export const EXPORTABLE_SETTING_KEYS = ["seo", "site_notice", "analytics", "billing", "lifetime_deal"] as const;
 
 const SECRET_NAME = /secret|token|password|api[_-]?key|private/i;
 
@@ -50,7 +50,7 @@ export type SettingsExport = {
 
 export const EXPORT_INCLUDES = [
   "Plans, prices and limits",
-  "Site currency, SEO, announcement banner and analytics settings",
+  "Site currency, SEO, announcement banner, lifetime deal text and analytics settings",
   "Editable pages (Terms, Privacy, Help, About, home page and the others)",
   "Page-by-page SEO overrides",
   "Blog categories and every article, drafts included (text only, not the photo files)",
