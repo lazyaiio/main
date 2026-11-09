@@ -49,6 +49,12 @@ Give this file to Claude at the start of a new chat, together with `lazyai-full-
 **Batch 4:** upload the Batch 4 zip and delete `src/components/marketing/bilingual.tsx` on GitHub; confirm CI is green; run `0003_admin_and_ai.sql` then `rls_admin_ai.sql` (expect `ALL ADMIN/AI TESTS PASSED`); re-run the corrected `rls_core_tables.sql` (expect `ALL CORE RLS TESTS PASSED`); make themselves a platform admin (SQL in `docs/SUPABASE_SETUP.md`); add an AI key in Vercel (`ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `GEMINI_API_KEY`, or `OPENROUTER_API_KEY`), redeploy, turn a provider on in Admin and press Test; write an English and a Bengali post and judge quality.
 **Batch 5:** upload the Batch 5 zip; confirm CI; run `0004_source_documents.sql` then `rls_sources.sql` (expect `ALL SOURCE TESTS PASSED`); try an English article link, a 404 link, a PDF link, a paywalled/login page, and `http://localhost` (must be refused); report results.
 
+### Update (Batch 23)
+One new blog starter article (Meta Business Suite vs a scheduling tool) was added to the seed (draft only, no competitor numbers on purpose; see the Batch 23 section of `docs/BUILD_PROGRESS.md`). The pillar article already in the owner's blog needs the new link added by hand.
+
+### Update (Batch 22.1)
+Facebook Page Insights was added (App -> Insights, migration 0025, `META_REQUEST_INSIGHTS` switch, Meta review pack and default Privacy Policy updated). Read `docs/INSIGHTS.md`. It is off until Meta approves `read_insights`. It has never run against the real Facebook API. Batch 23 (comparison articles checked against official pages) is still pending.
+
 ### Update (Batch 22)
 Batch 21 (migration 0024 included) is deployed and its SQL test passed per the owner. Batch 22 (Admin -> Launch checklist, Admin -> Meta review, three free tools: engagement rate, UTM builder, hashtag cleaner) is written and checked (tsc, lint, 640 tests, scratch build), not yet verified by the owner. No migration. Comparison blog articles are NOT done: they need facts checked on official pages first (Batch 23).
 

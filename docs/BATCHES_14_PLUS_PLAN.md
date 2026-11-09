@@ -73,5 +73,7 @@ Done: 14 (writing engine), 15 (plans, pricing, bKash, refunds), 16 (editable pag
 - **Batch 20 (written):** support inbox from the contact form, announcement banner, maintenance mode.
 - **Batch 21 (written):** admin user management (search users, change plan, suspend and restore), payment and plan emails (receipt, ending soon, ended), export of site settings.
 - **Batch 22 (written):** admin launch checklist, Meta review readiness page, three more free tools.
-- **Batch 23 (next):** comparison articles for the blog (only with facts checked on official pages), more tools if wanted.
+- **Batch 22.1 (written):** Facebook Page Insights (waits for Meta approval of read_insights).
+- **Batch 23 (written):** one comparison article for the blog, with no competitor numbers because they could not be checked on official pages.
+- **Next:** more articles on topics where facts can be checked, more tools, launch checklist work.
 - Owner-only work: a lawyer's review of the legal pages, Meta business verification and App Review submission.

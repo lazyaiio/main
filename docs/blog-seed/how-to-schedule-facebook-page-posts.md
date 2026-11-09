@@ -72,7 +72,7 @@ Third-party tools connect to your Facebook Page and let you plan, write, and sch
 
 A scheduling tool can be worth paying for when you manage several Pages, work with a team, post often, or want help writing. It is less useful if you post rarely and are happy with the built-in options.
 
-LazyAI is one such tool, and we make it, so keep that in mind when you read our opinion. You give it a topic or a website, it proposes a content plan and writes the posts, you edit them, and you schedule them to your Facebook Page. You can compare it with other options using the checklist below and [try the free plan](/pricing).
+LazyAI is one such tool, and we make it, so keep that in mind when you read our opinion. You give it a topic or a website, it proposes a content plan and writes the posts, you edit them, and you schedule them to your Facebook Page. You can compare it with other options using the checklist below, read our deeper comparison of [Meta Business Suite vs a scheduling tool](/blog/meta-business-suite-vs-scheduling-tool), and [try the free plan](/pricing).
 
 [[image: small business owner using laptop planning posts | A small business owner using a scheduling tool on a laptop]]
 

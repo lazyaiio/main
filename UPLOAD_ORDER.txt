@@ -1,5 +1,6 @@
-Batch 22 (launch checklist, Meta review page, three free tools) upload order
+Batch 23 (blog comparison article) upload order
 1. There is NO database change in this batch. Do not run any SQL.
 2. Upload every file in this zip to GitHub, same folders (nothing is deleted).
 3. Wait for GitHub Actions and Vercel to go green.
-4. Follow docs/LAUNCH_AND_META.md (20-minute test).
+4. Admin -> Blog -> "Add starter articles": the new article arrives as a draft. Find its photos, read it, publish.
+5. Add the link to the existing "How to schedule Facebook Page posts" article by hand (see the Batch 23 section of docs/BUILD_PROGRESS.md).

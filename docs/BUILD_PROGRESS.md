@@ -31,6 +31,80 @@ Plan: [`LAZYAI_MASTER_PLAN.md`](./LAZYAI_MASTER_PLAN.md) (see section 23 for own
 | 20.1 | Blog Publish / Schedule fix | Deployed per owner report |
 | 21 | Admin people management, payment and plan emails, settings export | **Code written and checked here, owner verification pending** (migration 0024 not yet run) |
 | 22 | Admin launch checklist, Meta review readiness page, three new free tools | **Code written and checked here, owner verification pending** (no database change) |
+| 22.1 | Facebook Page Insights page (read_insights), Meta review pack and Privacy Policy updated | **Code written and checked here, owner verification pending** (migration 0025; Meta approval of read_insights needed before it can be switched on) |
+| 23 | Blog comparison article: Meta Business Suite vs a scheduling tool | **Code written and checked here, owner verification pending** (no database change) |
+
+## Batch 23: comparison article for the blog
+
+**Status:** CODE WRITTEN AND CHECKED, owner verification pending. No migration. Nothing is published: the article arrives as a draft.
+
+### What was built
+- One new starter article, **"Meta Business Suite vs a Facebook Scheduling Tool: Which Should You Use?"** (`/blog/meta-business-suite-vs-scheduling-tool`, about 1,800 words, scheduling-and-ai category, supporting article of the "how to schedule Facebook Page posts" pillar). It was written to the blog's own rules (4 photo spots, links, SEO checklist) and passes the seed tests.
+- **Facts rule used:** no competitor prices, plan names, feature lists or numbers. Meta's own Help Center pages could not be opened from here, and the websites that came up disagreed with each other (for example on how far ahead a Facebook Page post can be scheduled: 29 days, 75 days, six months). So the article states only things that hold in general, tells readers to check the real scheduling window in Meta Business Suite or Meta's Help Center, and describes LazyAI only from what the product really does (Facebook Pages only, no Instagram, no inbox or ads tools).
+- The pillar article's source now links to the new article. Admin -> Blog -> "Add 8 starter articles" adds only the missing one (as a draft).
+- Why not a table or a "LazyAI vs Buffer" style page: a table of other products' prices and features would go out of date and could be wrong. If you want those, check each product's own pricing page first and give me the facts.
+
+### Files
+New: `docs/blog-seed/meta-business-suite-vs-scheduling-tool.md`. Changed: `src/content/blog-seed.ts`, `docs/blog-seed/how-to-schedule-facebook-page-posts.md`, `docs/BLOG_SETUP.md`, docs.
+Deleted: none.
+
+### Checks and results (real runs in this sandbox)
+| Check | Result |
+|---|---|
+| `tsc --noEmit` | PASS |
+| `next lint` | PASS |
+| `vitest run` | PASS: 74 files, 671 tests (the blog seed tests now cover 8 articles) |
+| Article read in the blog editor, photos found, published | **NOT DONE** (owner steps) |
+
+### Owner steps
+1. Upload the files. In Admin -> Blog press "Add starter articles": the new article is added as a draft.
+2. Open it, press "Find the photos", read it, and change anything that is not true for your product. Publish.
+3. **The pillar article already in your blog was imported before this change and does NOT get the new link automatically.** Open "How to schedule Facebook Page posts" in Admin -> Blog and add this sentence at the end of the paragraph that starts "LazyAI is one such tool": `You can also read our deeper comparison of [Meta Business Suite vs a scheduling tool](/blog/meta-business-suite-vs-scheduling-tool).` Until you do, the new article has no article pointing at it.
+
+### Exact next action
+Owner: the steps above. Then choose what is next (more articles on topics where the facts can be checked, more tools, or anything from the launch checklist).
+
+---
+
+## Batch 22.1: Facebook Page Insights
+
+**Status:** CODE WRITTEN AND CHECKED, owner verification pending. Migration `0025` has NOT been run. Nothing was sent to Meta. Insights stays **off** (a "coming soon" screen) until `META_REQUEST_INSIGHTS=1` is set.
+
+### What was built
+- **App -> Insights:** per connected Page, 7 or 28 days compared with the period before: Views, People reached, Post engagements, Page visits, New followers, Button and contact clicks (daily bar charts with a text version), follower count, and the latest posts LazyAI published (views, people reached, clicks, reactions). Fetched only on Refresh (Owner, Admin, Editor), saved as one copy per Page and range, 30-minute cooldown, 12 refreshes per workspace per hour.
+- **Permissions:** `read_insights` is requested only when `META_REQUEST_INSIGHTS=1` (classic login) and is NOT required to connect, so existing connections keep working; people with an older connection see "Reconnect Facebook to see Insights".
+- **Metrics** were checked against Meta's current Graph API v26 Page Insights reference (read on this date). Meta retired a number of Page Insights metrics on June 15, 2026, so each metric is requested on its own and a refused metric shows "Facebook no longer offers this number".
+- **Migration 0025** (`page_insight_snapshots`, members read, only the server writes) and SQL test `supabase/tests/rls_page_insights.sql`. Saved numbers are deleted on disconnect, Facebook data deletion, and workspace deletion.
+- **Meta review pack** (Admin -> Meta review) now has four permissions, a read_insights answer, an Insights screencast step, reviewer instructions and rejection risks. **Launch checklist** has an Insights switch item and a "Meta approved read_insights" item (both optional).
+- **Default Privacy Policy** describes Insights. A Privacy Policy already edited in Admin -> Pages is NOT changed automatically.
+- Test mode (`META_MOCK=1`, not production) shows made-up stable numbers.
+
+### Files
+New: `supabase/migrations/0025_page_insights.sql`, `supabase/tests/rls_page_insights.sql`, `src/lib/insights.ts` (+ test), `src/lib/data/insights.ts`, `src/lib/services/insights.ts`, `src/app/app/insights/{page.tsx,actions.ts}`, `src/components/app/insight-bars.tsx`, `docs/INSIGHTS.md`.
+Changed: `src/lib/social/{provider,meta-provider,mock-provider,keys}.ts` (+ provider tests), `src/lib/data/social.ts`, `src/lib/services/{errors,meta-review,launch}.ts`, `src/lib/{service-messages,meta-review,launch-checklist}.ts` (+ tests), `src/content/default-pages.ts`, `src/components/app/app-nav.tsx`, `.env.example`, docs.
+Deleted: none.
+
+### Checks and results (real runs in this sandbox)
+| Check | Result |
+|---|---|
+| `tsc --noEmit` | PASS |
+| `next lint` | PASS |
+| `vitest run` | PASS: 74 files, 671 tests |
+| `next build` (scratch copy, fonts stubbed) | PASS; `/app/insights` was built |
+| SQL `0025` and `rls_page_insights.sql` | **NOT RUN** (owner runs them) |
+| Real Facebook calls | **NOT DONE**: no Meta app available here. The request shapes follow Meta's documentation and are covered by tests with a fake Facebook, but have never been run against the real API |
+
+### Known limits
+- Never tested against the real Facebook API. The first real refresh may show a metric as unavailable if Meta's live behavior differs from its documentation.
+- Insights only exist for Pages with at least 100 likes, and need the Analyze role.
+- Only posts published through LazyAI appear in the posts table. Reels interactions are not included by Facebook.
+- Facebook Login for Business: `read_insights` must be added to the configuration in the Meta dashboard by hand.
+- The account data export does not yet include the saved Insights numbers.
+
+### Exact next action
+Owner: run 0025 and its test, upload, try Insights in test mode, then (with Meta's approval or your own app role) on a real Page with 100+ likes. Then continue with Batch 23.
+
+---
 
 ## Batch 22: launch checklist, Meta review readiness, new free tools
 
