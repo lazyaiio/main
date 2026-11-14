@@ -5,6 +5,9 @@ import { analyze, suggestions } from "./post-checker";
 import { engagementRates, parseCount } from "./engagement";
 import { buildUtmUrl, cleanUtmValue } from "./utm";
 import { cleanHashtags } from "./hashtags";
+import { MAX_ENTRIES, drawWinners, parseEntries, secureRandomInt } from "./giveaway";
+import { COMMON_ZONES, convertToZones, isValidZone, offsetMinutes, zonedInstant } from "./timezones";
+import { followerGrowth } from "./growth";
 
 describe("post idea generator", () => {
   it("gives twelve complete ideas for every business and goal, with no leftover placeholders", () => {
@@ -174,5 +177,116 @@ describe("hashtag cleaner", () => {
   it("handles empty input and other scripts safely", () => {
     expect(cleanHashtags("   ").tags).toEqual([]);
     expect(cleanHashtags("#café #naïve").tags).toEqual(["#café", "#naïve"]);
+  });
+});
+
+describe("giveaway winner picker", () => {
+  it("reads one entry per line, skipping blanks and optionally repeats", () => {
+    const r = parseEntries("Ana\n  ben  \n\nANA\nCara\n", true);
+    expect(r.entries).toEqual(["Ana", "ben", "Cara"]);
+    expect(r.duplicates).toBe(1);
+    expect(r.blank).toBeGreaterThan(0);
+    expect(parseEntries("Ana\nana", false).entries).toHaveLength(2);
+  });
+  it("caps the list and the length of a line", () => {
+    expect(parseEntries(Array.from({ length: MAX_ENTRIES + 5 }, (_, i) => `n${i}`).join("\n"), true).tooMany).toBe(true);
+    expect(parseEntries("x".repeat(500), true).entries[0]).toHaveLength(120);
+  });
+  it("draws different winners and backups with the given random source", () => {
+    const first = drawWinners(["a", "b", "c", "d", "e"], 2, 1, () => 0);
+    expect(first.ok && first.winners).toHaveLength(2);
+    const r = drawWinners(["a", "b", "c", "d", "e"], 2, 1, (n) => n - 1);
+    expect(r.ok && new Set([...r.winners, ...r.backups]).size).toBe(3);
+  });
+  it("lets one person win only once even if listed twice, and refuses impossible requests", () => {
+    const r = drawWinners(["a", "A", "b"], 2, 0, (n) => n - 1);
+    expect(r.ok && new Set(r.winners.map((w) => w.toLowerCase())).size).toBe(2);
+    expect(drawWinners(["a", "A"], 2, 0, () => 0).ok).toBe(false);
+    expect(drawWinners([], 1, 0, () => 0).ok).toBe(false);
+    expect(drawWinners(["a"], 0, 0, () => 0).ok).toBe(false);
+    expect(drawWinners(["a"], 99, 0, () => 0).ok).toBe(false);
+  });
+  it("gives every entry the same chance (a fair shuffle)", () => {
+    let seed = 12345;
+    const rnd = (n: number) => { seed = (seed * 1103515245 + 12345) % 2147483648; return Math.floor((seed / 2147483648) * n); };
+    const counts: Record<string, number> = { a: 0, b: 0, c: 0, d: 0 };
+    for (let i = 0; i < 4000; i += 1) {
+      const r = drawWinners(["a", "b", "c", "d"], 1, 0, rnd);
+      if (r.ok) counts[r.winners[0]!]! += 1;
+    }
+    for (const v of Object.values(counts)) expect(v).toBeGreaterThan(850);
+  });
+  it("rejects biased random values from the secure source", () => {
+    const values = [0xffffffff, 7];
+    let i = 0;
+    expect(secureRandomInt(10, (a) => { a[0] = values[i++]!; return a; })).toBe(7);
+    expect(() => secureRandomInt(0)).toThrow();
+    expect(secureRandomInt(1)).toBe(0);
+  });
+});
+
+describe("time zone converter", () => {
+  it("knows zone offsets, including daylight saving", () => {
+    expect(offsetMinutes("Asia/Dhaka", new Date("2026-11-09T12:00:00Z"))).toBe(360);
+    expect(offsetMinutes("America/New_York", new Date("2026-11-09T12:00:00Z"))).toBe(-300);
+    expect(offsetMinutes("America/New_York", new Date("2026-07-01T12:00:00Z"))).toBe(-240);
+    expect(offsetMinutes("Europe/London", new Date("2026-07-01T12:00:00Z"))).toBe(60);
+  });
+  it("turns a wall-clock time into an exact moment and shows it everywhere", () => {
+    const i = zonedInstant("2026-11-09", "18:30", "Asia/Dhaka");
+    expect(i.ok && i.utc.toISOString()).toBe("2026-11-09T12:30:00.000Z");
+    if (!i.ok) throw new Error("unreachable");
+    const rows = convertToZones(i.utc, "Asia/Dhaka", COMMON_ZONES);
+    const row = (z: string) => rows.find((r) => r.zone === z)!;
+    expect(row("Asia/Dhaka").time).toBe("6:30 PM");
+    expect(row("America/New_York").time).toBe("7:30 AM");
+    expect(row("Europe/London").time).toBe("12:30 PM");
+    expect(row("America/Los_Angeles").time).toBe("4:30 AM");
+    expect(row("Australia/Sydney").time).toBe("11:30 PM");
+    expect(row("Asia/Dhaka").offset).toBe("UTC+06:00");
+  });
+  it("marks when the date changes", () => {
+    const i = zonedInstant("2026-11-09", "02:00", "Asia/Dhaka");
+    if (!i.ok) throw new Error("unreachable");
+    const rows = convertToZones(i.utc, "Asia/Dhaka", COMMON_ZONES);
+    expect(rows.find((r) => r.zone === "America/New_York")?.dayShift).toBe(-1);
+    expect(rows.find((r) => r.zone === "Asia/Dhaka")?.dayShift).toBe(0);
+  });
+  it("handles clock changes: a skipped time moves forward, a repeated time uses the first one", () => {
+    const skipped = zonedInstant("2026-03-08", "02:30", "America/New_York");
+    expect(skipped.ok && skipped.note).toBe("skipped");
+    expect(skipped.ok && skipped.utc.toISOString()).toBe("2026-03-08T07:30:00.000Z");
+    const repeated = zonedInstant("2026-11-01", "01:30", "America/New_York");
+    expect(repeated.ok && repeated.note).toBe("repeated");
+    expect(repeated.ok && repeated.utc.toISOString()).toBe("2026-11-01T05:30:00.000Z");
+    const summer = zonedInstant("2026-07-01", "12:00", "Europe/London");
+    expect(summer.ok && summer.utc.toISOString()).toBe("2026-07-01T11:00:00.000Z");
+  });
+  it("rejects bad input", () => {
+    expect(zonedInstant("", "10:00", "Asia/Dhaka").ok).toBe(false);
+    expect(zonedInstant("2026-02-30", "10:00", "Asia/Dhaka").ok).toBe(false);
+    expect(zonedInstant("2026-11-09", "25:00", "Asia/Dhaka").ok).toBe(false);
+    expect(zonedInstant("2026-11-09", "10:00", "Mars/Base").ok).toBe(false);
+    expect(isValidZone("Asia/Dhaka")).toBe(true);
+    expect(isValidZone("../etc")).toBe(false);
+  });
+});
+
+describe("follower growth calculator", () => {
+  it("works out growth, the pace, and a straight-line projection", () => {
+    expect(followerGrowth({ start: 1000, end: 1140, days: 28, projectDays: 28 })).toEqual({ ok: true, net: 140, percent: 14, perDay: 5, perWeek: 35, projected: 1280, projectDays: 28, direction: "up" });
+  });
+  it("handles loss, no change, and no starting followers", () => {
+    const down = followerGrowth({ start: 200, end: 180, days: 10, projectDays: 100 });
+    expect(down.ok && down.direction).toBe("down");
+    expect(down.ok && down.projected).toBe(0);
+    expect(followerGrowth({ start: 50, end: 50, days: 7, projectDays: 7 })).toMatchObject({ ok: true, direction: "flat", percent: 0 });
+    expect(followerGrowth({ start: 0, end: 10, days: 5, projectDays: 5 })).toMatchObject({ ok: true, percent: null });
+  });
+  it("rejects bad numbers", () => {
+    expect(followerGrowth({ start: -1, end: 5, days: 5, projectDays: 5 }).ok).toBe(false);
+    expect(followerGrowth({ start: 1, end: 5, days: 0, projectDays: 5 }).ok).toBe(false);
+    expect(followerGrowth({ start: 1, end: 5, days: 99999, projectDays: 5 }).ok).toBe(false);
+    expect(followerGrowth({ start: 1, end: Number.NaN, days: 5, projectDays: 5 }).ok).toBe(false);
   });
 });

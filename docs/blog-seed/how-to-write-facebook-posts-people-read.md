@@ -161,6 +161,10 @@ Write the way you speak, then edit. Start by explaining the post to a friend, wr
 
 Yes, it can save time on first drafts, but you should always read and edit the result. See our guide on [using AI to write Facebook posts](/blog/how-to-use-ai-to-write-facebook-posts) for how to do it well.
 
+## Related reading
+
+Planning a prize post? Read our plain-English guide to [Facebook giveaway rules](/blog/facebook-giveaway-rules-for-small-businesses) first.
+
 ## Your next step
 
 Take the last post you published and rewrite it using this guide: a stronger first line, shorter sentences, one real detail, and one clear next step. Compare the two versions side by side. Once you see the difference, make the checklist a habit before every post. If you want help getting the first draft down quickly, LazyAI can write posts from a topic or a website for you to edit and schedule. [Start free](/pricing) when you are ready.

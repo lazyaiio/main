@@ -137,11 +137,45 @@ describe("launch checklist, Meta review and tools wiring", () => {
   it("registers every new tool for search, and lists it on the tools page", () => {
     const seo = read("lib/seo.ts");
     const index = read("app/(marketing)/tools/page.tsx");
-    for (const path of ["/tools/engagement-rate-calculator", "/tools/utm-link-builder", "/tools/hashtag-cleaner"]) {
+    for (const path of ["/tools/engagement-rate-calculator", "/tools/utm-link-builder", "/tools/hashtag-cleaner", "/tools/giveaway-winner-picker", "/tools/time-zone-converter", "/tools/follower-growth-calculator"]) {
       expect(seo, path).toContain(`path: "${path}"`);
       expect(index, path).toContain(path);
       expect(read(`app${"/(marketing)"}${path}/page.tsx`), path).toContain("ToolShell");
     }
+  });
+});
+
+describe("Page Insights wiring", () => {
+  it("keeps the server-side files server-only", () => {
+    for (const path of ["lib/data/insights.ts", "lib/services/insights.ts"]) expect(read(path), path).toContain('import "server-only"');
+  });
+  it("lets only writers refresh, rate-limits refreshes, and respects the cooldown", () => {
+    const text = read("lib/services/insights.ts");
+    expect(text).toContain("canWrite(ctx.role)");
+    expect(text).toContain('enforceRate(db, "insights_refresh"');
+    expect(text).toContain("canRefresh(");
+    expect(text.indexOf("insightsAccess(")).toBeLessThan(text.indexOf("getSocialProvider()"));
+  });
+  it("never requires read_insights to connect, so older connections keep working", () => {
+    expect(read("lib/social/meta-provider.ts")).toContain("requiredScopes: META_REQUIRED_SCOPES");
+    expect(read("lib/social/meta-provider.ts")).not.toMatch(/META_REQUIRED_SCOPES = \[[^\]]*read_insights/);
+  });
+  it("deletes saved Insights when a Page is disconnected or Facebook data is deleted", () => {
+    const text = read("lib/data/social.ts");
+    expect((text.match(/page_insight_snapshots/g) ?? []).length).toBeGreaterThanOrEqual(2);
+  });
+  it("shows Insights in the app menu and checks the signed-in person on the page and action", () => {
+    expect(read("components/app/app-nav.tsx")).toContain('"/app/insights"');
+    expect(read("app/app/insights/page.tsx")).toContain("requireAppContext()");
+    expect(read("app/app/insights/actions.ts")).toContain("requireAppContext()");
+  });
+  it("tells people in the Privacy Policy about Insights", () => {
+    const text = read("content/default-pages.ts");
+    expect(text).toContain("read_insights");
+    expect(text).toContain("saved Insights numbers");
+  });
+  it("keeps secrets out of what is saved", () => {
+    expect(read("lib/services/insights.ts")).not.toMatch(/token:\s*token|accessToken:\s*cipher/);
   });
 });
 

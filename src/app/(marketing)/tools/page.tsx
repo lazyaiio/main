@@ -17,6 +17,9 @@ const TOOLS = [
   { href: "/tools/engagement-rate-calculator", name: "Engagement Rate Calculator", text: "Enter your followers and the reactions, comments, and shares from your recent posts to see your engagement rate by followers and by reach." },
   { href: "/tools/utm-link-builder", name: "Campaign Link (UTM) Builder", text: "Tag a web address so your analytics shows which post or campaign sent each visitor. Values are cleaned so reports stay tidy." },
   { href: "/tools/hashtag-cleaner", name: "Hashtag Cleaner", text: "Paste a messy list and get clean, unique hashtags with no spaces or odd characters, ready to copy into your post." },
+  { href: "/tools/giveaway-winner-picker", name: "Giveaway Winner Picker", text: "Paste your entries and pick winners and backups at random. Your list stays in your browser." },
+  { href: "/tools/time-zone-converter", name: "Post Time Zone Converter", text: "Choose a posting time and see it in other time zones, with daylight saving handled and date changes marked." },
+  { href: "/tools/follower-growth-calculator", name: "Follower Growth Calculator", text: "Enter two follower counts and the days between them to see your growth, rate, and average gain per day and week." },
 ];
 
 export default function ToolsPage() {
@@ -27,7 +30,7 @@ export default function ToolsPage() {
         <div className="mx-auto w-full max-w-5xl px-4 pb-10 pt-14 sm:px-6 sm:pt-20">
           <p className="text-sm font-semibold uppercase tracking-wide text-brand-700">Free tools</p>
           <h1 className="mt-3 max-w-3xl font-display text-4xl font-extrabold leading-tight tracking-tight text-ink sm:text-5xl">Free tools for Facebook Page owners</h1>
-          <p className="mt-4 max-w-2xl text-lg leading-relaxed text-ink-600">Six small tools that make planning, writing, and measuring your posts easier. They are free, they need no sign-up, and they run in your browser, so your text is not stored or sent anywhere.</p>
+          <p className="mt-4 max-w-2xl text-lg leading-relaxed text-ink-600">Nine small tools that make planning, writing, scheduling, and measuring your posts easier. They are free, they need no sign-up, and they run in your browser, so your text is not stored or sent anywhere.</p>
         </div>
       </section>
       <section className="mx-auto grid w-full max-w-5xl gap-6 px-4 pb-20 sm:px-6 md:grid-cols-3">

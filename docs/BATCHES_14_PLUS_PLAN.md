@@ -75,5 +75,6 @@ Done: 14 (writing engine), 15 (plans, pricing, bKash, refunds), 16 (editable pag
 - **Batch 22 (written):** admin launch checklist, Meta review readiness page, three more free tools.
 - **Batch 22.1 (written):** Facebook Page Insights (waits for Meta approval of read_insights).
 - **Batch 23 (written):** one comparison article for the blog, with no competitor numbers because they could not be checked on official pages.
-- **Next:** more articles on topics where facts can be checked, more tools, launch checklist work.
+- **Batch 23.1 (written):** three more tools and three more articles (facts checked where possible).
+- **Next (owner to choose):** team invitations, a pre-launch audit, or more content.
 - Owner-only work: a lawyer's review of the legal pages, Meta business verification and App Review submission.

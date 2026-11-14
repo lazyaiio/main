@@ -4,7 +4,17 @@ import { parseMarkdown } from "@/lib/markdown";
 import { SEED_ARTICLES } from "./blog-seed";
 
 const slugs = SEED_ARTICLES.map((a) => a.slug);
-const TOOLS = ["/tools/post-idea-generator", "/tools/content-calendar-generator", "/tools/post-checker"];
+const TOOLS = [
+  "/tools/post-idea-generator",
+  "/tools/content-calendar-generator",
+  "/tools/post-checker",
+  "/tools/engagement-rate-calculator",
+  "/tools/utm-link-builder",
+  "/tools/hashtag-cleaner",
+  "/tools/giveaway-winner-picker",
+  "/tools/time-zone-converter",
+  "/tools/follower-growth-calculator",
+];
 
 describe("starter articles", () => {
   it("are valid posts with unique addresses and known categories", () => {

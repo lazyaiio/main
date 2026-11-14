@@ -33,6 +33,55 @@ Plan: [`LAZYAI_MASTER_PLAN.md`](./LAZYAI_MASTER_PLAN.md) (see section 23 for own
 | 22 | Admin launch checklist, Meta review readiness page, three new free tools | **Code written and checked here, owner verification pending** (no database change) |
 | 22.1 | Facebook Page Insights page (read_insights), Meta review pack and Privacy Policy updated | **Code written and checked here, owner verification pending** (migration 0025; Meta approval of read_insights needed before it can be switched on) |
 | 23 | Blog comparison article: Meta Business Suite vs a scheduling tool | **Code written and checked here, owner verification pending** (no database change) |
+| 23.1 | Three more free tools and three more blog articles | **Code written and checked here, owner verification pending** (no database change) |
+
+## Batch 23.1: three more free tools, three more blog articles
+
+**Status:** CODE WRITTEN AND CHECKED, owner verification pending. No migration. The articles arrive as drafts.
+
+### Tools (all pure, tested, run in the browser, store nothing)
+- `/tools/giveaway-winner-picker`: one entry per line, optional "count each name once", 1 to 10 winners plus backups, unbiased secure random shuffle, a person can win only once, caps (5,000 entries, 20 winners).
+- `/tools/time-zone-converter`: a posting time shown in other zones, with date-change markers and daylight-saving handling (a skipped time moves forward, a repeated time uses the first one). Tested with Dhaka, New York, London, Los Angeles, Sydney and the March and November clock changes.
+- `/tools/follower-growth-calculator`: net growth, percent, per day and per week, and a straight-line look-ahead labeled as arithmetic, not a forecast.
+- All three are in the tools index, the sitemap and Admin -> SEO (nine tools in total).
+
+### Articles (seed articles, drafts)
+- `facebook-giveaway-rules-for-small-businesses` (writing-posts): **facts check:** the official Meta policy page (Pages, Groups and Events Policies, section 7, Promotions) could only be read through a search excerpt (the site blocks automated fetching). The excerpt confirms: you must ensure the promotion follows the law (examples: official rules, offer terms and eligibility, registration where required), entrants must release Meta, entrants must acknowledge that Meta does not sponsor, endorse, run or have anything to do with it, and Meta will not help administer it. Two more limits (no entries for likes/follows/shares; run it on a Page, not a personal profile) came only from recent third-party guides, so the article says "reported" and tells readers to check. Not legal advice; the article says so and advises a local lawyer.
+- `facebook-page-metrics-explained` (content-planning): definitions follow Meta's own Page Insights reference (views, people reached as an estimate, engagements, Page visits, new followers, contact and button clicks). No benchmarks or averages. It does not mention LazyAI's own Insights page, because that is not live yet.
+- `track-facebook-post-clicks-with-utm-links` (scheduling-and-ai): the five UTM tags, naming rules, a worked example, how to read results in website analytics (named generically, with Google Analytics as one example). No claims about Facebook's treatment of tagged links.
+- The three pillar articles link to them ("Related reading" sections) in the seed.
+- Admin -> Blog -> "Add starter articles" now adds up to 11 articles; articles that are already in your blog are skipped.
+
+### Files
+New: `src/lib/tools/{giveaway,timezones,growth}.ts`, `src/components/tools/{giveaway,timezone,growth}-tool.tsx`, three pages under `src/app/(marketing)/tools/`, three article sources in `docs/blog-seed/`.
+Changed: `src/lib/seo.ts`, `src/app/(marketing)/tools/page.tsx`, `src/lib/tools/tools.test.ts`, `src/lib/user-management-wiring.test.ts`, `src/content/blog-seed.ts`, `src/content/blog-seed.test.ts`, the three pillar sources in `docs/blog-seed/`, `docs/BLOG_SETUP.md`, docs.
+Deleted: none.
+
+### Checks and results (real runs in this sandbox)
+| Check | Result |
+|---|---|
+| `tsc --noEmit` | PASS |
+| `next lint` | PASS |
+| `vitest run` | PASS: 74 files, 685 tests |
+| `next build` (scratch copy, fonts stubbed) | PASS; the three new tool pages were built |
+| Tools and articles looked at in a browser | **NOT DONE** |
+
+### Owner steps
+1. Upload. Admin -> Blog -> "Add starter articles" (adds the 3 new drafts). Open each, find the photos, read it, change anything that is not true for your business, publish.
+2. The giveaway tool links to `/blog/facebook-giveaway-rules-for-small-businesses`: that link works only after you publish that article.
+3. **The three pillar articles already in your blog were imported earlier and do NOT get the new links automatically.** Open each in Admin -> Blog and add, before its "Your next step" heading:
+   - "How to plan a month of Facebook content": `## Related reading` then `Once your plan is running, learn to read the results with our guide to [Facebook Page metrics](/blog/facebook-page-metrics-explained).`
+   - "How to write Facebook posts people read": `## Related reading` then `Planning a prize post? Read our plain-English guide to [Facebook giveaway rules](/blog/facebook-giveaway-rules-for-small-businesses) first.`
+   - "How to schedule Facebook Page posts": `## Related reading` then `Want to know which scheduled post sent visitors to your website? See how to [track Facebook post clicks with UTM links](/blog/track-facebook-post-clicks-with-utm-links).` (and the Batch 23 sentence about Meta Business Suite, if you have not added it yet).
+
+### Known limits
+- The giveaway article is general guidance, not legal advice; prize rules differ by country (nothing about Bangladesh was checked).
+- Time zone names come from the browser's own data; very old browsers may not know every zone.
+
+### Exact next action
+Owner: the steps above. Then decide the next batch.
+
+---
 
 ## Batch 23: comparison article for the blog
 

@@ -1,6 +1,6 @@
-Batch 23 (blog comparison article) upload order
+Batch 23.1 (three more free tools, three more blog articles) upload order
 1. There is NO database change in this batch. Do not run any SQL.
 2. Upload every file in this zip to GitHub, same folders (nothing is deleted).
 3. Wait for GitHub Actions and Vercel to go green.
-4. Admin -> Blog -> "Add starter articles": the new article arrives as a draft. Find its photos, read it, publish.
-5. Add the link to the existing "How to schedule Facebook Page posts" article by hand (see the Batch 23 section of docs/BUILD_PROGRESS.md).
+4. Admin -> Blog -> "Add starter articles": the three new articles arrive as drafts. Find photos, read, publish.
+5. Add the "Related reading" links to the three pillar articles by hand (see the Batch 23.1 section of docs/BUILD_PROGRESS.md).
