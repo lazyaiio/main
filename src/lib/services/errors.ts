@@ -10,6 +10,7 @@ export type ServiceErrorKind =
   | "library_full"
   | "stock_limited"
   | "stock_failed"
+  | "insights_unavailable"
   | "social_not_configured"
   | "social_denied"
   | "social_attempt_expired"

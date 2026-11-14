@@ -1,9 +1,12 @@
 import { createHmac } from "node:crypto";
 import { z } from "zod";
+import { INSIGHTS_SCOPE, parseDailyPoints, parseLifetimeValues } from "../insights";
 import {
   SocialError,
   describeSocialError,
+  type MetricResult,
   type PageGrant,
+  type PostMetricsResult,
   type PublishInput,
   type PublishResult,
   type SocialErrorKind,
@@ -33,6 +36,8 @@ export type MetaConfig = {
   apiVersion: string;
   /** Facebook Login for Business configuration id. When empty, classic permissions (scope) are requested. */
   loginConfigId?: string | null;
+  /** Also ask for read_insights (Page Insights). Switch on only after Meta has approved that permission. */
+  requestInsights?: boolean;
 };
 
 /** The proof Meta recommends for server calls: HMAC-SHA256 of the token with the app secret. */
@@ -99,9 +104,19 @@ const accountsAnswer = z.object({
   paging: z.object({ next: z.string().optional() }).optional(),
 });
 const pageAnswer = z.object({ id: z.string(), name: z.string().optional() });
+const summaryAnswer = z.object({ followers_count: z.number().optional(), fan_count: z.number().optional() });
 const postAnswer = z.object({ id: z.string().optional(), post_id: z.string().optional() });
 
 const secondsToDate = (seconds: number | undefined): Date | null => (seconds && seconds > 0 ? new Date(seconds * 1000) : null);
+
+/** Maps a failed Graph call for ONE insights metric to a plain problem. A bad token is rethrown by the caller's next call, not hidden here. */
+function metricProblemFor(error: unknown): "unavailable" | "no_data" | "permission" | "rate_limited" | "temporary" {
+  if (!(error instanceof SocialError)) return "temporary";
+  if (error.kind === "invalid_request") return "unavailable";
+  if (error.kind === "permission_missing" || error.kind === "token_expired" || error.kind === "page_access_lost") return "permission";
+  if (error.kind === "rate_limited") return "rate_limited";
+  return "temporary";
+}
 
 export function createMetaProvider(config: MetaConfig, fetchFn: typeof fetch = fetch): SocialPublishingProvider {
   const base = `https://${GRAPH_HOST}/${config.apiVersion}`;
@@ -154,7 +169,7 @@ export function createMetaProvider(config: MetaConfig, fetchFn: typeof fetch = f
         params.set("config_id", config.loginConfigId);
         params.set("override_default_response_type", "true");
       } else {
-        params.set("scope", META_REQUIRED_SCOPES.join(","));
+        params.set("scope", [...META_REQUIRED_SCOPES, ...(config.requestInsights ? [INSIGHTS_SCOPE] : [])].join(","));
       }
       return `https://www.facebook.com/${config.apiVersion}/dialog/oauth?${params.toString()}`;
     },
@@ -227,6 +242,52 @@ export function createMetaProvider(config: MetaConfig, fetchFn: typeof fetch = f
       const parsed = pageAnswer.safeParse(await get(`/${page.id}`, page.accessToken, { fields: "id,name" }));
       if (!parsed.success) throw new SocialError("unknown", describeSocialError("unknown"));
       return { name: parsed.data.name ?? "Page" };
+    },
+
+    async getPageSummary(page) {
+      if (!/^\d{1,25}$/.test(page.id)) throw new SocialError("invalid_request", describeSocialError("invalid_request"));
+      try {
+        const parsed = summaryAnswer.safeParse(await get(`/${page.id}`, page.accessToken, { fields: "followers_count,fan_count" }));
+        return { followers: parsed.success ? (parsed.data.followers_count ?? null) : null, likes: parsed.success ? (parsed.data.fan_count ?? null) : null };
+      } catch (error) {
+        if (error instanceof SocialError && error.kind === "token_expired") throw error;
+        return { followers: null, likes: null };
+      }
+    },
+
+    async getPageMetric(page, metric, since, until): Promise<MetricResult> {
+      if (!/^\d{1,25}$/.test(page.id) || !/^[a-z0-9_]{3,80}$/.test(metric)) throw new SocialError("invalid_request", describeSocialError("invalid_request"));
+      try {
+        const body = await get(`/${page.id}/insights`, page.accessToken, { metric, period: "day", since: String(Math.floor(since.getTime() / 1000)), until: String(Math.floor(until.getTime() / 1000)) });
+        const points = parseDailyPoints(body);
+        if (points === null) return { points: [], problem: "unavailable" };
+        return points.length === 0 ? { points: [], problem: "no_data" } : { points, problem: null };
+      } catch (error) {
+        return { points: [], problem: metricProblemFor(error) };
+      }
+    },
+
+    async getPostMetrics(page, postId, metrics): Promise<PostMetricsResult> {
+      if (!/^\d{1,25}(_\d{1,25})?$/.test(postId) || metrics.some((m) => !/^[a-z0-9_]{3,80}$/.test(m))) throw new SocialError("invalid_request", describeSocialError("invalid_request"));
+      const fetchValues = async (list: string[]) => parseLifetimeValues(await get(`/${postId}/insights`, page.accessToken, { metric: list.join(",") }));
+      try {
+        const values = await fetchValues(metrics);
+        return Object.keys(values).length > 0 ? { values, problem: null } : { values, problem: "no_data" };
+      } catch (error) {
+        const problem = metricProblemFor(error);
+        if (problem !== "unavailable") return { values: {}, problem };
+        // One retired metric fails the whole request, so ask for each metric on its own.
+        const values: Record<string, number> = {};
+        for (const m of metrics) {
+          try {
+            Object.assign(values, await fetchValues([m]));
+          } catch (inner) {
+            const p = metricProblemFor(inner);
+            if (p === "rate_limited" || p === "permission") return { values, problem: p };
+          }
+        }
+        return Object.keys(values).length > 0 ? { values, problem: null } : { values, problem: "unavailable" };
+      }
     },
 
     async publish(page, input: PublishInput): Promise<PublishResult> {

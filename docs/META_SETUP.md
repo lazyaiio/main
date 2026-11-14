@@ -20,7 +20,7 @@ Meta changes its dashboard often. If a button has a slightly different name, loo
 
 ## Part 2: Permissions for the use case
 1. In the app dashboard open **Use cases -> Manage everything on your Page -> Customize**.
-2. Under **Permissions and features**, make sure these are added: `pages_show_list`, `pages_read_engagement`, `pages_manage_posts` (also `business_management` and `public_profile`, which are included by default).
+2. Under **Permissions and features**, make sure these are added: `pages_show_list`, `pages_read_engagement`, `pages_manage_posts` (and `read_insights` if you want the Insights page, see `docs/INSIGHTS.md`) (also `business_management` and `public_profile`, which are included by default).
 3. In Development mode these work for you without review (Meta calls this Standard Access).
 
 ## Part 3: Login settings and redirect address

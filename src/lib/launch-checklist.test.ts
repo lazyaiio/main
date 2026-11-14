@@ -5,7 +5,7 @@ const ready: LaunchFacts = {
   environment: "production", appUrlIsHttps: true, deployProblems: 0, deployWarnings: 0, missingMigrations: [],
   contactEmailSet: true, operatorNameSet: true, operatorCountrySet: true, emailSendingReady: true, emailWebhookReady: true,
   paidPlansWithPrice: 2, bkashReady: true, bkashMode: "live", socialMode: "meta", socialReady: true, liveFlagOn: true,
-  publishingBlockedByEnv: false, cronSecretSet: true, heartbeatAgeMinutes: 1, publishedBlogPosts: 9,
+  publishingBlockedByEnv: false, cronSecretSet: true, heartbeatAgeMinutes: 1, publishedBlogPosts: 9, insightsOn: true,
 };
 const allDone = Object.fromEntries(MANUAL_IDS.map((id) => [id, "2026-11-08T10:00:00.000Z"]));
 const state = (facts: LaunchFacts, id: string, done = {}) => evaluate(facts, done).find((i) => i.id === id)?.state;

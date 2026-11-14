@@ -21,6 +21,7 @@ export type LaunchFacts = {
   cronSecretSet: boolean;
   heartbeatAgeMinutes: number | null;
   publishedBlogPosts: number;
+  insightsOn: boolean;
 };
 
 export type ItemState = "ok" | "todo" | "warn";
@@ -56,6 +57,7 @@ export const LAUNCH_ITEMS: LaunchItem[] = [
   { id: "pub-facebook", group: "Publishing", title: "Facebook connection is set up for real (not test mode)", kind: "auto", required: true, where: "Admin -> Publishing" },
   { id: "pub-live-flag", group: "Publishing", title: "Live publishing is switched on", kind: "auto", required: true, where: "Admin -> Publishing" },
   { id: "pub-scheduler", group: "Publishing", title: "The scheduler is running (a check-in in the last 10 minutes)", kind: "auto", required: true, where: "docs/SCHEDULER_SETUP.md" },
+  { id: "pub-insights", group: "Publishing", title: "Page Insights is switched on (only after Meta approves read_insights)", kind: "auto", required: false, where: "docs/INSIGHTS.md" },
   { id: "pub-test-post", group: "Publishing", title: "Published and then deleted one test post on a real Facebook Page", kind: "manual", required: true, where: "docs/RELEASE_CHECKLIST.md, section 3" },
   // Content and search
   { id: "seo-blog", group: "Content and search", title: "At least 7 blog articles are published", kind: "auto", required: false, where: "Admin -> Blog" },
@@ -65,6 +67,7 @@ export const LAUNCH_ITEMS: LaunchItem[] = [
   { id: "legal-lifetime", group: "Legal and approvals", title: "The Terms say what \"lifetime\" means for the plans you sell (or you sell none)", kind: "manual", required: true, where: "docs/LIFETIME_DEAL.md" },
   { id: "meta-business", group: "Legal and approvals", title: "Meta business verification approved", kind: "manual", required: true, where: "Admin -> Meta review" },
   { id: "meta-review", group: "Legal and approvals", title: "Meta App Review approved for the three permissions", kind: "manual", required: true, where: "Admin -> Meta review" },
+  { id: "meta-insights", group: "Legal and approvals", title: "Meta approved read_insights (or Insights stays off until it does), and the Privacy Policy mentions Insights", kind: "manual", required: false, where: "docs/INSIGHTS.md" },
   { id: "meta-live", group: "Legal and approvals", title: "Meta app switched from Development to Live", kind: "manual", required: true, where: "docs/META_APP_REVIEW.md, section 5" },
   // Running the business
   { id: "ops-paid-tiers", group: "Running the business", title: "Hosting and database plans upgraded where the free tier is not enough", kind: "manual", required: false, where: "docs/GO_LIVE_UPGRADE_CHECKLIST.md" },
@@ -113,6 +116,8 @@ function auto(id: string, f: LaunchFacts): { state: ItemState; detail: string } 
       if (!f.cronSecretSet) return { state: "todo", detail: "CRON_SECRET is missing." };
       if (f.heartbeatAgeMinutes === null) return { state: "todo", detail: "The scheduler has never checked in." };
       return f.heartbeatAgeMinutes <= 10 ? { state: "ok", detail: `Last check-in ${Math.max(0, Math.round(f.heartbeatAgeMinutes))} minute(s) ago.` } : { state: "todo", detail: `Last check-in ${Math.round(f.heartbeatAgeMinutes)} minutes ago.` };
+    case "pub-insights":
+      return f.insightsOn ? { state: "ok", detail: "On." } : { state: "warn", detail: "Off. People see \"coming soon\" on the Insights page." };
     case "seo-blog":
       return f.publishedBlogPosts >= 7 ? { state: "ok", detail: `${f.publishedBlogPosts} published.` } : { state: "warn", detail: `${f.publishedBlogPosts} published so far.` };
     default:

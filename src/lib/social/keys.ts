@@ -61,7 +61,17 @@ export function getSocialProvider(): SocialPublishingProvider | null {
     appSecret: text(process.env.META_APP_SECRET),
     apiVersion: graphVersion(),
     loginConfigId: text(process.env.META_LOGIN_CONFIG_ID) || null,
+    requestInsights: isInsightsRequested(),
   });
+}
+
+/**
+ * Whether Page Insights is switched on (META_REQUEST_INSIGHTS=1). Turn it on only after Meta has approved the
+ * read_insights permission (or while testing with people who have a role on the Meta app): until then ordinary
+ * people cannot grant it. In the test mode (pretend Facebook) it is always on.
+ */
+export function isInsightsRequested(): boolean {
+  return process.env.META_REQUEST_INSIGHTS?.trim() === "1" || getSocialMode() === "mock";
 }
 
 /** What is still missing, by variable name only (never values), so the page can say what to add. */

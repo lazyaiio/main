@@ -4,7 +4,7 @@ import { isLiveFlagOn } from "@/lib/data/platform";
 import { effectiveAppUrl } from "@/lib/deployment-checks";
 import { contactEmail } from "@/lib/legal";
 import { PUBLIC_PAGE_PROBES, judgePage, metaChecks, type MetaCheck, type MetaFacts, type ProbeOutcome } from "@/lib/meta-review";
-import { getCronSecret, getMetaAppSecret, getRedirectUri, getSocialMode, getTokenEncryptionKey } from "@/lib/social/keys";
+import { getCronSecret, getMetaAppSecret, getRedirectUri, getSocialMode, getTokenEncryptionKey, isInsightsRequested } from "@/lib/social/keys";
 
 export async function collectMetaFacts(): Promise<{ appUrl: string; checks: MetaCheck[] }> {
   const env = process.env as Record<string, string | undefined>;
@@ -22,6 +22,7 @@ export async function collectMetaFacts(): Promise<{ appUrl: string; checks: Meta
     liveFlagOn: await isLiveFlagOn(db).catch(() => false),
     cronReady: getCronSecret() !== null,
     isHttps: appUrl.startsWith("https://"),
+    insightsOn: isInsightsRequested(),
   };
   return { appUrl, checks: metaChecks(facts) };
 }

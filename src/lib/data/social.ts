@@ -207,6 +207,8 @@ export async function getTokenCiphertext(ws: string, pageId: string): Promise<st
 
 export async function deleteToken(ws: string, pageId: string): Promise<void> {
   unwrap(await admin().from("social_page_tokens").delete().eq("workspace_id", ws).eq("social_page_id", pageId), "remove the Page token");
+  // The saved Insights numbers for this Page go with its connection. (Ignored if migration 0025 has not been run.)
+  await admin().from("page_insight_snapshots").delete().eq("workspace_id", ws).eq("social_page_id", pageId);
 }
 
 export async function setPageState(
@@ -273,6 +275,7 @@ export async function revokeFacebookUser(providerUserId: string): Promise<{ acco
 
   if (pageIds.length > 0) {
     unwrap(await db.from("social_page_tokens").delete().in("social_page_id", pageIds), "delete the tokens");
+    unwrap(await db.from("page_insight_snapshots").delete().in("social_page_id", pageIds), "delete the saved Insights");
     unwrap(
       await db
         .from("scheduled_posts")

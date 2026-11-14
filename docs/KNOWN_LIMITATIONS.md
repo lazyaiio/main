@@ -24,6 +24,7 @@ Plain list of what LazyAI does not do, or does only partly. Share the customer-r
 
 ## Platform
 - **Support is a simple inbox:** one message per form submission (no threads, no attachments, no automatic acknowledgement). Replies are sent by an admin pressing a button.
+- **Insights:** needs Meta approval of `read_insights`, a Page with 100+ likes and the Analyze role. Facebook retires metrics from time to time; a retired metric shows as unavailable. Shown numbers are saved copies (refreshed on request, 30-minute cooldown). Not yet in the account data export. Never run against the real Facebook API in development.
 - **Launch checklist:** automatic items only see what the site can read. Hosting and database billing, DNS and spam-folder results are manual items. "Ready" never means "nothing can go wrong".
 - **Meta review page:** it checks the site and drafts the answers; it does not submit anything to Meta, create the reviewer account, or record the video.
 - **Account suspension** stops sign-in and every change, but does not cancel posts that were already scheduled. Plan changes made by an admin, and suspensions, are logged on the server only and send no email.

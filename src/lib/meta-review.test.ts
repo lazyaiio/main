@@ -1,13 +1,14 @@
 import { describe, expect, it } from "vitest";
+import { INSIGHTS_SCOPE } from "./insights";
 import { META_PERMISSIONS, PERMISSION_ANSWERS, PUBLIC_PAGE_PROBES, REJECTION_RISKS, SCREENCAST_STEPS, judgePage, metaChecks, reviewerInstructions, type MetaFacts } from "./meta-review";
 import { META_REQUIRED_SCOPES } from "./social/meta-provider";
 
-const good: MetaFacts = { appIdSet: true, appSecretSet: true, tokenKeySet: true, redirectUriMatches: true, contactEmailSet: true, operatorNameSet: true, operatorCountrySet: true, mock: false, liveFlagOn: true, cronReady: true, isHttps: true };
+const good: MetaFacts = { appIdSet: true, appSecretSet: true, tokenKeySet: true, redirectUriMatches: true, contactEmailSet: true, operatorNameSet: true, operatorCountrySet: true, mock: false, liveFlagOn: true, cronReady: true, isHttps: true, insightsOn: true };
 const long = "x".repeat(600);
 
 describe("permissions", () => {
-  it("match the scopes the app really requests", () => {
-    expect([...META_PERMISSIONS].sort()).toEqual([...META_REQUIRED_SCOPES].sort());
+  it("match the scopes the app really requests (three required, read_insights optional)", () => {
+    expect([...META_PERMISSIONS].sort()).toEqual([...META_REQUIRED_SCOPES, INSIGHTS_SCOPE].sort());
     for (const p of META_PERMISSIONS) expect(PERMISSION_ANSWERS[p].length).toBeGreaterThan(80);
   });
   it("has a screencast that mentions every permission and is in order", () => {
@@ -52,5 +53,6 @@ describe("metaChecks", () => {
     expect(bad({ contactEmailSet: false }, "email")).toBe("todo");
     expect(bad({ cronReady: false }, "cron")).toBe("todo");
     expect(bad({ liveFlagOn: false }, "live")).toBe("warn");
+    expect(bad({ insightsOn: false }, "insights")).toBe("warn");
   });
 });

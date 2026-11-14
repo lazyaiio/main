@@ -240,3 +240,81 @@ describe("mock provider", () => {
     expect((await mock.publish({ id: pages[0]!.id, accessToken: pages[0]!.accessToken }, { message: "x" })).providerPostId).toContain(pages[0]!.id);
   });
 });
+
+describe("Page Insights", () => {
+  const page = { id: "1234567890", accessToken: "page-token-abcdefghij" };
+  const since = new Date("2026-10-11T00:00:00Z");
+  const until = new Date("2026-11-08T00:00:00Z");
+
+  it("asks for read_insights only when switched on", () => {
+    const on = new URL(createMetaProvider({ ...CONFIG, requestInsights: true }).buildAuthorizationUrl({ state: "S", redirectUri: "https://app.example/api/meta/callback" }));
+    expect(on.searchParams.get("scope")).toBe([...META_REQUIRED_SCOPES, "read_insights"].join(","));
+    const off = new URL(createMetaProvider(CONFIG).buildAuthorizationUrl({ state: "S", redirectUri: "https://app.example/api/meta/callback" }));
+    expect(off.searchParams.get("scope")).not.toContain("read_insights");
+  });
+
+  it("does not require read_insights to connect", () => {
+    expect(createMetaProvider({ ...CONFIG, requestInsights: true }).requiredScopes).toEqual(META_REQUIRED_SCOPES);
+  });
+
+  it("requests one metric per call with day period, a time window and the app secret proof", async () => {
+    const calls: Call[] = [];
+    const provider = createMetaProvider(CONFIG, fakeFetch(() => json({ data: [{ name: "page_media_view", values: [{ value: 7, end_time: "2026-11-02T08:00:00+0000" }] }] }), calls));
+    const result = await provider.getPageMetric(page, "page_media_view", since, until);
+    expect(result).toEqual({ points: [{ date: "2026-11-01", value: 7 }], problem: null });
+    const url = new URL(calls[0]!.url);
+    expect(url.pathname).toBe("/v25.0/1234567890/insights");
+    expect(url.searchParams.get("metric")).toBe("page_media_view");
+    expect(url.searchParams.get("period")).toBe("day");
+    expect(url.searchParams.get("since")).toBe(String(since.getTime() / 1000));
+    expect(url.searchParams.get("until")).toBe(String(until.getTime() / 1000));
+    expect(url.searchParams.get("appsecret_proof")).toBe(appSecretProof(page.accessToken, CONFIG.appSecret));
+  });
+
+  it("turns Facebook's answers into plain problems instead of failing", async () => {
+    const answer = (body: unknown, status: number) => createMetaProvider(CONFIG, fakeFetch(() => json(body, status)));
+    expect((await answer({ data: [] }, 200).getPageMetric(page, "page_media_view", since, until)).problem).toBe("no_data");
+    expect((await answer({ error: { code: 100, message: "(#100) The value must be a valid insights metric" } }, 400).getPageMetric(page, "page_old_metric", since, until)).problem).toBe("unavailable");
+    expect((await answer({ error: { code: 200, message: "denied" } }, 403).getPageMetric(page, "page_media_view", since, until)).problem).toBe("permission");
+    expect((await answer({ error: { code: 80001, message: "too many" } }, 429).getPageMetric(page, "page_media_view", since, until)).problem).toBe("rate_limited");
+    expect((await answer({ error: { code: 2, message: "oops" } }, 500).getPageMetric(page, "page_media_view", since, until)).problem).toBe("temporary");
+    expect((await answer({ hello: "world" }, 200).getPageMetric(page, "page_media_view", since, until)).problem).toBe("unavailable");
+  });
+
+  it("refuses odd Page ids and metric names before calling Facebook", async () => {
+    const calls: Call[] = [];
+    const provider = createMetaProvider(CONFIG, fakeFetch(() => json({}), calls));
+    await expect(provider.getPageMetric({ id: "12/../3", accessToken: "x".repeat(12) }, "page_media_view", since, until)).rejects.toBeInstanceOf(SocialError);
+    await expect(provider.getPageMetric(page, "a&access_token=evil", since, until)).rejects.toBeInstanceOf(SocialError);
+    await expect(provider.getPostMetrics(page, "not an id", ["post_clicks"])).rejects.toBeInstanceOf(SocialError);
+    expect(calls).toHaveLength(0);
+  });
+
+  it("reads post numbers in one call, and falls back to one metric at a time when Facebook rejects one", async () => {
+    const calls: Call[] = [];
+    const provider = createMetaProvider(CONFIG, fakeFetch((call) => {
+      const metric = new URL(call.url).searchParams.get("metric") ?? "";
+      if (metric.includes(",")) return json({ error: { code: 100, message: "(#100) The value must be a valid insights metric" } }, 400);
+      if (metric === "post_retired") return json({ error: { code: 100, message: "(#100) The value must be a valid insights metric" } }, 400);
+      return json({ data: [{ name: metric, values: [{ value: metric === "post_clicks" ? 4 : 9 }] }] });
+    }, calls));
+    const result = await provider.getPostMetrics(page, "1234567890_987654321", ["post_media_view", "post_retired", "post_clicks"]);
+    expect(result).toEqual({ values: { post_media_view: 9, post_clicks: 4 }, problem: null });
+    expect(new URL(calls[0]!.url).pathname).toBe("/v25.0/1234567890_987654321/insights");
+  });
+
+  it("reads follower and like counts, and gives nulls instead of failing", async () => {
+    expect(await createMetaProvider(CONFIG, fakeFetch(() => json({ id: "1", followers_count: 120, fan_count: 118 }))).getPageSummary(page)).toEqual({ followers: 120, likes: 118 });
+    expect(await createMetaProvider(CONFIG, fakeFetch(() => json({ error: { code: 2, message: "x" } }, 500))).getPageSummary(page)).toEqual({ followers: null, likes: null });
+    await expect(createMetaProvider(CONFIG, fakeFetch(() => json({ error: { code: 190, message: "expired" } }, 401))).getPageSummary(page)).rejects.toMatchObject({ kind: "token_expired" });
+  });
+
+  it("never puts the token in an error message", async () => {
+    const provider = createMetaProvider(CONFIG, fakeFetch(() => json({ error: { code: 190, message: `Invalid token ${page.accessToken}` } }, 401)));
+    try {
+      await provider.getPageSummary(page);
+    } catch (error) {
+      expect(String((error as Error).message)).not.toContain(page.accessToken);
+    }
+  });
+});

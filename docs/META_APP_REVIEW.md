@@ -25,8 +25,9 @@ Meta Business Settings -> Security Center -> **Start verification**. You will be
 For each permission Meta asks for a description and a screencast. Draft answers (edit to match what you really do):
 
 - **pages_show_list:** "After the user signs in with Facebook, LazyAI lists the Pages the user manages so they can choose which Pages to connect. We show only the Page names."
-- **pages_read_engagement:** "LazyAI reads basic information about the Pages the user manages (name, category, and the user's role) and confirms the connection still works. We do not display or store engagement analytics."
+- **pages_read_engagement:** "LazyAI reads basic details about each Page the user chose to connect (name, category, follower and like counts) and confirms the connection still works. Facebook also requires this permission for Page Insights, which LazyAI shows only to people in the workspace that connected the Page." (The copy-and-paste version is on Admin -> Meta review.)
 - **pages_manage_posts:** "LazyAI publishes posts to the Page that the user wrote and approved in LazyAI, at the date and time the user scheduled. Nothing is published without the user's approval, and the user can cancel before publishing."
+- **read_insights (optional; request it only if you want the Insights page):** see `docs/INSIGHTS.md` for the draft answer, what to show in the screencast, and the test Page needs (at least 100 likes).
 - **business_management (only if Meta lists it as required):** "Needed so users who manage their Pages through a business portfolio can see and connect those Pages."
 
 ## 4. What reviewers need

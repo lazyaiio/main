@@ -1,6 +1,7 @@
-Batch 23.1 (three more free tools, three more blog articles) upload order
-1. There is NO database change in this batch. Do not run any SQL.
-2. Upload every file in this zip to GitHub, same folders (nothing is deleted).
+Batch 22.1 catch-up (Facebook Page Insights) - upload order
+Why this zip exists: Batch 23.1 was uploaded but Batch 22.1 was not, so the tests that check the Insights files failed in GitHub Actions.
+1. Supabase SQL Editor: run supabase/migrations/0025_page_insights.sql, then supabase/tests/rls_page_insights.sql (expect: ALL PAGE INSIGHTS TESTS PASSED).
+2. Upload every file in this zip to GitHub, same folders, and replace the files that already exist. (The docs and the wiring test in this zip are the NEWEST versions, so they also keep the Batch 23 and 23.1 notes.)
 3. Wait for GitHub Actions and Vercel to go green.
-4. Admin -> Blog -> "Add starter articles": the three new articles arrive as drafts. Find photos, read, publish.
-5. Add the "Related reading" links to the three pillar articles by hand (see the Batch 23.1 section of docs/BUILD_PROGRESS.md).
+4. Leave META_REQUEST_INSIGHTS empty for now: the Insights page shows "coming soon". See docs/INSIGHTS.md before turning it on.
+5. If you edited the Privacy Policy in Admin -> Pages, add the Insights points yourself (see docs/INSIGHTS.md).

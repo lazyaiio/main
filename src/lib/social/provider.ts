@@ -32,6 +32,10 @@ export type PublishInput = {
 
 export type PublishResult = { providerPostId: string };
 
+/** One Page metric: daily points, or the reason there are none. A problem here never fails the whole page. */
+export type MetricResult = { points: { date: string; value: number }[]; problem: null } | { points: []; problem: "unavailable" | "no_data" | "permission" | "rate_limited" | "temporary" };
+export type PostMetricsResult = { values: Record<string, number>; problem: null } | { values: Record<string, number>; problem: "unavailable" | "no_data" | "permission" | "rate_limited" | "temporary" };
+
 export type SocialErrorKind =
   | "denied" // the person pressed Cancel or refused permissions
   | "token_expired"
@@ -72,6 +76,12 @@ export interface SocialPublishingProvider {
   listPages(userToken: string): Promise<{ user: { id: string; name: string }; pages: PageGrant[] }>;
   /** Confirms a stored Page token still works. Throws SocialError when it does not. */
   checkPage(page: { id: string; accessToken: string }): Promise<{ name: string }>;
+  /** Follower and like counts (needs only pages_read_engagement). Fields Facebook does not send are null. */
+  getPageSummary(page: { id: string; accessToken: string }): Promise<{ followers: number | null; likes: number | null }>;
+  /** One Page Insights metric as daily points (needs read_insights). Throws SocialError only when the token itself is bad. */
+  getPageMetric(page: { id: string; accessToken: string }, metric: string, since: Date, until: Date): Promise<MetricResult>;
+  /** Lifetime numbers for one published post (needs read_insights). */
+  getPostMetrics(page: { id: string; accessToken: string }, postId: string, metrics: string[]): Promise<PostMetricsResult>;
   /** Publishes now. Not connected to any screen yet (publishing starts in Batch 9). */
   publish(page: { id: string; accessToken: string }, input: PublishInput): Promise<PublishResult>;
 }

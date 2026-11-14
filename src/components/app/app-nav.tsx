@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Activity,
+  BarChart3,
   CalendarDays,
   CreditCard,
   FileText,
@@ -25,6 +26,7 @@ const items: { href: string; label: string; icon: LucideIcon; exact?: boolean }[
   { href: "/app/content", label: "Content", icon: FileText },
   { href: "/app/calendar", label: "Calendar", icon: CalendarDays },
   { href: "/app/pages", label: "Pages", icon: Plug },
+  { href: "/app/insights", label: "Insights", icon: BarChart3 },
   { href: "/app/media", label: "Media", icon: ImageIcon },
   { href: "/app/activity", label: "Activity", icon: Activity },
   { href: "/app/billing", label: "Billing", icon: CreditCard },

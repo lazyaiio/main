@@ -13,6 +13,7 @@ export const SERVICE_ERROR_MESSAGES: Record<ServiceErrorKind, string> = {
   library_full: "Your media library is full. Delete some images to add more.",
   stock_limited: "You have reached the hourly stock photo limit. Please try again later.",
   stock_failed: "Stock photo search is not available right now. Try again later.",
+  insights_unavailable: "Insights are not available for this Page right now. Reconnect Facebook and allow every permission shown, or try again later.",
   social_not_configured: "Facebook connection is not available yet. Please try again later or contact us.",
   social_denied: "The connection was canceled, or Facebook permissions were not granted. Try again and allow every permission shown.",
   social_attempt_expired: "That connection attempt expired or was already used. Start again with Connect Facebook.",

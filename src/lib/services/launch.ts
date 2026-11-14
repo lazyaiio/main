@@ -8,7 +8,7 @@ import { getEmailSetup } from "@/lib/email/keys";
 import { MIGRATION_PROBES, checkAppAddress, checkSettings, deploymentEnvironment, effectiveAppUrl, interpretProbe } from "@/lib/deployment-checks";
 import type { LaunchFacts } from "@/lib/launch-checklist";
 import { contactEmail, operatorCountry } from "@/lib/legal";
-import { getCronSecret, getSocialSetup, isPublishingBlockedByEnv } from "@/lib/social/keys";
+import { getCronSecret, getSocialSetup, isInsightsRequested, isPublishingBlockedByEnv } from "@/lib/social/keys";
 
 /** Reads everything the automatic checklist items need. Each part fails on its own into the safe answer ("not ready"). */
 export async function collectLaunchFacts(requestHost: string | null): Promise<LaunchFacts> {
@@ -59,5 +59,6 @@ export async function collectLaunchFacts(requestHost: string | null): Promise<La
     cronSecretSet: getCronSecret() !== null,
     heartbeatAgeMinutes: heartbeat ? (Date.now() - new Date(heartbeat.at).getTime()) / 60_000 : null,
     publishedBlogPosts: blog.total,
+    insightsOn: isInsightsRequested(),
   };
 }
