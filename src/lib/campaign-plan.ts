@@ -89,10 +89,14 @@ export const campaignFormSchema = z
       .min(1, "Choose at least one language.")
       .max(2)
       .transform((list) => Array.from(new Set(list))),
-    formats: z.array(z.enum(POST_FORMAT_VALUES)).min(1, "Choose at least one post format."),
+    formats: z
+      .array(z.enum(POST_FORMAT_VALUES))
+      .min(1, "Choose at least one post format.")
+      .max(POST_FORMAT_VALUES.length * 2),
     postingDays: z
       .array(z.coerce.number().int().min(0).max(6))
       .min(1, "Choose at least one posting day.")
+      .max(14)
       .transform((list) => Array.from(new Set(list)).sort((a, b) => a - b)),
     times: z
       .array(z.string().regex(TIME_RE, "Choose valid posting times."))

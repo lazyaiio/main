@@ -1,7 +1,5 @@
-Batch 24 (docs, figures, long-tail articles, tool guides) upload order
+Batch 25 (pre-launch audit) upload order
 1. There is NO database change in this batch. Do not run any SQL.
 2. Upload every file in this zip to GitHub, same folders (nothing is deleted).
-3. Wait for GitHub Actions and Vercel to go green.
-4. Open /docs and read each guide against your live app. Fix any sentence that does not match what you see (the text is in src/content/docs.ts).
-5. Admin -> Blog -> "Add starter articles": the 7 new articles arrive as drafts. Find photos, read, publish.
-6. Add the screenshots (docs/SCREENSHOT_GUIDE.md).
+3. package.json changes (sharp is updated). Wait for GitHub Actions and Vercel to go green.
+4. Read docs/PRE_LAUNCH_AUDIT.md and do the owner checklist at the bottom.

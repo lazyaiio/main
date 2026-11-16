@@ -10,7 +10,7 @@ describe("normalizeDeal", () => {
     expect(normalizeDeal(null)).toEqual(DEFAULT_DEAL);
     expect(normalizeDeal({ enabled: "yes" }).enabled).toBe(false);
     expect(normalizeDeal({ enabled: true, badge: "<b>x</b>" }).badge).toBe(DEFAULT_DEAL.badge);
-    expect(normalizeDeal({ headline: "বাংলা" }).headline).toBe(DEFAULT_DEAL.headline);
+    expect(normalizeDeal({ headline: "\u09ac\u09be\u0982\u09b2\u09be" }).headline).toBe(DEFAULT_DEAL.headline);
     expect(normalizeDeal({ endsOn: "2026-02-30" }).endsOn).toBeNull();
     expect(normalizeDeal({ badge: "x".repeat(99) }).badge).toHaveLength(24);
   });
@@ -29,7 +29,7 @@ describe("parseDealForm", () => {
     expect(parseDealForm({ ...form, subtext: "x".repeat(201) }, now).ok).toBe(false);
   });
   it("rejects Bengali text and markup", () => {
-    expect(parseDealForm({ ...form, headline: "একবার দিন" }, now).ok).toBe(false);
+    expect(parseDealForm({ ...form, headline: "\u098f\u0995\u09ac\u09be\u09b0 \u09a6\u09bf\u09a8" }, now).ok).toBe(false);
     expect(parseDealForm({ ...form, subtext: "<script>" }, now).ok).toBe(false);
   });
   it("checks the end date", () => {

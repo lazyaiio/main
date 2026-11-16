@@ -35,6 +35,31 @@ Plan: [`LAZYAI_MASTER_PLAN.md`](./LAZYAI_MASTER_PLAN.md) (see section 23 for own
 | 23 | Blog comparison article: Meta Business Suite vs a scheduling tool | **Code written and checked here, owner verification pending** (no database change) |
 | 23.1 | Three more free tools and three more blog articles | **Code written and checked here, owner verification pending** (no database change) |
 | 24 | Docs section (/docs), tables and diagrams in content, seven long-tail articles, tool-to-guide links | **Code written and checked here, owner verification pending** (no database change) |
+| 25 | Pre-launch audit: patched sharp, guard tests (RLS, API routes, no Bengali), input limits, audit report | **Code written and checked here, owner verification pending** (no database change) |
+
+## Batch 25: pre-launch audit
+
+**Status:** CODE WRITTEN AND CHECKED, owner verification pending. No migration.
+
+### What was done
+Full report in `docs/PRE_LAUNCH_AUDIT.md`. In short: sharp raised to `^0.35.5` (security fixes; Node 20.9+), Bengali characters removed from `lifetime-deal.test.ts` (rule: `\u` escapes only), upper limits on the campaign form's format and posting-day lists, and `src/lib/prelaunch-audit.test.ts` (RLS on every table, every API route listed with its guard, no Bengali in `src` and `docs`, sharp range).
+
+### Checks and results (real runs)
+| Check | Result |
+|---|---|
+| `tsc --noEmit` | PASS |
+| `next lint` | PASS |
+| `vitest run` | PASS: 76 files, 707 tests |
+| `next build` (scratch copy, fonts stubbed) | PASS |
+| Browser / real devices | **NOT DONE** |
+
+### Open
+`postcss` (inside Next) and `zod` 3 still show in `npm audit`; both need major upgrades and are planned as separate post-launch batches.
+
+### Exact next action
+Owner: upload, wait for green, then the checklist in `docs/PRE_LAUNCH_AUDIT.md`. Then choose the next batch (team invitations or more content).
+
+---
 
 ## Batch 24: docs, figures, long-tail articles, tool visibility
 

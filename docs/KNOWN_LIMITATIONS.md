@@ -1,4 +1,4 @@
-# Known limitations (as of Batch 24)
+# Known limitations (as of Batch 25)
 
 Plain list of what LazyAI does not do, or does only partly. Share the customer-relevant parts honestly.
 
@@ -33,6 +33,6 @@ Plain list of what LazyAI does not do, or does only partly. Share the customer-r
 - **Settings export** is a copy of plans, pages, SEO and blog text for safekeeping. It has no restore button and is not a database backup.
 - **Maintenance mode is a courtesy screen,** not a security lock. It hides the app pages from customers but does not stop direct calls to internal endpoints.
 - **Free tiers while building.** Supabase Free pauses idle projects and has no reliable backups. Vercel Hobby is not for commercial use. See `docs/GO_LIVE_UPGRADE_CHECKLIST.md`.
-- **Major package upgrades are postponed** (Tailwind 4, TypeScript 7, Zod 4). Dependabot does not propose them. Plan them as their own batch after launch.
+- **Major package upgrades are postponed** (Next 16, Tailwind 4, TypeScript 7, Zod 4). `npm audit` still lists `postcss` (inside Next) and `zod` 3 because of this; see `docs/PRE_LAUNCH_AUDIT.md`. Dependabot does not propose them. Plan them as their own batch after launch.
 - **Not tested by a person on real devices:** screen readers and every phone model. The automated checks cover images, labels, landmarks, text contrast, and zoom.
 - **Legal pages** are starting texts and need a lawyer's review before launch.
