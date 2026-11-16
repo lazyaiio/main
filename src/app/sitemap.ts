@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { DOCS } from "@/content/docs";
 import { BLOG_CATEGORIES } from "@/lib/blog";
 import { listPublishedMeta } from "@/lib/data/blog";
 import { readPageDates } from "@/lib/data/seo";
@@ -28,5 +29,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: p.path === "/" ? 1 : p.path === "/pricing" || p.path === "/blog" || p.path === "/tools" ? 0.9 : p.path.startsWith("/tools/") ? 0.8 : ["/privacy", "/terms", "/acceptable-use", "/cookies", "/data-deletion"].includes(p.path) ? 0.3 : 0.6,
     };
   });
-  return [...pages, ...blog];
+  const docs: MetadataRoute.Sitemap = overrides["/docs"]?.noindex ? [] : DOCS.map((d) => ({ url: `${base}/docs/${d.slug}`, lastModified: new Date(d.updated), changeFrequency: "monthly" as const, priority: 0.7 }));
+  return [...pages, ...docs, ...blog];
 }

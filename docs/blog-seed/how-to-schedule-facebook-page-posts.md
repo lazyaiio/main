@@ -176,6 +176,8 @@ It can help with drafts. You should always read and edit them. See our guide on 
 
 Want to know which scheduled post sent visitors to your website? See how to [track Facebook post clicks with UTM links](/blog/track-facebook-post-clicks-with-utm-links).
 
+Then keep your tags tidy with a [UTM parameters naming convention](/blog/utm-parameters-naming-convention), and find out the [best time to post on Facebook](/blog/best-time-to-post-on-facebook) for your own audience.
+
 ## Your next step
 
 Pick one method this week, the built-in option or a tool, and schedule just the next seven days of posts. Write them in one sitting, check the details, and schedule them. At the end of the week, notice how much calmer it felt. If you want help with the writing and the plan, you can [start free with LazyAI](/pricing) and have a campaign drafted for you to edit and schedule.

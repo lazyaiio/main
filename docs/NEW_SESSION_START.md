@@ -49,6 +49,9 @@ Give this file to Claude at the start of a new chat, together with `lazyai-full-
 **Batch 4:** upload the Batch 4 zip and delete `src/components/marketing/bilingual.tsx` on GitHub; confirm CI is green; run `0003_admin_and_ai.sql` then `rls_admin_ai.sql` (expect `ALL ADMIN/AI TESTS PASSED`); re-run the corrected `rls_core_tables.sql` (expect `ALL CORE RLS TESTS PASSED`); make themselves a platform admin (SQL in `docs/SUPABASE_SETUP.md`); add an AI key in Vercel (`ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `GEMINI_API_KEY`, or `OPENROUTER_API_KEY`), redeploy, turn a provider on in Admin and press Test; write an English and a Bengali post and judge quality.
 **Batch 5:** upload the Batch 5 zip; confirm CI; run `0004_source_documents.sql` then `rls_sources.sql` (expect `ALL SOURCE TESTS PASSED`); try an English article link, a 404 link, a PDF link, a paywalled/login page, and `http://localhost` (must be refused); report results.
 
+### Update (Batch 24)
+A docs section (`/docs`, 11 guides in `src/content/docs.ts`), table and diagram support in the Markdown reader, seven more long-tail seed articles (18 in total), "Guides for this tool" links on all nine tools, and `docs/CONTENT_GUIDE.md` + `docs/SCREENSHOT_GUIDE.md` were added. Real screenshots are NOT included (the owner adds them). Read the Batch 24 section of `docs/BUILD_PROGRESS.md`.
+
 ### Update (Batch 23.1)
 Three more free tools (giveaway winner picker, time zone converter, follower growth calculator) and three more seed articles (giveaway rules, Page metrics explained, UTM click tracking) were added; see the Batch 23.1 section of `docs/BUILD_PROGRESS.md`. The existing pillar articles in the owner's blog need the "Related reading" links added by hand.
 

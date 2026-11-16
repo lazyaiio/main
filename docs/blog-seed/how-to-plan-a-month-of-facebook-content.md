@@ -156,6 +156,8 @@ You can reuse the same ideas, but adapt the format and length to each platform. 
 
 Once your plan is running, learn to read the results with our guide to [Facebook Page metrics](/blog/facebook-page-metrics-explained).
 
+Need a ready-made layout? Copy our [Facebook content calendar template](/blog/facebook-content-calendar-template). To measure your results, see how to [calculate engagement rate on Facebook](/blog/how-to-calculate-engagement-rate-on-facebook). Want more followers? Try our [30-day plan to grow your Page](/blog/how-to-grow-facebook-page-followers-organically).
+
 ## Your next step
 
 You now have everything you need: a goal, an audience, a few themes, a rhythm, a calendar, a batch writing session, and a monthly review. Block one hour this week, choose your goal, and sketch the first two weeks of posts. Once you see how much easier the week feels, planning a whole month becomes a habit rather than a project. When you are ready to write posts faster, you can try the [content calendar generator](/tools/content-calendar-generator) or let LazyAI draft and schedule a full month for you.

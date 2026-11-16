@@ -9,7 +9,7 @@ import { loadSeo, siteBase } from "@/lib/services/seo";
 export type ToolFaq = { q: string; a: string };
 
 /** The page around a free tool: heading, the tool, how to use it, questions, related guides, and a gentle pointer to LazyAI. */
-export async function ToolShell(props: { path: string; name: string; headline: string; intro: string; category: string; steps: string[]; tips: string[]; faq: ToolFaq[]; children: ReactNode }) {
+export async function ToolShell(props: { path: string; name: string; headline: string; intro: string; category: string; steps: string[]; tips: string[]; faq: ToolFaq[]; guides?: { href: string; label: string }[]; children: ReactNode }) {
   const [{ settings }, related] = await Promise.all([loadSeo(), listPublished({ category: props.category, perPage: 3 }).catch(() => ({ posts: [], total: 0 }))]);
   const base = siteBase();
   const ld = [
@@ -50,6 +50,17 @@ export async function ToolShell(props: { path: string; name: string; headline: s
           ))}
         </div>
       </section>
+
+      {props.guides && props.guides.length > 0 ? (
+        <section aria-labelledby="tool-guides" className="mx-auto w-full max-w-3xl px-4 pb-12 sm:px-6">
+          <h2 id="tool-guides" className="font-display text-2xl font-bold">Guides for this tool</h2>
+          <ul className="mt-4 space-y-2">
+            {props.guides.map((g) => (
+              <li key={g.href}><Link href={g.href} className="font-semibold text-brand underline underline-offset-2 hover:no-underline">{g.label}</Link></li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
 
       {related.posts.length > 0 ? (
         <section className="border-t border-ink-100 bg-ink-50">

@@ -25,6 +25,7 @@ export default function Page() {
         { q: "Can I plan more than twelve weeks?", a: "The tool is limited to twelve weeks so the plan stays realistic. Run it again later for the next stretch." },
         { q: "Is my information stored?", a: "No. The calendar is built in your browser and the CSV file is created on your device." },
       ]}
+      guides={[{ href: "/blog/facebook-content-calendar-template", label: "Facebook content calendar template" }, { href: "/blog/how-to-plan-a-month-of-facebook-content", label: "How to plan a month of Facebook content" }, { href: "/blog/how-often-should-you-post-on-facebook", label: "How often should you post on Facebook?" }]}
     >
       <CalendarTool />
     </ToolShell>

@@ -25,6 +25,7 @@ export default function Page() {
         { q: "Is my text saved?", a: "No. The analysis runs in your browser. Your text is not sent to us." },
         { q: "Can it write the post for me?", a: "This tool only checks a draft. To have posts written for you, you can use LazyAI." },
       ]}
+      guides={[{ href: "/blog/how-long-should-a-facebook-post-be", label: "How long should a Facebook post be?" }, { href: "/blog/facebook-post-hooks-and-calls-to-action", label: "Hooks and calls to action" }, { href: "/blog/how-to-write-facebook-posts-people-read", label: "How to write Facebook posts people read" }]}
     >
       <PostCheckerTool />
     </ToolShell>

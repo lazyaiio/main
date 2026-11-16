@@ -4,7 +4,11 @@ import { describe, expect, it } from "vitest";
 
 /** Source-reading checks for Batch 21 (people, plan emails, settings export). */
 
+import { DOC_SLUGS } from "@/content/docs";
+import { SEED_ARTICLES } from "@/content/blog-seed";
+
 const SRC = join(process.cwd(), "src");
+const DOC_PATHS_FOR_TEST = [...DOC_SLUGS.map((d) => `/docs/${d}`), ...SEED_ARTICLES.map((a) => `/blog/${a.slug}`)];
 const read = (path: string) => readFileSync(join(SRC, path), "utf8");
 const MIGRATION = readFileSync(join(process.cwd(), "supabase/migrations/0024_user_management.sql"), "utf8");
 
@@ -176,6 +180,32 @@ describe("Page Insights wiring", () => {
   });
   it("keeps secrets out of what is saved", () => {
     expect(read("lib/services/insights.ts")).not.toMatch(/token:\s*token|accessToken:\s*cipher/);
+  });
+});
+
+describe("docs, figures and tool guides wiring", () => {
+  it("lists every doc page in the sitemap and the public menu", () => {
+    expect(read("app/sitemap.ts")).toContain("DOCS.map");
+    expect(read("lib/site.ts")).toContain('"/docs"');
+    expect(read("lib/seo.ts")).toContain('path: "/docs"');
+  });
+  it("makes unknown doc addresses a 404 instead of an empty page", () => {
+    const page = read("app/(marketing)/docs/[slug]/page.tsx");
+    expect(page).toContain("dynamicParams = false");
+    expect(page).toContain("notFound()");
+  });
+  it("shows a screenshot only when it is listed, so there is never a broken image", () => {
+    expect(read("components/marketing/markdown-content.tsx")).toContain("screenshotFor(block.name)");
+    expect(read("content/screenshots.ts")).toContain("SCREENSHOT_NAMES.includes(name)");
+  });
+  it("sends every tool page to guides that exist", () => {
+    const known = new Set([...DOC_PATHS_FOR_TEST]);
+    for (const slug of ["post-idea-generator", "content-calendar-generator", "post-checker", "engagement-rate-calculator", "utm-link-builder", "hashtag-cleaner", "giveaway-winner-picker", "time-zone-converter", "follower-growth-calculator"]) {
+      const text = read(`app/(marketing)/tools/${slug}/page.tsx`);
+      const hrefs = [...text.matchAll(/guides=\{\[(.*?)\]\}/gs)].flatMap((m) => [...(m[1] ?? "").matchAll(/href: "([^"]+)"/g)].map((x) => x[1] as string));
+      expect(hrefs.length, slug).toBeGreaterThan(0);
+      for (const h of hrefs) expect(known.has(h), `${slug} -> ${h}`).toBe(true);
+    }
   });
 });
 

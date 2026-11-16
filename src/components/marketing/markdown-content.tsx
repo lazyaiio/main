@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { Fragment, type ReactNode } from "react";
+import { Diagram } from "@/components/docs/diagrams";
 import { DeletionCheckForm } from "@/components/marketing/deletion-check-form";
+import { screenshotFor } from "@/content/screenshots";
 import type { Block, Inline } from "@/lib/markdown";
 
 function renderInline(nodes: Inline[]): ReactNode {
@@ -78,6 +80,46 @@ export function MarkdownContent({ blocks, images }: { blocks: Block[]; images?: 
                 {renderInline(block.children)}
               </blockquote>
             );
+          case "table":
+            return (
+              <div key={i} className="my-6 overflow-x-auto rounded-xl border border-ink-100">
+                <table className="w-full min-w-[28rem] border-collapse text-left text-sm">
+                  <thead className="bg-ink-50">
+                    <tr>
+                      {block.header.map((cell, j) => (
+                        <th key={j} scope="col" className="border-b border-ink-100 px-4 py-2.5 font-semibold text-ink">
+                          {renderInline(cell)}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {block.rows.map((row, r) => (
+                      <tr key={r} className="border-b border-ink-100 last:border-0">
+                        {row.map((cell, c) => (
+                          <td key={c} className="px-4 py-2.5 align-top text-ink-700">
+                            {renderInline(cell)}
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            );
+          case "diagram":
+            return <Diagram key={i} name={block.name} />;
+          case "screenshot": {
+            const shot = screenshotFor(block.name);
+            if (!shot) return null;
+            return (
+              <figure key={i} className="my-8">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={shot.src} alt={block.alt} width={shot.width} height={shot.height} loading="lazy" decoding="async" className="h-auto w-full rounded-xl border border-ink-100 shadow-card" />
+                <figcaption className="mt-2 text-sm text-ink-600">{block.alt}</figcaption>
+              </figure>
+            );
+          }
           case "image": {
             const image = images?.[block.id];
             if (!image) return null;

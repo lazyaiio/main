@@ -1,7 +1,8 @@
 /**
  * A small, safe Markdown reader for the pages an admin can edit. It understands only what the pages need:
  * ## and ### headings (with an optional {#id}), paragraphs, bullet and numbered lists, **bold**, *italic*,
- * `code`, and [links](address). Everything else is plain text. It produces a tree, never HTML, so nothing
+ * `code`, [links](address), simple tables (| a | b | with a |---|---| line), and the figure lines [[diagram: name]] and
+ * [[screenshot: name | description]], which show only when that figure exists. Everything else is plain text. It produces a tree, never HTML, so nothing
  * typed in the editor can run as a script. Links are limited to https, http, mailto, and this site's own paths.
  */
 
@@ -18,6 +19,9 @@ export type Block =
   | { type: "ul" | "ol"; items: Inline[][] }
   | { type: "form"; name: "deletion_check_form" }
   | { type: "image"; id: string; alt: string }
+  | { type: "table"; header: Inline[][]; rows: Inline[][][] }
+  | { type: "diagram"; name: string }
+  | { type: "screenshot"; name: string; alt: string }
   | { type: "quote"; children: Inline[] };
 
 export function slugify(text: string): string {
@@ -116,6 +120,21 @@ export function parseInline(text: string): Inline[] {
 const HEADING = /^(#{2,3})\s+(.+?)\s*$/;
 const IMAGE = /^!\[([^\]]*)\]\(blog-image:([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\)$/;
 const PLACEHOLDER = /^\[\[image:.*\]\]$/;
+const DIAGRAM = /^\[\[diagram:\s*([a-z0-9-]{1,40})\s*\]\]$/;
+const SCREENSHOT = /^\[\[screenshot:\s*([a-z0-9-]{1,60})\s*\|\s*([^\][|]{1,200}?)\s*\]\]$/;
+const TABLE_ROW = /^\|.+\|$/;
+const TABLE_RULE = /^\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)*\|?$/;
+export const MAX_TABLE_COLUMNS = 6;
+export const MAX_TABLE_ROWS = 40;
+
+function splitRow(line: string): string[] {
+  return line
+    .trim()
+    .replace(/^\|/, "")
+    .replace(/\|$/, "")
+    .split("|")
+    .map((c) => c.trim().slice(0, 300));
+}
 const BULLET = /^[-*]\s+(.*)$/;
 const NUMBERED = /^\d{1,3}[.)]\s+(.*)$/;
 
@@ -125,6 +144,7 @@ export function parseMarkdown(source: string): Block[] {
   let paragraph: string[] = [];
   let list: { type: "ul" | "ol"; items: string[] } | null = null;
   let quote: string[] = [];
+  let tableLines: string[] = [];
 
   const flushParagraph = () => {
     if (paragraph.length > 0) {
@@ -133,6 +153,25 @@ export function parseMarkdown(source: string): Block[] {
       else if (text) blocks.push({ type: "p", children: parseInline(text) });
     }
     paragraph = [];
+  };
+  const flushTable = () => {
+    if (tableLines.length === 0) return;
+    const lines2 = tableLines;
+    tableLines = [];
+    const header = splitRow(lines2[0] as string);
+    const valid = lines2.length >= 2 && TABLE_RULE.test((lines2[1] as string).trim()) && header.length >= 2 && header.length <= MAX_TABLE_COLUMNS;
+    if (!valid) {
+      // Not a real table: keep the text as an ordinary paragraph.
+      const text = lines2.join(" ").trim();
+      if (text) blocks.push({ type: "p", children: parseInline(text) });
+      return;
+    }
+    const rows = lines2.slice(2, 2 + MAX_TABLE_ROWS).map((row) => {
+      const cells = splitRow(row).slice(0, header.length);
+      while (cells.length < header.length) cells.push("");
+      return cells.map((c) => parseInline(c));
+    });
+    blocks.push({ type: "table", header: header.map((c) => parseInline(c)), rows });
   };
   const flushQuote = () => {
     if (quote.length > 0) blocks.push({ type: "quote", children: parseInline(quote.join(" ")) });
@@ -145,6 +184,14 @@ export function parseMarkdown(source: string): Block[] {
 
   for (const raw of lines) {
     const line = raw.trimEnd();
+    if (TABLE_ROW.test(line.trim())) {
+      flushParagraph();
+      flushList();
+      flushQuote();
+      tableLines.push(line.trim());
+      continue;
+    }
+    flushTable();
     if (line.trim() === "") {
       flushParagraph();
       flushList();
@@ -157,6 +204,22 @@ export function parseMarkdown(source: string): Block[] {
       flushParagraph();
       flushList();
       flushQuote();
+      continue;
+    }
+    const diagram = DIAGRAM.exec(trimmed);
+    if (diagram) {
+      flushParagraph();
+      flushList();
+      flushQuote();
+      blocks.push({ type: "diagram", name: diagram[1] as string });
+      continue;
+    }
+    const shot = SCREENSHOT.exec(trimmed);
+    if (shot) {
+      flushParagraph();
+      flushList();
+      flushQuote();
+      blocks.push({ type: "screenshot", name: shot[1] as string, alt: shot[2] as string });
       continue;
     }
     const picture = IMAGE.exec(trimmed);
@@ -205,6 +268,7 @@ export function parseMarkdown(source: string): Block[] {
     flushList();
     paragraph.push(line.trim());
   }
+  flushTable();
   flushParagraph();
   flushList();
   flushQuote();

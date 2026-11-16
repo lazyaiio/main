@@ -9,6 +9,7 @@ export const siteConfig = {
     { label: "Pricing", href: "/pricing" },
     { label: "Blog", href: "/blog" },
     { label: "Free tools", href: "/tools" },
+    { label: "Docs", href: "/docs" },
     { label: "FAQ", href: "/#faq" },
   ],
   footer: [
@@ -16,6 +17,7 @@ export const siteConfig = {
     { label: "About", href: "/about" },
     { label: "Blog", href: "/blog" },
     { label: "Free tools", href: "/tools" },
+    { label: "Docs", href: "/docs" },
     { label: "Help", href: "/help" },
     { label: "Contact", href: "/contact" },
     { label: "Privacy", href: "/privacy" },

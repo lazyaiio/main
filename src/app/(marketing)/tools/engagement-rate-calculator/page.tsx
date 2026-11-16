@@ -25,6 +25,7 @@ export default function Page() {
         { q: "Why are there two rates?", a: "The follower rate asks how much of your audience responds. The reach rate asks how much of the people who actually saw your posts responded. They answer different questions." },
         { q: "Is my data saved?", a: "No. The math runs in your browser. Your numbers are not sent to us." },
       ]}
+      guides={[{ href: "/blog/how-to-calculate-engagement-rate-on-facebook", label: "How to calculate engagement rate on Facebook" }, { href: "/blog/facebook-page-metrics-explained", label: "Facebook Page metrics explained" }, { href: "/docs/insights", label: "Page Insights in LazyAI" }]}
     >
       <EngagementTool />
     </ToolShell>

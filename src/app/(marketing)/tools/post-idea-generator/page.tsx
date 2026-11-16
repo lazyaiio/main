@@ -25,6 +25,7 @@ export default function Page() {
         { q: "How many posts do I need each week?", a: "That depends on how much time you have and what you can keep up. A steady schedule you can maintain beats a burst that fades. Our guide on posting frequency explains how to choose." },
         { q: "Is my information stored?", a: "No. Everything you type stays in your browser and is not sent to our servers." },
       ]}
+      guides={[{ href: "/blog/facebook-post-ideas-for-small-businesses", label: "Facebook post ideas for small businesses" }, { href: "/blog/how-to-plan-a-month-of-facebook-content", label: "How to plan a month of Facebook content" }, { href: "/docs/write-posts", label: "Write posts with AI in LazyAI" }]}
     >
       <PostIdeaTool />
     </ToolShell>

@@ -25,6 +25,7 @@ export default function Page() {
         { q: "Does it work with other languages?", a: "Letters and numbers from other scripts are kept, such as accented letters." },
         { q: "Is my text saved?", a: "No. It stays in your browser." },
       ]}
+      guides={[{ href: "/blog/how-many-hashtags-to-use-on-facebook", label: "How many hashtags to use on Facebook" }, { href: "/blog/how-to-write-facebook-posts-people-read", label: "How to write Facebook posts people read" }]}
     >
       <HashtagTool />
     </ToolShell>

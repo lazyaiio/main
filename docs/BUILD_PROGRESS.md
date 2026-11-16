@@ -34,6 +34,52 @@ Plan: [`LAZYAI_MASTER_PLAN.md`](./LAZYAI_MASTER_PLAN.md) (see section 23 for own
 | 22.1 | Facebook Page Insights page (read_insights), Meta review pack and Privacy Policy updated | **Code written and checked here, owner verification pending** (migration 0025; Meta approval of read_insights needed before it can be switched on) |
 | 23 | Blog comparison article: Meta Business Suite vs a scheduling tool | **Code written and checked here, owner verification pending** (no database change) |
 | 23.1 | Three more free tools and three more blog articles | **Code written and checked here, owner verification pending** (no database change) |
+| 24 | Docs section (/docs), tables and diagrams in content, seven long-tail articles, tool-to-guide links | **Code written and checked here, owner verification pending** (no database change) |
+
+## Batch 24: docs, figures, long-tail articles, tool visibility
+
+**Status:** CODE WRITTEN AND CHECKED, owner verification pending. No migration. Articles arrive as drafts.
+
+### What was built
+- **Docs section** at `/docs` (index) and `/docs/<guide>`: 11 user guides (Getting started, Connect a Facebook Page, Write posts with AI, Plan a campaign, Schedule and publish posts, Add images and stock photos, Plans payments and invoices, Page Insights, Your data and your account, Fix common problems, Glossary). Each has a side menu, an "On this page" list, previous/next links, search metadata, breadcrumb and TechArticle structured data, and is in the sitemap and the public menu. The text only describes what the app really does (menu names, statuses, limits, and steps came from the app's own help text and code); the Insights and billing guides say what depends on Meta approval or on your plan.
+- **Tables** now work in blog articles, the docs and editable pages (Markdown pipe tables; up to 6 columns and 40 rows; scroll sideways on a phone; never turned into HTML tags).
+- **Diagrams:** four built-in SVG diagrams (`workflow`, `lifecycle`, `funnel`, `rhythm`) with text descriptions for screen readers, used in the docs and two articles. I rendered them to pictures and checked each by eye. They contain steps and ideas, never invented numbers.
+- **Screenshots:** the docs ask for five pictures. They show only after you add them (`docs/SCREENSHOT_GUIDE.md`), so there is never a broken image. **I could not take real screenshots of your app.** I did not make fake ones.
+- **Seven long-tail articles** (drafts): calculate engagement rate; UTM naming convention; how many hashtags; how long a post should be; grow followers organically (30-day plan); best time to post; content calendar template. They use tables and (two of them) diagrams, 1,250+ words, four photo spots, and pass the blog's own SEO checklist. **Honesty rules:** no invented statistics or "best time" numbers, no competitor numbers; where advice is our opinion the article says so and tells readers how to test it.
+- **Silo links:** the three pillar articles link to every new supporting article. The article page already lists related articles by itself, so the pillars already in your blog need no manual edit (the earlier "add this sentence by hand" steps are optional editorial polish, not required for links to work).
+- **Tool visibility:** each of the nine free tools now has a "Guides for this tool" section linking to its best articles and docs, and the articles link back to the tools. Admin -> SEO covers the new /docs page.
+- `docs/CONTENT_GUIDE.md` explains the silo map, the honesty rules and how to add content.
+
+### Files
+New: `src/content/docs.ts` (+ test), `src/content/screenshots.ts`, `src/components/docs/diagrams.tsx`, `src/app/(marketing)/docs/page.tsx`, `src/app/(marketing)/docs/[slug]/page.tsx`, seven article sources in `docs/blog-seed/`, `docs/SCREENSHOT_GUIDE.md`, `docs/CONTENT_GUIDE.md`.
+Changed: `src/lib/markdown.ts` (+ tests), `src/components/marketing/markdown-content.tsx`, `src/components/tools/tool-shell.tsx`, the nine tool pages, `src/lib/seo.ts`, `src/lib/site.ts`, `src/app/sitemap.ts`, `src/content/blog-seed.ts`, three pillar sources, `src/lib/user-management-wiring.test.ts`, docs.
+Deleted: none.
+
+### Checks and results (real runs in this sandbox)
+| Check | Result |
+|---|---|
+| `tsc --noEmit` | PASS |
+| `next lint` | PASS |
+| `vitest run` | PASS: 75 files, 703 tests |
+| `next build` (scratch copy, fonts stubbed) | PASS; all 11 docs pages were generated, with tables, diagrams, one heading each and structured data |
+| Diagrams viewed as pictures | DONE (lifecycle, workflow, funnel checked by eye) |
+| Pages looked at in a real browser | **NOT DONE** |
+
+### Owner steps
+1. Upload. Open `/docs` and read each guide against your live app: **change any sentence that does not match what you see** (the guides were written from the code and help text, not from your screen).
+2. Admin -> Blog -> "Add starter articles" (adds the 7 new drafts; 18 in total). Find photos, read, change anything that is not true for you, publish.
+3. Take the screenshots (`docs/SCREENSHOT_GUIDE.md`).
+4. Submit the new pages in Google Search Console (the sitemap already lists them).
+
+### Known limits
+- Search ranking is never guaranteed; a new site usually needs months.
+- The docs describe the app as of this date; keep them in step when screens change.
+- The article "best time to post" and "hashtags" give our opinion plus a way to test; they cite no studies on purpose.
+
+### Exact next action
+Owner: the steps above, then choose the next batch (team invitations, a pre-launch audit, or more content).
+
+---
 
 ## Batch 23.1: three more free tools, three more blog articles
 

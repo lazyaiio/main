@@ -25,6 +25,7 @@ export default function Page() {
         { q: "Where do I find my follower count?", a: "Your Page shows its followers, and Facebook's own Page tools show how the count has changed over time." },
         { q: "Is my data saved?", a: "No. The math runs in your browser and nothing is sent to us." },
       ]}
+      guides={[{ href: "/blog/how-to-grow-facebook-page-followers-organically", label: "Grow your Facebook Page followers organically" }, { href: "/blog/facebook-page-metrics-explained", label: "Facebook Page metrics explained" }]}
     >
       <GrowthTool />
     </ToolShell>

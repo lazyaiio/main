@@ -25,6 +25,7 @@ export default function Page() {
         { q: "What if my link already has UTM tags?", a: "The tool replaces them with the new values and keeps your other parameters and any #section at the end." },
         { q: "Is my link saved?", a: "No. Everything runs in your browser and nothing is sent to us." },
       ]}
+      guides={[{ href: "/blog/track-facebook-post-clicks-with-utm-links", label: "How to track Facebook post clicks with UTM links" }, { href: "/blog/utm-parameters-naming-convention", label: "UTM parameters naming convention" }, { href: "/docs/schedule-and-publish", label: "Schedule and publish posts" }]}
     >
       <UtmTool />
     </ToolShell>

@@ -25,6 +25,7 @@ export default function Page() {
         { q: "Can the same person win twice?", a: "No. If a name appears more than once, that person can still be chosen only once." },
         { q: "Does this make my giveaway follow Facebook's rules?", a: "No. The tool only picks names. You are responsible for your rules and for following Meta's policies and the law. Our giveaway guide explains the main points." },
       ]}
+      guides={[{ href: "/blog/facebook-giveaway-rules-for-small-businesses", label: "Facebook giveaway rules for small businesses" }, { href: "/blog/how-to-grow-facebook-page-followers-organically", label: "How to grow your Page followers organically" }]}
     >
       <GiveawayTool />
     </ToolShell>

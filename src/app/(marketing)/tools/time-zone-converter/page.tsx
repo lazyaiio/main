@@ -25,6 +25,7 @@ export default function Page() {
         { q: "What if a time does not exist on a clock-change day?", a: "Clocks skip an hour on some dates. The tool moves that time forward to the next valid one and tells you. A repeated hour uses the first time." },
         { q: "Is my information stored?", a: "No. The conversion runs in your browser and nothing is sent to us." },
       ]}
+      guides={[{ href: "/blog/best-time-to-post-on-facebook", label: "Best time to post on Facebook" }, { href: "/blog/how-to-schedule-facebook-page-posts", label: "How to schedule Facebook Page posts" }, { href: "/docs/schedule-and-publish", label: "Schedule and publish posts" }]}
     >
       <TimezoneTool />
     </ToolShell>

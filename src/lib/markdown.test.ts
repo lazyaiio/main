@@ -66,3 +66,37 @@ describe("links and tokens", () => {
     expect(slugify("What each status means!")).toBe("what-each-status-means");
   });
 });
+
+describe("tables and figures", () => {
+  it("reads a simple table", () => {
+    const blocks = parseMarkdown("| Name | Use |\n|---|---|\n| **A** | one |\n| B | [two](/pricing) |\n\nAfter.");
+    expect(blocks[0]?.type).toBe("table");
+    const t = blocks[0] as Extract<(typeof blocks)[number], { type: "table" }>;
+    expect(t.header).toHaveLength(2);
+    expect(t.rows).toHaveLength(2);
+    expect(blocks[1]?.type).toBe("p");
+  });
+  it("pads short rows and cuts long ones to the header width", () => {
+    const t = parseMarkdown("| A | B |\n|---|---|\n| 1 |\n| 1 | 2 | 3 |")[0] as { type: "table"; rows: unknown[][] };
+    expect(t.rows.map((r) => r.length)).toEqual([2, 2]);
+  });
+  it("treats pipes without a rule line as plain text, and never makes HTML", () => {
+    const blocks = parseMarkdown("| not | a table |\n| really | nope |");
+    expect(blocks.every((b) => b.type === "p")).toBe(true);
+    const evil = parseMarkdown("| A | B |\n|---|---|\n| <script>x</script> | [x](javascript:alert(1)) |")[0] as { type: "table"; rows: { type: string }[][][] };
+    expect(JSON.stringify(evil)).not.toContain('"href":"javascript');
+  });
+  it("limits columns", () => {
+    const wide = `| ${Array.from({ length: 8 }, (_, i) => `c${i}`).join(" | ")} |\n|${"---|".repeat(8)}\n| ${Array.from({ length: 8 }, () => "x").join(" | ")} |`;
+    expect(parseMarkdown(wide)[0]?.type).toBe("p");
+  });
+  it("reads diagram and screenshot lines", () => {
+    const blocks = parseMarkdown("[[diagram: workflow]]\n\n[[screenshot: connect-facebook | The Facebook Pages screen]]");
+    expect(blocks[0]).toEqual({ type: "diagram", name: "workflow" });
+    expect(blocks[1]).toEqual({ type: "screenshot", name: "connect-facebook", alt: "The Facebook Pages screen" });
+  });
+  it("does not confuse photo placeholders with figures", () => {
+    expect(parseMarkdown("[[image: a desk | A desk]]")).toEqual([]);
+  });
+});
+
