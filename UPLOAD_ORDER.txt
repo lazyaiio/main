@@ -1,5 +1,6 @@
-Batch 25 (pre-launch audit) upload order
+Batch 26 (seven more blog articles) upload order
 1. There is NO database change in this batch. Do not run any SQL.
 2. Upload every file in this zip to GitHub, same folders (nothing is deleted).
-3. package.json changes (sharp is updated). Wait for GitHub Actions and Vercel to go green.
-4. Read docs/PRE_LAUNCH_AUDIT.md and do the owner checklist at the bottom.
+3. Wait for GitHub Actions and Vercel to go green.
+4. Admin -> Blog -> "Add 7 starter articles". They arrive as drafts.
+5. Read each draft, check anything about Facebook screens against the real screens, use "Find the photos", then publish.

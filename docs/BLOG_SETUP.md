@@ -3,7 +3,7 @@
 ## One-time setup
 1. Run `0022_blog.sql` in the Supabase SQL Editor (creates the blog tables, three categories, and a **public** storage bucket named `blog`).
 2. Upload the code. Make sure **Admin -> Stock photos** has a working Pixabay and/or Unsplash key (the blog's photo finder uses it).
-3. Open **Admin -> Blog** -> **Add 18 starter articles**. They arrive as drafts.
+3. Open **Admin -> Blog** -> **Add 25 starter articles**. They arrive as drafts.
 4. Open each article -> **Find the photos**. This fills the four `[[image: …]]` spots and the featured image from Pixabay and Unsplash (it can take up to a minute). Check that each photo matches the text; use **Replace** or **Search stock photos** to change any.
 5. Read the article, edit it, fix the checklist items, then **Publish now** (or **Schedule**).
 6. Publish the three pillar guides first, then the supporting articles. Open `/blog`, `/blog/category/<topic>`, `/sitemap.xml`, and `/blog/rss.xml` and check them.

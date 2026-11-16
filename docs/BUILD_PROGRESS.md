@@ -36,6 +36,31 @@ Plan: [`LAZYAI_MASTER_PLAN.md`](./LAZYAI_MASTER_PLAN.md) (see section 23 for own
 | 23.1 | Three more free tools and three more blog articles | **Code written and checked here, owner verification pending** (no database change) |
 | 24 | Docs section (/docs), tables and diagrams in content, seven long-tail articles, tool-to-guide links | **Code written and checked here, owner verification pending** (no database change) |
 | 25 | Pre-launch audit: patched sharp, guard tests (RLS, API routes, no Bengali), input limits, audit report | **Code written and checked here, owner verification pending** (no database change) |
+| 26 | Seven more long-tail blog articles (25 starter articles in total), content guide and topical map updated | **Code written and checked here, owner verification pending** (no database change) |
+
+## Batch 26: seven more long-tail articles
+
+**Status:** CODE WRITTEN AND CHECKED, owner verification pending. No migration. Chosen because the master plan defers team permissions until after launch, and the topical map listed these as the next supporting articles.
+
+### What was done
+Seven new starter articles in `src/content/blog-seed.ts` (sources in `docs/blog-seed/*.md`): facebook post ideas for restaurants; repurposing one article into five posts; twelve post templates; replying to comments and reviews; why a scheduled post failed; twenty AI prompts; scheduling a month in one hour. 25 starter articles in total. Admin -> Blog shows the button "Add 7 starter articles" if you already have the first 18.
+
+### Checks and results (real runs)
+| Check | Result |
+|---|---|
+| `tsc --noEmit` | PASS |
+| `next lint` | PASS |
+| `vitest run` | PASS: 76 files, 707 tests (the starter-article tests now cover 25 articles: length, four photo spots, SEO checklist, links, pillar links, supported Markdown) |
+| `next build` | NOT RUN (content-only change; the data file is type-checked and tested) |
+| Reading every article for facts, or looking at pages in a browser | **NOT DONE** |
+
+### Open
+The articles are drafts and describe common practice, not Meta rules. Owner should read each one, check statements about Facebook features against the current Facebook screens, add photos with "Find the photos", and publish.
+
+### Exact next action
+Owner: upload, run "Add 7 starter articles", read, add photos, publish. Then choose the next batch (more content, or post-launch work such as Next 16 / Zod 4).
+
+---
 
 ## Batch 25: pre-launch audit
 

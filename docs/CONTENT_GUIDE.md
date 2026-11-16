@@ -1,13 +1,13 @@
-# Content guide: topic silos, long-tail articles, docs, tables, and diagrams (Batch 24)
+# Content guide: topic silos, long-tail articles, docs, tables, and diagrams (Batches 24 and 26)
 
 ## How the blog is organized (topic silos)
 Each of the three topics is a silo: one main (pillar) article, and supporting articles that each answer one specific question people search for. Every supporting article links up to its pillar, and the pillar links down to all of them. The article page also lists related articles by itself, so you never have to edit old articles to keep them connected.
 
 | Silo | Pillar article | Supporting articles (long-tail searches) |
 |---|---|---|
-| Content planning | How to plan a month of Facebook content | Post ideas for small businesses; How often to post; Page metrics explained; How to calculate engagement rate; Content calendar template; How to grow Page followers organically |
-| Writing posts | How to write Facebook posts people read | Hooks and calls to action; Giveaway rules; How many hashtags to use; How long a post should be |
-| Scheduling and AI | How to schedule Facebook Page posts | Using AI to write posts; Meta Business Suite vs a scheduling tool; Track post clicks with UTM links; UTM naming convention; Best time to post |
+| Content planning | How to plan a month of Facebook content | Post ideas for small businesses; Post ideas for restaurants; How often to post; Page metrics explained; How to calculate engagement rate; Content calendar template; How to grow Page followers organically; Repurposing one article into a week of posts |
+| Writing posts | How to write Facebook posts people read | Hooks and calls to action; Post templates; Replying to comments and reviews; Giveaway rules; How many hashtags to use; How long a post should be |
+| Scheduling and AI | How to schedule Facebook Page posts | Using AI to write posts; Meta Business Suite vs a scheduling tool; Track post clicks with UTM links; UTM naming convention; Best time to post; Why a scheduled post failed; AI prompts for Facebook posts; Scheduling a month of posts in one hour |
 
 Every free tool links to its guides ("Guides for this tool"), and every guide links to its tool. That two-way link is the main way the tools get found in search.
 
@@ -21,11 +21,14 @@ Rankings are never promised. New sites usually need months, links, and steady wo
 - Example numbers (such as a bakery with 1,200 followers) are plainly examples.
 
 ## Adding content
-- **Blog:** Admin -> Blog -> "Add starter articles" adds the 18 starter articles you do not have yet, as drafts. Read each one, find photos, change anything that is not true for your business, and publish.
+- **Blog:** Admin -> Blog -> "Add starter articles" adds the 25 starter articles you do not have yet, as drafts. Read each one, find photos, change anything that is not true for your business, and publish.
 - **Tables:** write them in Markdown (a header row, a `|---|---|` line, then rows). They work in the blog and in the docs.
 - **Diagrams:** a line such as `[[diagram: workflow]]` shows one of four built-in diagrams: `workflow`, `lifecycle`, `funnel`, `rhythm`. They contain ideas and steps, never data.
 - **Screenshots:** see `docs/SCREENSHOT_GUIDE.md`.
 - **Docs pages:** they live in `src/content/docs.ts`. A test checks that every link inside them points to a page that exists, and that tables and diagrams are valid.
+
+## Batch 26: seven more long-tail articles
+Restaurant post ideas, repurposing one article into five posts, twelve fill-in-the-blank templates, replying to comments and reviews, why a scheduled post failed, twenty AI prompts, and scheduling a month in one hour. Each is 1,250+ words with four photo spots, links up to its pillar, and links to at least one tool or sibling article. Like the earlier ones they arrive as drafts. Read each one, and change anything that is not true for your business. The failure-causes article describes common causes in general terms; it does not quote Meta error codes or limits, because those change.
 
 ## What this batch does not include
 - Real screenshots (you add them; see the guide).
