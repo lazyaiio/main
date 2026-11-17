@@ -38,6 +38,31 @@ Plan: [`LAZYAI_MASTER_PLAN.md`](./LAZYAI_MASTER_PLAN.md) (see section 23 for own
 | 25 | Pre-launch audit: patched sharp, guard tests (RLS, API routes, no Bengali), input limits, audit report | **Code written and checked here, owner verification pending** (no database change) |
 | 26 | Seven more long-tail blog articles (25 starter articles in total), content guide and topical map updated | **Code written and checked here, owner verification pending** (no database change) |
 | 27 | Four more long-tail blog articles (29 starter articles in total) | **Code written and checked here, owner verification pending** (no database change) |
+| 28 | Four more long-tail blog articles (33 starter articles in total) | **Code written and checked here, owner verification pending** (no database change) |
+
+## Batch 28: four more long-tail articles
+
+**Status:** CODE WRITTEN AND CHECKED, owner verification pending. No migration. This zip is cumulative (it contains the Batch 26 and 27 files too).
+
+### What was done
+Four new starter articles in `src/content/blog-seed.ts` (sources in `docs/blog-seed/*.md`): post ideas for real estate agents; seasonal content calendar for local businesses; how to do a Facebook Page content audit; Facebook captions for photos. 33 starter articles in total.
+
+### Checks and results (real runs)
+| Check | Result |
+|---|---|
+| `tsc --noEmit` | PASS |
+| `next lint` | PASS |
+| `vitest run` | PASS: 76 files, 707 tests (the starter-article tests cover all 33 articles) |
+| `next build` | NOT RUN (content-only change) |
+| Reading every article for facts, or looking at pages in a browser | **NOT DONE** |
+
+### Open
+Drafts describe common practice. The real estate article is general guidance on permission, accuracy and fair wording, not legal advice; check local rules. Owner should read, add photos, and publish.
+
+### Exact next action
+Owner: upload, run "Add starter articles", read, add photos, publish.
+
+---
 
 ## Batch 27: four more long-tail articles
 

@@ -11,8 +11,8 @@
 | Support | How Often Should You Post on a Facebook Page? | how often should you post on facebook | answer one question |
 | Tool | Content calendar generator, post idea generator | content calendar generator | use a tool |
 
-**Written since:** facebook content calendar template (Batch 24), facebook post ideas for restaurants and how to repurpose one article into a week of posts (Batch 26), post ideas for salons and for online shops (Batch 27).
-**Next supporting articles (not written yet):** facebook post ideas for real estate agents (one article per business type, each with a short example set); social media content audit for a small Page; seasonal content calendar for local businesses.
+**Written since:** facebook content calendar template (Batch 24), facebook post ideas for restaurants and how to repurpose one article into a week of posts (Batch 26), post ideas for salons and for online shops (Batch 27), post ideas for real estate agents, a seasonal content calendar for local businesses, and a Page content audit (Batch 28).
+**Next supporting articles:** none planned. Look at Search Console after launch to pick new ones.
 
 ## Silo 2: Writing Posts (`/blog/category/writing-posts`)
 | Role | Article | Target query | Search intent |
@@ -21,8 +21,8 @@
 | Support | Facebook Post Hooks and Calls to Action: 25 Patterns | facebook call to action | get patterns |
 | Tool | Post checker | facebook post checker | use a tool |
 
-**Written since:** how long should a facebook post be, hashtags on facebook (Batch 24); facebook post templates for small business and how to reply to facebook comments and reviews (Batch 26); a facebook post for a sale or offer and a facebook post about a new product (Batch 27).
-**Next:** facebook captions for photos; alt text for social images.
+**Written since:** how long should a facebook post be, hashtags on facebook (Batch 24); facebook post templates for small business and how to reply to facebook comments and reviews (Batch 26); a facebook post for a sale or offer and a facebook post about a new product (Batch 27); facebook captions for photos (Batch 28).
+**Next:** alt text for social images.
 
 ## Silo 3: Scheduling and AI (`/blog/category/scheduling-and-ai`)
 | Role | Article | Target query | Search intent |

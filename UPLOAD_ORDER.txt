@@ -1,6 +1,6 @@
-Batch 27 (four more blog articles) upload order. This zip also contains everything from Batch 26.
+Batch 28 (four more blog articles) upload order. This zip also contains everything from Batches 26 and 27.
 1. There is NO database change in this batch. Do not run any SQL.
-2. Upload every file in this zip to GitHub, same folders (nothing is deleted). If you already uploaded Batch 26, the files simply get replaced.
+2. Upload every file in this zip to GitHub, same folders (nothing is deleted). Files from earlier batches simply get replaced.
 3. Wait for GitHub Actions and Vercel to go green.
 4. Admin -> Blog -> "Add starter articles" (adds every one you do not have yet, as drafts).
 5. Read each draft, check anything about Facebook screens against the real screens, use "Find the photos", then publish.
