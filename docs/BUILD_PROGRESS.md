@@ -37,6 +37,31 @@ Plan: [`LAZYAI_MASTER_PLAN.md`](./LAZYAI_MASTER_PLAN.md) (see section 23 for own
 | 24 | Docs section (/docs), tables and diagrams in content, seven long-tail articles, tool-to-guide links | **Code written and checked here, owner verification pending** (no database change) |
 | 25 | Pre-launch audit: patched sharp, guard tests (RLS, API routes, no Bengali), input limits, audit report | **Code written and checked here, owner verification pending** (no database change) |
 | 26 | Seven more long-tail blog articles (25 starter articles in total), content guide and topical map updated | **Code written and checked here, owner verification pending** (no database change) |
+| 27 | Four more long-tail blog articles (29 starter articles in total) | **Code written and checked here, owner verification pending** (no database change) |
+
+## Batch 27: four more long-tail articles
+
+**Status:** CODE WRITTEN AND CHECKED, owner verification pending. No migration. This zip is cumulative: it also contains every Batch 26 file, so if Batch 26 is not uploaded yet, upload only this one.
+
+### What was done
+Four new starter articles in `src/content/blog-seed.ts` (sources in `docs/blog-seed/*.md`): post ideas for salons; post ideas for online shops; how to write a Facebook post for a sale or offer; how to write a Facebook post about a new product. 29 starter articles in total (the admin button shows how many you are still missing).
+
+### Checks and results (real runs)
+| Check | Result |
+|---|---|
+| `tsc --noEmit` | PASS |
+| `next lint` | PASS |
+| `vitest run` | PASS: 76 files, 707 tests (the starter-article tests cover all 29 articles) |
+| `next build` | NOT RUN (content-only change) |
+| Reading every article for facts, or looking at pages in a browser | **NOT DONE** |
+
+### Open
+Drafts describe common practice, not rules. The sale-post article mentions local rules on price claims in general terms; check them for your country before publishing. Owner should read, add photos, and publish.
+
+### Exact next action
+Owner: upload, run "Add starter articles", read, add photos, publish. Then choose the next batch (more content, or post-launch work such as Next 16 / Zod 4).
+
+---
 
 ## Batch 26: seven more long-tail articles
 
