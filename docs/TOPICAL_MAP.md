@@ -21,8 +21,8 @@
 | Support | Facebook Post Hooks and Calls to Action: 25 Patterns | facebook call to action | get patterns |
 | Tool | Post checker | facebook post checker | use a tool |
 
-**Written since:** how long should a facebook post be, hashtags on facebook (Batch 24); facebook post templates for small business and how to reply to facebook comments and reviews (Batch 26); a facebook post for a sale or offer and a facebook post about a new product (Batch 27); facebook captions for photos (Batch 28).
-**Next:** alt text for social images.
+**Written since:** how long should a facebook post be, hashtags on facebook (Batch 24); facebook post templates for small business and how to reply to facebook comments and reviews (Batch 26); a facebook post for a sale or offer and a facebook post about a new product (Batch 27); facebook captions for photos (Batch 28); alt text for social media images (Batch 29).
+**Next:** none planned.
 
 ## Silo 3: Scheduling and AI (`/blog/category/scheduling-and-ai`)
 | Role | Article | Target query | Search intent |
@@ -30,8 +30,8 @@
 | Pillar | How to Schedule Facebook Page Posts: Built-In Tools vs. Apps | schedule facebook posts | learn / compare |
 | Support | How to Use AI to Write Facebook Posts Without Sounding Robotic | ai facebook posts | learn a method |
 
-**Written since:** best time to post on facebook (Batch 24); why a scheduled facebook post failed, how to schedule a month of facebook posts in one hour, and ai prompts for facebook posts (Batch 26).
-**Next:** meta business suite scheduling step by step; AI vs human social media writing; comparison pages ("LazyAI vs …") once the product is established.
+**Written since:** best time to post on facebook (Batch 24); why a scheduled facebook post failed, how to schedule a month of facebook posts in one hour, and ai prompts for facebook posts (Batch 26); meta business suite scheduling step by step and AI vs human social media writing (Batch 29).
+**Next:** comparison pages ("LazyAI vs …") once the product is established.
 
 ## Entities to cover consistently
 Facebook Page, Meta Business Suite, Page Insights, reach, engagement (reactions, comments, shares), content calendar, call to action, hook, brand voice, scheduling, time zone, Reels and photos, alt text, hashtags, small business, local business.

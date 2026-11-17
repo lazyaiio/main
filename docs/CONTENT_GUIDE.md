@@ -1,4 +1,4 @@
-# Content guide: topic silos, long-tail articles, docs, tables, and diagrams (Batches 24, 26, 27, and 28)
+# Content guide: topic silos, long-tail articles, docs, tables, and diagrams (Batches 24, 26, 27, 28, and 29)
 
 ## How the blog is organized (topic silos)
 Each of the three topics is a silo: one main (pillar) article, and supporting articles that each answer one specific question people search for. Every supporting article links up to its pillar, and the pillar links down to all of them. The article page also lists related articles by itself, so you never have to edit old articles to keep them connected.
@@ -6,8 +6,8 @@ Each of the three topics is a silo: one main (pillar) article, and supporting ar
 | Silo | Pillar article | Supporting articles (long-tail searches) |
 |---|---|---|
 | Content planning | How to plan a month of Facebook content | Post ideas for small businesses; Post ideas for restaurants, salons, online shops, and real estate agents; Seasonal content calendar for local businesses; How to do a Page content audit; How often to post; Page metrics explained; How to calculate engagement rate; Content calendar template; How to grow Page followers organically; Repurposing one article into a week of posts |
-| Writing posts | How to write Facebook posts people read | Hooks and calls to action; Post templates; Replying to comments and reviews; Writing a sale or offer post; Writing a new product post; Captions for photos; Giveaway rules; How many hashtags to use; How long a post should be |
-| Scheduling and AI | How to schedule Facebook Page posts | Using AI to write posts; Meta Business Suite vs a scheduling tool; Track post clicks with UTM links; UTM naming convention; Best time to post; Why a scheduled post failed; AI prompts for Facebook posts; Scheduling a month of posts in one hour |
+| Writing posts | How to write Facebook posts people read | Hooks and calls to action; Post templates; Replying to comments and reviews; Writing a sale or offer post; Writing a new product post; Captions for photos; Alt text for social media images; Giveaway rules; How many hashtags to use; How long a post should be |
+| Scheduling and AI | How to schedule Facebook Page posts | Using AI to write posts; Meta Business Suite vs a scheduling tool; Track post clicks with UTM links; UTM naming convention; Best time to post; Why a scheduled post failed; AI prompts for Facebook posts; Scheduling a month of posts in one hour; Scheduling in Meta Business Suite step by step; AI vs human writing |
 
 Every free tool links to its guides ("Guides for this tool"), and every guide links to its tool. That two-way link is the main way the tools get found in search.
 
@@ -21,7 +21,7 @@ Rankings are never promised. New sites usually need months, links, and steady wo
 - Example numbers (such as a bakery with 1,200 followers) are plainly examples.
 
 ## Adding content
-- **Blog:** Admin -> Blog -> "Add starter articles" adds the 33 starter articles you do not have yet, as drafts. Read each one, find photos, change anything that is not true for your business, and publish.
+- **Blog:** Admin -> Blog -> "Add starter articles" adds the 36 starter articles you do not have yet, as drafts. Read each one, find photos, change anything that is not true for your business, and publish.
 - **Tables:** write them in Markdown (a header row, a `|---|---|` line, then rows). They work in the blog and in the docs.
 - **Diagrams:** a line such as `[[diagram: workflow]]` shows one of four built-in diagrams: `workflow`, `lifecycle`, `funnel`, `rhythm`. They contain ideas and steps, never data.
 - **Screenshots:** see `docs/SCREENSHOT_GUIDE.md`.
@@ -35,6 +35,11 @@ Post ideas for salons, post ideas for online shops, how to write a Facebook post
 
 ## Batch 28: four more long-tail articles
 Post ideas for real estate agents, a seasonal content calendar for local businesses, how to do a Facebook Page content audit, and Facebook captions for photos. Same rules as before: drafts, four photo spots each, no invented statistics. The real estate article gives general habits about permission, accuracy, and fair wording, and tells readers to check their local advertising rules; it is not legal advice. The seasonal article gives example hooks, not dates, because holidays and seasons differ by country.
+
+## Batch 29: three more long-tail articles (topical map complete)
+Scheduling posts in Meta Business Suite step by step, alt text for social media images, and AI vs human social media writing. With these, every item on the topical map is written (36 articles).
+
+**Check the Meta Business Suite article against the real screens before you publish it.** It was written from several current guides that quote Meta's Business Help Center, because Meta's own pages could not be opened while writing it. The steps are the general flow, with no exact limits (guides disagreed on how far ahead you can schedule, so the article says Meta sets a window and tells readers to trust the message in the editor). Open Meta Business Suite, schedule one test post, and change any step or button name that differs.
 
 ## What this batch does not include
 - Real screenshots (you add them; see the guide).

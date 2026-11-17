@@ -39,6 +39,32 @@ Plan: [`LAZYAI_MASTER_PLAN.md`](./LAZYAI_MASTER_PLAN.md) (see section 23 for own
 | 26 | Seven more long-tail blog articles (25 starter articles in total), content guide and topical map updated | **Code written and checked here, owner verification pending** (no database change) |
 | 27 | Four more long-tail blog articles (29 starter articles in total) | **Code written and checked here, owner verification pending** (no database change) |
 | 28 | Four more long-tail blog articles (33 starter articles in total) | **Code written and checked here, owner verification pending** (no database change) |
+| 29 | Three more long-tail blog articles (36 starter articles; every topical-map item written) | **Code written and checked here, owner verification pending** (no database change) |
+
+## Batch 29: three more long-tail articles
+
+**Status:** CODE WRITTEN AND CHECKED, owner verification pending. No migration. This zip is cumulative (it contains the Batch 26, 27 and 28 files too).
+
+### What was done
+Three new starter articles in `src/content/blog-seed.ts` (sources in `docs/blog-seed/*.md`): how to schedule posts in Meta Business Suite; alt text for social media images; AI vs human social media writing. 36 starter articles in total. Every item on `docs/TOPICAL_MAP.md` is now written.
+
+### Checks and results (real runs)
+| Check | Result |
+|---|---|
+| `tsc --noEmit` | PASS |
+| `next lint` | PASS |
+| `vitest run` | PASS: 76 files, 707 tests (the starter-article tests cover all 36 articles) |
+| `next build` | NOT RUN (content-only change) |
+| Meta Business Suite steps checked against Meta's own pages | **NOT DONE** (Meta's pages could not be opened; written from several current third-party guides) |
+| Reading every article, or looking at pages in a browser | **NOT DONE** |
+
+### Open
+The Meta Business Suite article must be checked against the real screens before publishing (open the tool, schedule one test post, fix any step or button name that differs). The article deliberately gives no numbers for how far ahead you can schedule, because guides disagreed.
+
+### Exact next action
+Owner: upload, run "Add starter articles", read, check the Meta Business Suite steps, add photos, publish. After launch, use Search Console to choose what to write next.
+
+---
 
 ## Batch 28: four more long-tail articles
 
