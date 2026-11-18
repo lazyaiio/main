@@ -40,6 +40,32 @@ Plan: [`LAZYAI_MASTER_PLAN.md`](./LAZYAI_MASTER_PLAN.md) (see section 23 for own
 | 27 | Four more long-tail blog articles (29 starter articles in total) | **Code written and checked here, owner verification pending** (no database change) |
 | 28 | Four more long-tail blog articles (33 starter articles in total) | **Code written and checked here, owner verification pending** (no database change) |
 | 29 | Three more long-tail blog articles (36 starter articles; every topical-map item written) | **Code written and checked here, owner verification pending** (no database change) |
+| 30 | Zod 4 upgrade, validation-message regression test | **Code written and checked here, owner verification pending** (no database change) |
+
+## Batch 30: Zod 4 upgrade
+
+**Status:** CODE WRITTEN AND CHECKED, owner verification pending. No migration. This zip is cumulative (it also contains the Batch 26 to 29 files).
+
+### What was done
+`zod` raised from `^3.24.1` to `^4.6.7` (the audit tool flagged version 3). No source file needed changes: the type check passed as it was. Because Zod 4 words its built-in errors differently, added `src/lib/validation-messages.test.ts`, which submits empty versions of every form schema (sign up, sign in, forgot and reset password, profile, content, manual post, project, campaign) and fails if a visitor would see a built-in Zod sentence instead of ours. `prelaunch-audit.test.ts` now also checks the Zod range.
+
+### Checks and results (real runs)
+| Check | Result |
+|---|---|
+| `tsc --noEmit` | PASS |
+| `next lint` | PASS |
+| `vitest run` | PASS: 77 files, 717 tests |
+| `next build` (scratch copy, Google fonts stubbed) | PASS |
+| `npm audit --omit=dev` | 2 findings left: the `postcss` copy inside Next.js (needs Next 16) |
+| Signing up, resetting a password, creating a project and a campaign on the live site | **NOT DONE** (needs the real site) |
+
+### Open
+Zod 4 changes default error wording and some edge cases (for example how defaults and optional fields behave). Tests cover the forms and the existing schemas, but not every path with real data from Facebook or the AI provider. After upload, try: sign up, sign in, reset password, create a project, create a campaign, generate one post, and open the Admin pages that save settings. If anything shows an odd English message such as "Invalid input", tell me which page.
+
+### Exact next action
+Owner: upload, wait for green, run the short check above. Remaining known advisory: `postcss` inside Next.js; fix is the Next 16 upgrade (its own batch, higher risk).
+
+---
 
 ## Batch 29: three more long-tail articles
 

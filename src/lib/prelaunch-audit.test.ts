@@ -56,9 +56,10 @@ describe("pre-launch audit guards", () => {
     expect(bad).toEqual([]);
   });
 
-  it("asks for the patched sharp release", () => {
+  it("asks for the patched sharp and Zod releases", () => {
     const pkg = JSON.parse(readFileSync(join(ROOT, "package.json"), "utf8"));
     expect(pkg.dependencies.sharp).toBe("^0.35.5");
+    expect(pkg.dependencies.zod).toBe("^4.6.7");
     expect(pkg.engines.node).toBe(">=20.9.0");
   });
 });

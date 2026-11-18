@@ -10,13 +10,14 @@ What was checked by running things on the build machine, what was fixed, and wha
 | `next lint` | PASS (no warnings or errors) |
 | `vitest run` | PASS: 76 files, 707 tests (4 new guard tests) |
 | `next build` (scratch copy, Google fonts stubbed because the build machine has no network) | PASS |
-| `npm audit --omit=dev` | before: 4 findings (3 high, 1 moderate); after: 3 (see below) |
+| `npm audit --omit=dev` | before: 4 findings (3 high, 1 moderate); after Batch 25: 3; after Batch 30 (Zod 4): 2, both the `postcss` copy inside Next.js (see below) |
 | Page looked at in a real browser, real devices, screen readers | **NOT DONE** |
 
 ## Found and fixed
 1. **sharp (image thumbnails) had known vulnerabilities** in its image libraries. Raised to `^0.35.5` (needs Node 20.9 or newer; `engines` updated; Vercel and CI use Node 22). The thumbnail and media tests pass on the new version.
 2. **Bengali characters in a test file** (`lifetime-deal.test.ts`) broke the project rule "no Bengali in source files". Replaced with `\u` escapes. A new guard test now scans all of `src` and `docs`.
-3. **Campaign form lists had no upper limit** for post formats and posting days. Limits added (formats: at most twice the number of formats; posting days: at most 14). Normal use is not affected.
+3. **Zod 3 flagged by the audit tool (Batch 30).** Upgraded to Zod 4 (`^4.6.7`). The type check, all tests, lint and a production build pass on it. A new test (`validation-messages.test.ts`) makes sure visitors only see our own sentences on empty forms, because Zod 4 words its built-in errors differently.
+4. **Campaign form lists had no upper limit** for post formats and posting days. Limits added (formats: at most twice the number of formats; posting days: at most 14). Normal use is not affected.
 
 ## Checked and fine (no change needed)
 - Every one of the 38 database tables created by the migrations has row level security turned on (now enforced by a test).
@@ -29,7 +30,6 @@ What was checked by running things on the build machine, what was fixed, and wha
 | Item | Why it is open | What to do |
 |---|---|---|
 | `postcss` inside Next.js (advisory about CSS output and source maps) | The fix needs Next.js 16, a major upgrade. LazyAI only runs PostCSS at build time on its own CSS, never on visitor input. | Plan "Next 16" as its own batch after launch. |
-| `zod` 3 (advisory about very large constrained lists) | The fix needs Zod 4, a major upgrade. I have not confirmed that version 3 is affected; the audit tool flags it by version range. Lists from visitors now have limits; lists in answers from Facebook, Pexels, Pixabay and Unsplash are trusted providers. | Plan "Zod 4" as its own batch after launch. |
 | Content-Security-Policy is minimal (`frame-ancestors`, `base-uri`, `object-src`) | A full script policy can break the app, the analytics tags, and the cookie banner. | Try a report-only policy first, after launch. |
 | Pages never looked at in a browser by the build machine | No browser here. | Owner checklist below. |
 

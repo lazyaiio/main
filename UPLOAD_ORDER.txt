@@ -1,7 +1,7 @@
-Batch 29 (three more blog articles) upload order. This zip also contains everything from Batches 26, 27 and 28.
+Batch 30 (Zod 4 upgrade) upload order. This zip also contains everything from Batches 26 to 29 (blog articles), so upload it instead of those zips if you have not yet.
 1. There is NO database change in this batch. Do not run any SQL.
 2. Upload every file in this zip to GitHub, same folders (nothing is deleted). Files from earlier batches simply get replaced.
-3. Wait for GitHub Actions and Vercel to go green.
-4. Admin -> Blog -> "Add starter articles" (adds every one you do not have yet, as drafts).
-5. Read each draft. Before you publish "How to Schedule Posts in Meta Business Suite", open Meta Business Suite, schedule one test post, and fix any step or button name that differs from the article.
-6. Use "Find the photos", then publish.
+3. package.json changes (zod 3 -> 4). Wait for GitHub Actions and Vercel to go green.
+4. Quick live check: sign up or sign in, reset a password, create a project, create a campaign, generate one post, save an Admin setting.
+5. If any page shows an odd message such as "Invalid input", tell me which page.
+6. If you have not yet: Admin -> Blog -> "Add starter articles", read the drafts (check the Meta Business Suite steps against the real screens), add photos, publish.
