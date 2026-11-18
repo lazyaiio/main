@@ -37,26 +37,22 @@ function Step({ x, y, w = 128, n, label, sub, hot = false }: { x: number; y: num
   );
 }
 
-function arrowFor(id: string) {
-  function Arrow({ x1, y1, x2, y2 }: { x1: number; y1: number; x2: number; y2: number }) {
-    return <line x1={x1} y1={y1} x2={x2} y2={y2} className="stroke-ink-500" strokeWidth={1.5} markerEnd={`url(#${id}-arrow)`} />;
-  }
-  return Arrow;
+function Arrow({ id, x1, y1, x2, y2 }: { id: string; x1: number; y1: number; x2: number; y2: number }) {
+  return <line x1={x1} y1={y1} x2={x2} y2={y2} className="stroke-ink-500" strokeWidth={1.5} markerEnd={`url(#${id}-arrow)`} />;
 }
 
 /** Plan, write, review, schedule, publish. */
 function Workflow() {
-  const Arrow = arrowFor("workflow");
   return (
     <Frame id="workflow" title="How a LazyAI post goes from idea to your Page" desc="Five steps in a row: plan, write, review, schedule, and publish. You review and approve before anything is scheduled." height={150}>
       <Step x={12} y={30} n={1} label="Plan" sub="Topic or link" />
-      <Arrow x1={142} y1={72} x2={160} y2={72} />
+      <Arrow id="workflow" x1={142} y1={72} x2={160} y2={72} />
       <Step x={162} y={30} n={2} label="Write" sub="AI drafts" />
-      <Arrow x1={292} y1={72} x2={310} y2={72} />
+      <Arrow id="workflow" x1={292} y1={72} x2={310} y2={72} />
       <Step x={312} y={30} n={3} label="Review" sub="You edit" hot />
-      <Arrow x1={442} y1={72} x2={460} y2={72} />
+      <Arrow id="workflow" x1={442} y1={72} x2={460} y2={72} />
       <Step x={462} y={30} n={4} label="Schedule" sub="Pick a time" />
-      <Arrow x1={592} y1={72} x2={610} y2={72} />
+      <Arrow id="workflow" x1={592} y1={72} x2={610} y2={72} />
       <Step x={612} y={30} n={5} label="Publish" sub="To your Page" />
       <text x={380} y={132} textAnchor="middle" className="fill-ink-600 text-[12px]">Nothing is published unless you schedule it. You can cancel a scheduled post before it goes out.</text>
     </Frame>
@@ -65,7 +61,6 @@ function Workflow() {
 
 /** The life of a scheduled post. */
 function Lifecycle() {
-  const Arrow = arrowFor("lifecycle");
   const s = (x: number, y: number, w: number, label: string, hot = false) => (
     <g>
       <rect x={x} y={y} width={w} height={40} rx={20} className={hot ? accent : box} strokeWidth={1.5} />
@@ -75,19 +70,19 @@ function Lifecycle() {
   return (
     <Frame id="lifecycle" title="The life of a scheduled post" desc="A post is ready, then scheduled, then publishing. From publishing it becomes published, or failed, or it goes to retrying and tries publishing again. A scheduled post can be canceled before it goes out." height={260}>
       {s(20, 30, 110, "Ready")}
-      <Arrow x1={132} y1={50} x2={178} y2={50} />
+      <Arrow id="lifecycle" x1={132} y1={50} x2={178} y2={50} />
       {s(180, 30, 120, "Scheduled", true)}
-      <Arrow x1={302} y1={50} x2={348} y2={50} />
+      <Arrow id="lifecycle" x1={302} y1={50} x2={348} y2={50} />
       {s(350, 30, 130, "Publishing")}
-      <Arrow x1={482} y1={50} x2={528} y2={50} />
+      <Arrow id="lifecycle" x1={482} y1={50} x2={528} y2={50} />
       {s(530, 30, 130, "Published", true)}
-      <Arrow x1={395} y1={72} x2={395} y2={128} />
-      <Arrow x1={435} y1={128} x2={435} y2={72} />
+      <Arrow id="lifecycle" x1={395} y1={72} x2={395} y2={128} />
+      <Arrow id="lifecycle" x1={435} y1={128} x2={435} y2={72} />
       {s(350, 130, 130, "Retrying")}
       <text x={385} y={112} textAnchor="end" className="fill-ink-600 text-[12px]">tries again by itself</text>
-      <Arrow x1={470} y1={72} x2={545} y2={128} />
+      <Arrow id="lifecycle" x1={470} y1={72} x2={545} y2={128} />
       {s(530, 130, 130, "Failed")}
-      <Arrow x1={240} y1={72} x2={240} y2={188} />
+      <Arrow id="lifecycle" x1={240} y1={72} x2={240} y2={188} />
       {s(180, 190, 120, "Canceled")}
       <text x={20} y={244} className="fill-ink-600 text-[12px]">Published appears only after Facebook confirms the post. A failed post shows its reason and a retry button.</text>
     </Frame>

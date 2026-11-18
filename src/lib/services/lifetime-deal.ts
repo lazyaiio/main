@@ -29,7 +29,7 @@ export async function loadLifetimeOffer(): Promise<LifetimeOffer | null> {
 
 export function refreshLifetimeOffer(): void {
   try {
-    revalidateTag(OFFER_TAG);
+    revalidateTag(OFFER_TAG, { expire: 0 });
   } catch {
     // Outside a request the cache simply expires on its own within a minute.
   }

@@ -35,7 +35,6 @@ export function validatePageInput(input: PageInput): string | null {
   if (input.body.trim().length < 20) return "The page text is too short.";
   if (input.body.length > 60000) return "The page text is too long (60,000 characters at most).";
   if (BENGALI.test(input.title + input.intro + input.body)) return "The site text must be in English. Remove the Bengali characters.";
-  // eslint-disable-next-line no-control-regex
   if (/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/.test(input.title + input.intro + input.body)) return "The text contains characters that are not allowed.";
   return null;
 }

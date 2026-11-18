@@ -11,7 +11,6 @@ export const isUuid = (value: string): boolean => UUID.test(value);
 /** A search box value made safe to send: trimmed, one line, at most 80 characters, no control characters. */
 export function cleanSearch(value: string | string[] | undefined): string {
   if (typeof value !== "string") return "";
-  // eslint-disable-next-line no-control-regex
   return value.replace(/[\u0000-\u001f\u007f]/g, " ").replace(/\s+/g, " ").trim().slice(0, 80);
 }
 

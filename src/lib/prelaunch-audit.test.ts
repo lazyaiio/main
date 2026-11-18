@@ -56,10 +56,12 @@ describe("pre-launch audit guards", () => {
     expect(bad).toEqual([]);
   });
 
-  it("asks for the patched sharp and Zod releases", () => {
+  it("asks for the patched sharp, Zod and Next.js releases", () => {
     const pkg = JSON.parse(readFileSync(join(ROOT, "package.json"), "utf8"));
     expect(pkg.dependencies.sharp).toBe("^0.35.5");
     expect(pkg.dependencies.zod).toBe("^4.6.7");
+    expect(pkg.dependencies.next).toBe("^16.4.6");
+    expect(pkg.scripts.lint).toBe("eslint .");
     expect(pkg.engines.node).toBe(">=20.9.0");
   });
 });

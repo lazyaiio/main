@@ -41,6 +41,32 @@ Plan: [`LAZYAI_MASTER_PLAN.md`](./LAZYAI_MASTER_PLAN.md) (see section 23 for own
 | 28 | Four more long-tail blog articles (33 starter articles in total) | **Code written and checked here, owner verification pending** (no database change) |
 | 29 | Three more long-tail blog articles (36 starter articles; every topical-map item written) | **Code written and checked here, owner verification pending** (no database change) |
 | 30 | Zod 4 upgrade, validation-message regression test | **Code written and checked here, owner verification pending** (no database change) |
+| 31 | Next.js 16 and ESLint 9 upgrade (last open security advisory) | **Code written and checked here, owner verification pending** (no database change) |
+
+## Batch 31: Next.js 16 and ESLint 9
+
+**Status:** CODE WRITTEN AND CHECKED, owner verification pending. No migration. Only the changed files are in the zip (Batches 26 to 30 are already uploaded).
+
+### What was done
+`next` raised from `^15.1.0` to `^16.4.6`, `eslint` from 8 to `^9.0.0`, `eslint-config-next` to `^16.4.6`. Changes needed in the code: (1) `revalidateTag` now needs a second argument, so `refreshLifetimeOffer` calls `revalidateTag(OFFER_TAG, { expire: 0 })`, which expires the cached offer immediately as before; (2) `next lint` no longer exists, so `npm run lint` now runs `eslint .` with a new `eslint.config.mjs`, and the old `eslintConfig` block was removed from `package.json`; (3) in `src/components/docs/diagrams.tsx` the arrow helper was a component created inside another component on every render, so it is now a normal top-level component taking an `id`; (4) two unused `eslint-disable` comments removed. The new ESLint config turns three new advisory rules (`react-hooks/purity`, `refs`, `set-state-in-effect`) into warnings (11 spots, explained in the file), because the code behaves correctly and LazyAI does not use the React Compiler.
+
+### Checks and results (real runs)
+| Check | Result |
+|---|---|
+| `tsc --noEmit` | PASS |
+| `eslint .` | PASS: 0 errors, 11 advisory warnings |
+| `vitest run` | PASS: 77 files, 717 tests |
+| `next build` (Turbopack, the Next 16 default; Google fonts stubbed) | PASS. The set of pre-built (static) pages is the same as on Next 15, plus Next's own `/_global-error` page |
+| `npm audit --omit=dev` | 0 vulnerabilities |
+| Vercel deploy, sign-in, payments, publishing, image upload on the live site | **NOT DONE** |
+
+### Open
+Next 16 builds with Turbopack and prints that `middleware.ts` is deprecated (renamed `proxy.ts`). It still works; renaming is a later, small change. Things the tests and build cannot show: sign-in redirects (they run in the middleware), uploading an image (sharp), the maintenance page, the lifetime-deal banner updating right after you save it in Admin, and the docs pages with the diagrams.
+
+### Exact next action
+Owner: upload, wait for Actions and Vercel to go green, then try: sign in and out, open `/app` and `/admin`, upload a logo or photo, save the lifetime deal in Admin and check the public banner, open the docs "How it works" page (diagrams), publish one test post. If Vercel fails or something looks wrong, redeploy the previous deployment from the Vercel dashboard (Deployments -> the Batch 30 one -> Promote or Redeploy) and tell me what you saw.
+
+---
 
 ## Batch 30: Zod 4 upgrade
 

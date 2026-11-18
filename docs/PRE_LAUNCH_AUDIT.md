@@ -7,17 +7,18 @@ What was checked by running things on the build machine, what was fixed, and wha
 |---|---|
 | `npm install` | OK (415 packages) |
 | `tsc --noEmit` | PASS |
-| `next lint` | PASS (no warnings or errors) |
+| `next lint` (from Batch 31: `eslint .`) | PASS (no errors; 11 advisory warnings since Batch 31) |
 | `vitest run` | PASS: 76 files, 707 tests (4 new guard tests) |
 | `next build` (scratch copy, Google fonts stubbed because the build machine has no network) | PASS |
-| `npm audit --omit=dev` | before: 4 findings (3 high, 1 moderate); after Batch 25: 3; after Batch 30 (Zod 4): 2, both the `postcss` copy inside Next.js (see below) |
+| `npm audit --omit=dev` | before: 4 findings (3 high, 1 moderate); after Batch 25: 3; after Batch 30 (Zod 4): 2; after Batch 31 (Next 16): 0 |
 | Page looked at in a real browser, real devices, screen readers | **NOT DONE** |
 
 ## Found and fixed
 1. **sharp (image thumbnails) had known vulnerabilities** in its image libraries. Raised to `^0.35.5` (needs Node 20.9 or newer; `engines` updated; Vercel and CI use Node 22). The thumbnail and media tests pass on the new version.
 2. **Bengali characters in a test file** (`lifetime-deal.test.ts`) broke the project rule "no Bengali in source files". Replaced with `\u` escapes. A new guard test now scans all of `src` and `docs`.
 3. **Zod 3 flagged by the audit tool (Batch 30).** Upgraded to Zod 4 (`^4.6.7`). The type check, all tests, lint and a production build pass on it. A new test (`validation-messages.test.ts`) makes sure visitors only see our own sentences on empty forms, because Zod 4 words its built-in errors differently.
-4. **Campaign form lists had no upper limit** for post formats and posting days. Limits added (formats: at most twice the number of formats; posting days: at most 14). Normal use is not affected.
+4. **`postcss` inside Next.js (Batch 31).** Upgraded to Next.js 16.4.6, the version that fixes it. ESLint went to version 9 with a new `eslint.config.mjs`, because Next 16 no longer has `next lint`. `npm audit --omit=dev` now reports 0 vulnerabilities.
+5. **Campaign form lists had no upper limit** for post formats and posting days. Limits added (formats: at most twice the number of formats; posting days: at most 14). Normal use is not affected.
 
 ## Checked and fine (no change needed)
 - Every one of the 38 database tables created by the migrations has row level security turned on (now enforced by a test).
@@ -29,7 +30,6 @@ What was checked by running things on the build machine, what was fixed, and wha
 ## Still open (known, not fixed here)
 | Item | Why it is open | What to do |
 |---|---|---|
-| `postcss` inside Next.js (advisory about CSS output and source maps) | The fix needs Next.js 16, a major upgrade. LazyAI only runs PostCSS at build time on its own CSS, never on visitor input. | Plan "Next 16" as its own batch after launch. |
 | Content-Security-Policy is minimal (`frame-ancestors`, `base-uri`, `object-src`) | A full script policy can break the app, the analytics tags, and the cookie banner. | Try a report-only policy first, after launch. |
 | Pages never looked at in a browser by the build machine | No browser here. | Owner checklist below. |
 

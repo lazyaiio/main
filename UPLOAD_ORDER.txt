@@ -1,7 +1,6 @@
-Batch 30 (Zod 4 upgrade) upload order. This zip also contains everything from Batches 26 to 29 (blog articles), so upload it instead of those zips if you have not yet.
+Batch 31 (Next.js 16 and ESLint 9 upgrade) upload order
 1. There is NO database change in this batch. Do not run any SQL.
-2. Upload every file in this zip to GitHub, same folders (nothing is deleted). Files from earlier batches simply get replaced.
-3. package.json changes (zod 3 -> 4). Wait for GitHub Actions and Vercel to go green.
-4. Quick live check: sign up or sign in, reset a password, create a project, create a campaign, generate one post, save an Admin setting.
-5. If any page shows an odd message such as "Invalid input", tell me which page.
-6. If you have not yet: Admin -> Blog -> "Add starter articles", read the drafts (check the Meta Business Suite steps against the real screens), add photos, publish.
+2. Upload every file in this zip to GitHub, same folders (nothing is deleted). eslint.config.mjs is a NEW file in the main folder.
+3. package.json changes (next 15 -> 16, eslint 8 -> 9). Wait for GitHub Actions and Vercel to go green. The first install takes longer than usual.
+4. Live check: sign in and out, open /app and /admin, upload a logo or photo, save the lifetime deal in Admin and check the public banner, open the docs "How it works" page (diagrams), publish one test post.
+5. If Vercel fails or the site behaves oddly: Vercel -> Deployments -> the Batch 30 deployment -> Promote to Production (or Redeploy). Then tell me what you saw.
